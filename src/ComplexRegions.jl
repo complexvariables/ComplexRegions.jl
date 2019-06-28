@@ -4,13 +4,18 @@ export Polar,Spherical
 using ComplexValues,LinearAlgebra
 
 AllComplex(T::Type{S}) where {S<:AbstractFloat} = Union{Complex{T},Polar{T},Spherical{T}}
-AnyComplex = Union{Complex,Polar,Spherical}
+AnyComplex{S} = Union{Complex{S},Polar{S},Spherical{S}} where {S<:AbstractFloat}
 
-import Base: +,-,*,/,sign,inv,angle,real,imag,conj,show
+import Base: +,-,*,/,sign,inv,angle,real,imag,conj,show,iterate,eltype,length,getindex
 
 include("utilities.jl")
 
-export point,start,stop,arclength,Circle,Segment
+export point,start,stop,arclength,Circle,Line,Arc,Segment
 include("curves.jl")
+
+export Path,ClosedPath,Polygon,CircularPolygon
+include("paths.jl")
+
+include("plotrecipes.jl")
 
 end # module

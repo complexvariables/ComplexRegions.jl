@@ -5,7 +5,7 @@ uuid = "2a0f44e3-6c83-55bd-87e4-b1978d98bd5f"
 
 [[ComplexValues]]
 deps = ["RecipesBase", "Test"]
-git-tree-sha1 = "b70eb46aed1bf86f44fee8571fe6faeb8c909695"
+git-tree-sha1 = "91e6b8004c7a73300318841ea009e6b35e26697e"
 repo-rev = "master"
 repo-url = "/Users/driscoll/Dropbox/julia/ComplexValues"
 uuid = "41a84b80-6cf2-11e9-379d-9df124847946"
