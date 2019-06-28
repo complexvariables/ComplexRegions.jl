@@ -52,6 +52,12 @@ function isapprox(L1::Line,L2::Line;tol=1e-12)
 		isapprox(real(w1)*imag(dz),imag(w1)*real(dz),rtol=tol,atol=tol)
 end
 
+dist(z::Number,L::Line) = imag( (z-L.base)/sign(L.direction) )
+function closest(z::Number,L::Line) 
+	s = sign(L.direction)
+	L.base + real((z-L.base)/s)*s 
+end	
+
 function show(io::IO,L::Line)
 	print(IOContext(io,:compact=>true),"Line(...",L(0.5),"...",L((sqrt(5)-1)/2),"...)")
 end
@@ -105,6 +111,21 @@ end
 function isapprox(S1::Segment,S2::Segment;tol=1e-12)
 	return isapprox(S1(0.0),S2(0.0),rtol=tol,atol=tol) &&
 		isapprox(S1(1.0),S2(1.0),rtol=tol,atol=tol)
+end
+
+dist(z::Number,S::Segment) = abs(z - closest(z,S))
+function closest(z::Number,S::Segment) 
+	# translate and rotate segment to positive Re axis
+	a,b = point(S,0),point(S,1)
+	s = sign(S.line.direction)
+	ζ = (z-a)/s
+	if real(ζ) < 0
+		a 
+	elseif real(ζ) > real((b-a)/s)
+		b 
+	else 
+		a + real(ζ)*s
+	end 
 end
 
 function show(io::IO,S::Segment{T}) where {T}

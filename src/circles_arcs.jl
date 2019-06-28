@@ -54,13 +54,15 @@ function isapprox(C1::Circle,C2::Circle;tol=1e-12)
 		isapprox(C1.radius,C2.radius,rtol=tol,atol=tol)
 end
 
+dist(z::Number,C::Circle) = abs( abs(z-C.center) - C.radius )
+closest(z::Number,C::Circle) =	C.center + C.radius*sign(z - C.center)
+
 function show(io::IO,C::Circle)
 	print(IOContext(io,:compact=>true),"Circle(",C.center,",",C.radius,")")
 end
 function show(io::IO,::MIME"text/plain",C::Circle{T}) where {T}
 	print(io,"Circle{$T} in the complex plane:\n   centered at (",C.center,") with radius ",C.radius)
 end
-
 
 #
 # Arc 
@@ -139,6 +141,23 @@ function isapprox(A1::Arc,A2::Arc;tol=1e-12)
 	return isapprox(A1.Circle,A2.Circle,tol) &&
 		isapprox(A1.start,A2.start,rtol=tol,atol=tol) &&
 		isapprox(A1.delta,A2.delta,rtol=tol,atol=tol) 
+end
+function dist(z::Number,A::Arc) 
+	ζ = z - A.circle.center 
+	min( abs(abs(ζ)-A.circle.radius), abs(z-point(A,0)), abs(z-point(A,1)) )
+end
+function closest(z::Number,A::Arc)
+	ζ = z - A.circle.center
+	d = A.delta/2
+	# rotate arc to position symmetric about positive Re axis
+	ϕ = angle( ζ/exp(2im*pi*(A.start+d)) ) / (2π)
+	if ϕ > d 
+		point(A,1)
+	elseif ϕ < -d 
+		point(A,0) 
+	else
+		A.circle.center + A.circle.radius*sign(ζ)
+	end
 end
 
 function show(io::IO,A::Arc{T}) where {T}

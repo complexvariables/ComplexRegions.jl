@@ -10,7 +10,8 @@ import Base: +,-,*,/,sign,inv,angle,real,imag,conj,show,iterate,eltype,length,ge
 
 include("utilities.jl")
 
-export point,start,stop,arclength,slope,isapprox,Circle,Line,Arc,Segment
+export point,start,stop,arclength,slope,isapprox,dist,closest
+export Circle,Line,Arc,Segment
 include("curves.jl")
 
 export Path,ClosedPath,Polygon,CircularPolygon,vertex
