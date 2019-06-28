@@ -49,6 +49,10 @@ function /(z::Number,C::Circle)
 	Circle(w...)
 end
 
+function isapprox(C1::Circle,C2::Circle;tol=1e-12)
+	return isapprox(C1.center,C2.center,rtol=tol,atol=tol) &&
+		isapprox(C1.radius,C2.radius,rtol=tol,atol=tol)
+end
 
 function show(io::IO,C::Circle)
 	print(IOContext(io,:compact=>true),"Circle(",C.center,",",C.radius,")")
@@ -129,6 +133,12 @@ end
 function /(z::Number,A::Arc) 
 	w = z./point(A,[0,0.5,1])
 	Arc(w...)
+end
+
+function isapprox(A1::Arc,A2::Arc;tol=1e-12)
+	return isapprox(A1.Circle,A2.Circle,tol) &&
+		isapprox(A1.start,A2.start,rtol=tol,atol=tol) &&
+		isapprox(A1.delta,A2.delta,rtol=tol,atol=tol) 
 end
 
 function show(io::IO,A::Arc{T}) where {T}

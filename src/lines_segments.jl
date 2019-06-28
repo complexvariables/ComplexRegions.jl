@@ -30,6 +30,8 @@ end
 (C::Line)(t::Real) = point(C,t)
 
 # Other methods
+slope(L::Line) = tan(angle(L.direction))
+
 +(L::Line,z::Number) = Line(L.base+z,direction=L.direction)
 +(z::Number,L::Line) = Line(L.base+z,direction=L.direction)
 -(L::Line) = Line(-L.base,direction=-L.direction)
@@ -43,7 +45,12 @@ function /(z::Number,L::Line)
 	Circle(w...)
 end
 
-slope(L::Line) = tan(angle(L.direction))
+function isapprox(L1::Line,L2::Line;tol=1e-12)
+	dz = L1.base - L2.base
+	w1,w2 = L1.direction,L2.direction
+	return isapprox(real(w1)*imag(w2),imag(w1)*real(w2),rtol=tol,atol=tol) &&
+		isapprox(real(w1)*imag(dz),imag(w1)*real(dz),rtol=tol,atol=tol)
+end
 
 function show(io::IO,L::Line)
 	print(IOContext(io,:compact=>true),"Line(...",L(0.5),"...",L((sqrt(5)-1)/2),"...)")
@@ -95,6 +102,10 @@ function /(z::Number,S::Segment)
 	Arc(w...)
 end
 
+function isapprox(S1::Segment,S2::Segment;tol=1e-12)
+	return isapprox(S1(0.0),S2(0.0),rtol=tol,atol=tol) &&
+		isapprox(S1(1.0),S2(1.0),rtol=tol,atol=tol)
+end
 
 function show(io::IO,S::Segment{T}) where {T}
 	print(IOContext(io,:compact=>true),"Segment(",point(S,0),",",point(S,1),")")
