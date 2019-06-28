@@ -11,6 +11,7 @@ end
 	@test( arclength(c) ≈ 2*sqrt(2)*pi )
 	c = Circle(1-1im,sqrt(2))
 	@test( point(c,.25) ≈ complex(1,sqrt(2)-1) )
+	@test( 2/c isa Line )
 	c = Circle(1f0,-1im,0)
 	@test( c.radius ≈ 1/sqrt(2f0) )
 	zz = point(5im - c/3im,.23)
@@ -22,6 +23,7 @@ end
 	l = Line(1im,direction=1+2im)
 	dz = point(l,.6)-point(l,.1)
 	@test( angle(dz) ≈ angle(1+2im) )
+	@test( 1/l isa Circle )
 	zz = point(5im - l/3im,.23)
 	z0 = 5im - l.base/3im
 	@test( angle(zz-z0) ≈ angle(l.direction/3im) )
@@ -33,10 +35,24 @@ end
 	@test( point(b,0.5) ≈ zz)
 	@test( point(0.1 - 3im*a,0.5) ≈ 0.1 - 3im*zz)
 
-	#s1 = Segment(3.0+5.0im,0)
-	#s2 = Segment(Spherical(1.0im),-1)
-
+	s = Segment(1,3.0+5.0im)
+	zz = 2 + 2.5im
+	@test( point(2 - 3im*s,0.5) ≈ 2 - 3im*zz)
 end 
 	
+@testset "Paths" begin
+	S = Segment(1,1im)
+	A = Arc(1im,-1+0.5im,-1)
+	l1,l2 = arclength(S),arclength(A)
+	l = l1+l2
+	P = Path([S,A,-S])
+	t = (l1+0.5l2)/(2l1+l2)
+	@test( P(t) ≈ A(0.5) )
+	Q = 1 - 3im*P 
+	@test( Q(t) ≈ 1 - 3im*A(0.5) )
 
+	P = ClosedPath([S,1im*S,-S,-1im*S])
+	@test( vertex(P,3) ≈ -1 )
+	@test( arclength(P) ≈ 4*sqrt(2) )
+end
 
