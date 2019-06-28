@@ -17,12 +17,25 @@ end
     point(C,[0.0,1.0])
 end
 
-@recipe function f(p::AbstractPath)
-    for c in p 
+@recipe function f(P::AbstractPath;vertices=false)
+    
+    delete!(plotattributes,:vertices)
+    
+    for c in P 
         @series begin 
             c
         end 
     end
+
+    if vertices 
+        @series begin 
+            markercolor --> :black
+            markershape --> :circle 
+            seriestype := :scatter
+            vertex(P) 
+        end
+    end
+
 end
 
 # @recipe function f(z::Array{Spherical{T}}) where T
