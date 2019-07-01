@@ -6,6 +6,11 @@ using Test
 	 @test(ComplexRegions.@scalefrom(1im,3im,[2im,1im,1.5im]) ≈ [0.5,0,0.25])
 end
 
+@testset "Curves" begin
+	@test( Curve(t -> 2*cos(t) + 1im*sin(t),-1,1) isa Curve)
+	@test( ClosedCurve(t -> 2*cos(t) + 1im*sin(t),0,2π) isa ClosedCurve)
+end
+
 @testset "CirclesArcs" begin
 	c = Circle(Spherical(1-1im),sqrt(2))
 	@test( arclength(c) ≈ 2*sqrt(2)*pi )
