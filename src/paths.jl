@@ -102,3 +102,5 @@ curve(p::ClosedPath) = p.curve
 breakindex(p::ClosedPath) = p.breakindex
 arclength(p::ClosedPath) = sum(p.arclen)
 (p::ClosedPath)(t::Real) = point(p,t)
+
+include("polygons.jl")
