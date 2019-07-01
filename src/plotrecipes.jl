@@ -2,14 +2,9 @@ using RecipesBase
 
 RecipesBase.debug(false)
 
-@recipe function f(C::AbstractCurve,n=500)
+@recipe function f(C::AbstractCurve,n=600)
     aspect_ratio --> 1.0
     point(C,LinRange(0,1,n+1))
-end
-
-@recipe function f(C::Union{Circle,Arc})
-    aspect_ratio --> 1.0
-    point(C,LinRange(0,1,601))
 end
 
 @recipe function f(C::Union{Line,Segment})
@@ -18,7 +13,8 @@ end
 end
 
 @recipe function f(P::AbstractPath;vertices=false)
-    delete!(plotattributes,:vertices)    
+    delete!(plotattributes,:vertices) 
+    aspect_ratio --> 1.0  
     for c in P 
         @series begin 
             c
