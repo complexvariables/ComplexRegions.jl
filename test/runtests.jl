@@ -7,11 +7,14 @@ using Test
 end
 
 @testset "Curves" begin
-	@test( Curve(t -> 2*cos(t) + 1im*sin(t),-1,1) isa Curve)
+	f = t -> 2*cos(t) + 1im*sin(t)
+	@test( Curve(f,-1,1) isa Curve)
+	@test( point(Curve(f,-1,1),0.5) ≈ f(0) )
 	@test( ClosedCurve(t -> 2*cos(t) + 1im*sin(t),0,2π) isa ClosedCurve)
+	@test( point(ClosedCurve(f,0,2*pi),0.25) ≈ f(pi/2) )
 end
 
-@testset "CirclesArcs" begin
+@testset "Circles & Arcs" begin
 	c = Circle(Spherical(1-1im),sqrt(2))
 	@test( arclength(c) ≈ 2*sqrt(2)*pi )
 	@test( dist(-1+1im,c) ≈ sqrt(2) )
@@ -36,7 +39,7 @@ end
 	@test( dist(3im+.5*2im*exp(1im*pi/5),3im+2im*a) ≈ 2*0.5 )
 end 
 
-@testset "LinesSegments" begin
+@testset "Lines & Segments" begin
 	@test( Line(1,5) isa Line )
 	l = Line(1im,direction=1+2im)
 	dz = point(l,.6)-point(l,.1)
@@ -54,8 +57,19 @@ end
 	@test( point(2 - 3im*s,0.5) ≈ 2 - 3im*zz)
 	@test( closest(4+6im,s) ≈ 3+5im )
 	@test( dist(-1,s) ≈ 2 )
-	z = s(0.7) + 1im*sign(s.line.direction)
+	z = s(0.7) + 1im*sign(s(0.9)-s(0.7))
 	@test( closest(z,s) ≈ s(0.7) )
+
+	s = Segment(2,Polar(Inf,pi/2))
+	@test( isinf(arclength(s)) )
+	@test( real(s(0.23)) ≈ 2 )
+	@test( imag(s(0.9)) > imag(s(0.7)) )
+	@test( closest(5im,s) ≈ 2+5im )
+	s = Segment(Spherical(pi/2,pi),2im)
+	@test( imag(s(0.5)) ≈ 2 )
+	@test( real(s(0.3)) < real(s(0.4)) )
+	@test( closest(-4+1im,s) ≈ -4+2im )
+	@test( closest(6,s) ≈ 2im )
 end
 	
 @testset "Paths" begin
