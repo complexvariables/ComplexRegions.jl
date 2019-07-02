@@ -1,4 +1,4 @@
-using RecipesBase
+using RecipesBase,Colors
 
 RecipesBase.debug(false)
 
@@ -15,6 +15,9 @@ end
 @recipe function f(P::AbstractPath;vertices=false)
     delete!(plotattributes,:vertices) 
     aspect_ratio --> 1.0  
+    # hard coded in lieu of understanding plot themes
+    palette --> [RGB{Float64}(0.0,0.6056031611752248,0.978680117569607)]
+    label --> ""
     for c in P 
         @series begin 
             c
