@@ -5,7 +5,7 @@
 struct Line{T<:AnyComplex} <: AbstractClosedCurve 
 	base::T 
 	direction::T
-	Line{T}(a,b) where T = new(a,b-a)
+	Line{T}(a,b) where T = new(a,sign(b-a))
 end
 function Line(a::Number,b::Number)
 	a,b = promote(complex(float(a)),complex(float(b)))
@@ -30,16 +30,16 @@ end
 (C::Line)(t::Real) = point(C,t)
 
 # Other methods
-slope(L::Line) = tan(angle(L.direction))
+slope(L::Line) = imag(L.direction)/real(L.direction)
 
 +(L::Line,z::Number) = Line(L.base+z,direction=L.direction)
 +(z::Number,L::Line) = Line(L.base+z,direction=L.direction)
 -(L::Line) = Line(-L.base,direction=-L.direction)
 -(L::Line,z::Number) = Line(L.base-z,direction=L.direction)
 -(z::Number,L::Line) = Line(z-L.base,direction=-L.direction)
-*(L::Line,z::Number) = Line(L.base*z,direction=L.direction*z)
-*(z::Number,L::Line) = Line(L.base*z,direction=L.direction*z)
-/(L::Line,z::Number) = Line(L.base/z,direction=L.direction/z)
+*(L::Line,z::Number) = Line(L.base*z,direction=L.direction*sign(z))
+*(z::Number,L::Line) = Line(L.base*z,direction=L.direction*sign(z))
+/(L::Line,z::Number) = Line(L.base/z,direction=L.direction/sign(z))
 function /(z::Number,L::Line) 
 	w = z./point(L,[0.25,0.5,0.75])
 	Circle(w...)
@@ -52,9 +52,9 @@ function isapprox(L1::Line,L2::Line;tol=1e-12)
 		isapprox(real(w1)*imag(dz),imag(w1)*real(dz),rtol=tol,atol=tol)
 end
 
-dist(z::Number,L::Line) = imag( (z-L.base)/sign(L.direction) )
+dist(z::Number,L::Line) = imag( (z-L.base)/L.direction )
 function closest(z::Number,L::Line) 
-	s = sign(L.direction)
+	s = L.direction
 	L.base + real((z-L.base)/s)*s 
 end	
 
@@ -71,38 +71,61 @@ end
 
 # Type  
 struct Segment{T<:AnyComplex} <: AbstractCurve 
-	line::Line{T} 
-	start::Float64  # specified as Line parameter value
-	stop::Float64 
+	base::T 
+	delta::T 
+	reverse::Bool
+	function Segment{T}(a,b) where T<:Complex
+		if isinf(a) || isinf(b)
+			@error("Must use Polar or Spherical value to designate infinity")
+		else
+		 new(a,b-a,false)
+		end
+	end
+	function Segment{T}(a,b) where T<:Union{Polar,Spherical}
+		if isinf(a)
+			if isinf(b)
+				@error("Segment with two infinite endpoints is not defined")
+			else
+				new(b,a-b,true)
+			end
+		else
+		 	new(a,b-a,false)
+		end
+	end
 end
 
 # Untyped constructor
-function Segment(L::Line{T},start::Real,stop::Real) where T<:AnyComplex
-	Segment{T}(L,Float64(start),Float64(stop))
-end
-
-# Construct from 2 points
 function Segment(a::Number,b::Number) 
 	a,b = promote(complex(float(a)),b)
-	L = Line(a,b)
-	tf = (sqrt(5)-1)/2  # based on Line implementation
-	Segment(L,0.5,tf)
+	Segment{typeof(a)}(a,b)
 end
 
 # Required methods
-arclength(S::Segment) = abs(point(S,1) - point(S,0))
-point(S::Segment,t::Real) = (1-t)*S.line(S.start) + t*S.line(S.stop)
+arclength(S::Segment) = abs(S.delta)
+function point(S::Segment,t::Real)
+	# have to take care of infinite endpoint
+	a,d = S.base,S.delta
+	if S.reverse 
+		t = 1-t
+	end
+	if isinf(d)
+		a + t/(1-t)*sign(d) 
+	else
+		a + t*d
+	end
+end
 (C::Segment)(t::Real) = point(C,t)
 
 # Other methods
-+(S::Segment,z::Number) = Segment(+(S.line,z),S.start,S.stop)
-+(z::Number,S::Segment) = Segment(+(z,S.line),S.start,S.stop)
--(S::Segment,z::Number) = Segment(-(S.line,z),S.start,S.stop)
--(z::Number,S::Segment) = Segment(-(z,S.line),S.start,S.stop)
--(S::Segment) = Segment(-S.line,S.start,S.stop)
-*(S::Segment,z::Number) = Segment(*(S.line,z),S.start,S.stop)
-*(z::Number,S::Segment) = Segment(*(z,S.line),S.start,S.stop)
-/(S::Segment,z::Number) = Segment(/(S.line,z),S.start,S.stop)
++(S::Segment,z::Number) = Segment(S(0)+z,S(1)+z)
++(z::Number,S::Segment) = Segment(S(0)+z,S(1)+z)
+-(S::Segment,z::Number) = Segment(S(0)-z,S(1)-z)
+-(z::Number,S::Segment) = Segment(z-S(0),z-S(1))
+-(S::Segment) = Segment(-S(0),-S(1))
+# these need to recompute the final parameter values
+*(S::Segment,z::Number) = Segment(z*S(0),z*S(1))
+*(z::Number,S::Segment) = Segment(z*S(0),z*S(1))
+/(S::Segment,z::Number) = Segment(S(0)/z,S(1)/z)
 function /(z::Number,S::Segment) 
 	w = z./point(S,[0,0.5,1])
 	Arc(w...)
@@ -116,13 +139,13 @@ end
 dist(z::Number,S::Segment) = abs(z - closest(z,S))
 function closest(z::Number,S::Segment) 
 	# translate and rotate segment to positive Re axis
-	a,b = point(S,0),point(S,1)
-	s = sign(S.line.direction)
+	a,d = S.base,S.delta
+	s = sign(d)
 	ζ = (z-a)/s
 	if real(ζ) < 0
 		a 
-	elseif real(ζ) > real((b-a)/s)
-		b 
+	elseif real(ζ) > abs(d)
+		a+d 
 	else 
 		a + real(ζ)*s
 	end 
