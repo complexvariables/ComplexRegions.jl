@@ -1,4 +1,4 @@
-using ComplexValues,ComplexRegions
+using ComplexRegions
 
 using Test
 @testset "Utilities" begin
