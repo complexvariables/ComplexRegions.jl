@@ -17,16 +17,7 @@ Line(z::Number;direction) = Line(z,z+direction)
 
 # Required methods
 arclength(::Line) = Inf
-function point(L::Line,t::Real)
-	if t==0
-		z = Polar(Inf,angle(-L.direction))
-	elseif t==1
-		z = Polar(Inf,angle(L.direction))
-	else
-		z = L.base + (2t-1)/(t-t^2)*L.direction
-	end
-	return z 
-end
+point(L::Line,t::Real) = L.base + (2t-1)/(t-t^2)*L.direction
 (C::Line)(t::Real) = point(C,t)
 
 # Other methods
@@ -71,26 +62,11 @@ end
 
 # Type  
 struct Segment{T<:AnyComplex} <: AbstractCurve 
-	base::T 
-	delta::T 
-	reverse::Bool
-	function Segment{T}(a,b) where T<:Complex
-		if isinf(a) || isinf(b)
-			@error("Must use Polar or Spherical value to designate infinity")
-		else
-		 new(a,b-a,false)
-		end
-	end
-	function Segment{T}(a,b) where T<:Union{Polar,Spherical}
-		if isinf(a)
-			if isinf(b)
-				@error("Segment with two infinite endpoints is not defined")
-			else
-				new(b,a-b,true)
-			end
-		else
-		 	new(a,b-a,false)
-		end
+	za::T 
+	zb::T 
+	function Segment{T}(a,b) where T<:AnyComplex
+		@assert isfinite(a) && isfinite(b)
+		new(a,b)
 	end
 end
 
@@ -101,71 +77,129 @@ function Segment(a::Number,b::Number)
 end
 
 # Required methods
-arclength(S::Segment) = abs(S.delta)
-function point(S::Segment,t::Real)
-	# have to take care of infinite endpoint
-	a,d = S.base,S.delta
-	if S.reverse 
-		t = 1-t
-	end
-	if isinf(d)
-		a + t/(1-t)*sign(d) 
-	else
-		a + t*d
-	end
-end
+arclength(S::Segment) = abs(S.zb-S.za)
+point(S::Segment,t::Real) = (1-t)*S.za + t*S.zb
 (C::Segment)(t::Real) = point(C,t)
 
 # Other methods
-+(S::Segment,z::Number) = Segment(S(0)+z,S(1)+z)
-+(z::Number,S::Segment) = Segment(S(0)+z,S(1)+z)
--(S::Segment,z::Number) = Segment(S(0)-z,S(1)-z)
--(z::Number,S::Segment) = Segment(z-S(0),z-S(1))
--(S::Segment) = Segment(-S(0),-S(1))
++(S::Segment,z::Number) = Segment(S.za+z,S.zb+z)
++(z::Number,S::Segment) = Segment(S.za+z,S.zb+z)
+-(S::Segment,z::Number) = Segment(S.za-z,S.zb-z)
+-(z::Number,S::Segment) = Segment(z-S.za,z-S.zb)
+-(S::Segment) = Segment(-S.za,-S.zb)
 # these need to recompute the final parameter values
-*(S::Segment,z::Number) = Segment(z*S(0),z*S(1))
-*(z::Number,S::Segment) = Segment(z*S(0),z*S(1))
-/(S::Segment,z::Number) = Segment(S(0)/z,S(1)/z)
+*(S::Segment,z::Number) = Segment(S.za*z,S.zb*z)
+*(z::Number,S::Segment) = Segment(S.za*z,S.zb*z)
+/(S::Segment,z::Number) = *(S,1/z)
 function /(z::Number,S::Segment) 
 	w = z./point(S,[0,0.5,1])
 	Arc(w...)
 end
+sign(S::Segment) = sign(S.zb-S.za)
 
 function isapprox(S1::Segment,S2::Segment;tol=1e-12)
-	return isapprox(S1(0.0),S2(0.0),rtol=tol,atol=tol) &&
-		isapprox(S1(1.0),S2(1.0),rtol=tol,atol=tol)
+	return isapprox(S1.za,S2.za,rtol=tol,atol=tol) &&
+		isapprox(S1.zb,S2.zb,rtol=tol,atol=tol)
 end
 
 dist(z::Number,S::Segment) = abs(z - closest(z,S))
 function closest(z::Number,S::Segment) 
 	# translate and rotate segment to positive Re axis
-	a,d = S.base,S.delta
+	d = S.zb-S.za
 	s = sign(d)
-	ζ = (z-a)/s
-	if real(ζ) < 0
-		a 
-	elseif real(ζ) > abs(d)
-		a+d 
-	else 
-		a + real(ζ)*s
-	end 
+	ζ = (z-S.za)/s
+	S.za + s*min( max(real(ζ),0), abs(d) ) 
 end
-
-sign(S::Segment) = S.reverse ? -sign(S.delta) : sign(S.delta)
 
 function isleft(z::Number,S::Segment) 
 	a,b = point(S,[0.2,0.8])
 	(real(b)-real(a)) * (imag(z)-imag(a)) > (real(z)-real(a)) * (imag(b)-imag(a))
-end
-function isright(z::Number,S::Segment) 
-	a,b = point(S,[0.2,0.8])
-	(real(b)-real(a)) * (imag(z)-imag(a)) < (real(z)-real(a)) * (imag(b)-imag(a))
 end
 
 # Display methods
 function show(io::IO,S::Segment{T}) where {T}
 	print(IOContext(io,:compact=>true),"Segment(",point(S,0),",",point(S,1),")")
 end
+
 function show(io::IO,::MIME"text/plain",S::Segment{T}) where {T}
 	print(io,"Segment{$T} in the complex plane:\n   from (",point(S,0),") to (",point(S,1),")")
+end
+
+#
+# Ray
+# 
+
+# Type  
+struct Ray{T<:AnyComplex} <: AbstractCurve 
+	base::T 
+	angle::AbstractFloat  
+	reverse::Bool
+	function Ray{T}(a,d,rev=false) where T<:AnyComplex
+		new(a,d,rev)
+	end
+end
+
+# Untyped constructor
+function Ray(a::Number,d::Number,rev=false) 
+	a = complex(float(a))
+	Ray{typeof(a)}(a,float(d),rev)
+end
+
+# Required methods
+arclength(R::Ray) = Inf
+function point(R::Ray,t::Real)
+	if R.reverse 
+		R.base + (1-t)/t*exp(complex(0,R.angle))
+	else
+		R.base + t/(1-t)*exp(complex(0,R.angle))
+	end	
+end
+(C::Ray)(t::Real) = point(C,t)
+
+# Other methods
++(R::Ray,z::Number) = Ray(R.base+z,R.angle,R.reverse)
++(z::Number,R::Ray) = Ray(R.base+z,R.angle,R.reverse)
+-(R::Ray,z::Number) = Ray(R.base-z,R.angle,R.reverse)
+-(z::Number,R::Ray) = Ray(z-R.base,R.angle,R.reverse)
+-(R::Ray) = Ray(-R.base,mod2pi(R.angle+pi),R.reverse)
+# these need to recompute the final parameter values
+*(R::Ray,z::Number) = Ray(z*R.base,mod2pi(R.angle+sign(z)),R.reverse)
+*(z::Number,R::Ray) = *(R,z)
+/(R::Ray,z::Number) = *(R,1/z)
+function /(z::Number,R::Ray) 
+	w = z./point(R,[0,0.5,1])
+	Arc(w...)
+end
+
+function isapprox(R1::Ray,R2::Ray;tol=1e-12)
+	return isapprox(R1.base,R2.base,rtol=tol,atol=tol) && (abs(mod2pi(R1.angle-R2.angle)) < tol)
+end
+
+dist(z::Number,R::Ray) = abs(z - closest(z,R))
+function closest(z::Number,R::Ray) 
+	# translate and rotate to positive Re axis
+	s = exp(complex(0,R.angle))
+	ζ = (z-R.base)/s
+	R.base + max(real(ζ),0)*s
+end
+
+sign(R::Ray) = R.reverse ? -exp(complex(0,R.angle)) : exp(complex(0,R.angle))
+
+function isleft(z::Number,R::Ray) 
+	a,b = point(R,[0.2,0.8])
+	q = (real(b)-real(a)) * (imag(z)-imag(a)) - (real(z)-real(a)) * (imag(b)-imag(a))
+	R.reverse ? q<0 : q>0
+end
+
+# Display methods
+function show(io::IO,R::Ray{T}) where {T}
+	print(IOContext(io,:compact=>true),"Ray(",R.base,",",R.angle,",",R.reverse,")")
+end
+
+function show(io::IO,::MIME"text/plain",R::Ray{T}) where {T}
+	if R.reverse 
+		print(io,"Ray to ",R.base," at angle ",R.angle)
+	else
+		print(io,"Ray from ",R.base," at angle ",R.angle)
+	end
 end

@@ -12,7 +12,7 @@ export inf
 include("utilities.jl")
 
 export point,start,stop,arclength,slope,isapprox,dist,closest,isleft
-export Curve,ClosedCurve,Circle,Line,Arc,Segment
+export Curve,ClosedCurve,Circle,Line,Arc,Segment,Ray
 include("curves.jl")
 
 export Path,ClosedPath,Polygon,CircularPolygon

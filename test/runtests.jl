@@ -59,13 +59,15 @@ end
 	@test( dist(-1,s) ≈ 2 )
 	z = s(0.7) + 1im*sign(s(0.9)-s(0.7))
 	@test( closest(z,s) ≈ s(0.7) )
+end
 
-	s = Segment(2,Polar(Inf,pi/2))
+@testset "Rays" begin
+	s = Ray(Polar(2,0),pi/2)
 	@test( isinf(arclength(s)) )
 	@test( real(s(0.23)) ≈ 2 )
 	@test( imag(s(0.9)) > imag(s(0.7)) )
 	@test( closest(5im,s) ≈ 2+5im )
-	s = Segment(Spherical(pi/2,pi),2im)
+	s = Ray(Spherical(2im),pi,true)
 	@test( imag(s(0.5)) ≈ 2 )
 	@test( real(s(0.3)) < real(s(0.4)) )
 	@test( closest(-4+1im,s) ≈ -4+2im )
