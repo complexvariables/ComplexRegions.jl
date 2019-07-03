@@ -1,6 +1,7 @@
 abstract type AbstractCircularPolygon <: AbstractClosedPath end
 
 # Common methods
+side = curve
 
 function show(io::IO,P::AbstractCircularPolygon)
 	print(IOContext(io,:compact=>true),typeof(P)," with ",length(P)," sides") 

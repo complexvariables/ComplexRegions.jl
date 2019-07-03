@@ -1,3 +1,7 @@
+#
+# generic curves
+#
+
 abstract type AbstractCurve end
 
 point(c::AbstractCurve,t::Real) = @error "No point() method defined for type $(typeof(c))"
@@ -16,6 +20,11 @@ Curve(f,a::Real,b::Real,arclen=missing) = Curve(t -> f(scaleto(a,b,t)),arclen)
 point(C::Curve,t::Real) = C.point(t)
 (C::Curve)(t::Real) = point(C,t)
 arclength(C::Curve) = C.arclength 
+conj(C::Curve) = Curve(t->conj(C.point(t)),C.arclength)
+
+#
+# closed curves
+# 
 
 abstract type AbstractClosedCurve <: AbstractCurve end
 
@@ -32,6 +41,7 @@ ClosedCurve(f,a::Real,b::Real,arclen=missing;kw...) = ClosedCurve(t -> f(scaleto
 point(C::ClosedCurve,t::Real) = C.point(t)
 (C::ClosedCurve)(t::Real) = point(C,t)
 arclength(C::ClosedCurve) = C.arclength 
+conj(C::ClosedCurve) = ClosedCurve(t->conj(C.point(t)),C.arclength)
 
 include("lines_segments.jl")
 include("circles_arcs.jl")

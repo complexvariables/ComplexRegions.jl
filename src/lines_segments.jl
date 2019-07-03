@@ -22,7 +22,7 @@ point(L::Line,t::Real) = L.base + (2t-1)/(t-t^2)*L.direction
 
 # Other methods
 slope(L::Line) = imag(L.direction)/real(L.direction)
-
+conj(L::Line) = Line(conj(L.base),direction=conj(L.direction))
 +(L::Line,z::Number) = Line(L.base+z,direction=L.direction)
 +(z::Number,L::Line) = Line(L.base+z,direction=L.direction)
 -(L::Line) = Line(-L.base,direction=-L.direction)
@@ -82,6 +82,7 @@ point(S::Segment,t::Real) = (1-t)*S.za + t*S.zb
 (C::Segment)(t::Real) = point(C,t)
 
 # Other methods
+conj(S::Segment) = Segment(conj(S.za),conj(S.zb))
 +(S::Segment,z::Number) = Segment(S.za+z,S.zb+z)
 +(z::Number,S::Segment) = Segment(S.za+z,S.zb+z)
 -(S::Segment,z::Number) = Segment(S.za-z,S.zb-z)
@@ -163,6 +164,7 @@ end
 (C::Ray)(t::Real) = point(C,t)
 
 # Other methods
+conj(R::Ray) = Ray(conj(R.base),-R.angle,R.reverse)
 +(R::Ray,z::Number) = Ray(R.base+z,R.angle,R.reverse)
 +(z::Number,R::Ray) = Ray(R.base+z,R.angle,R.reverse)
 -(R::Ray,z::Number) = Ray(R.base-z,R.angle,R.reverse)
