@@ -8,3 +8,5 @@ end
 
 scalefrom(a,b,t) = @. (t-a)/(b-a)
 scaleto(a,b,t) = @. a + t*(b-a)
+
+inf(α) = Polar(Inf,α*π)

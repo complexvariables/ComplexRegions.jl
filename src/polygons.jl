@@ -1,5 +1,18 @@
 abstract type AbstractCircularPolygon <: AbstractClosedPath end
 
+# Common methods
+
+function show(io::IO,P::AbstractCircularPolygon)
+	print(IOContext(io,:compact=>true),typeof(P)," with ",length(P)," sides") 
+end
+function show(io::IO,::MIME"text/plain",P::AbstractCircularPolygon) 
+	print(io,typeof(P)," with ",length(P)," sides")
+end
+
+#
+# CircularPolygon
+#
+
 struct CircularPolygon <: AbstractCircularPolygon
 	side
 	arclen
@@ -12,23 +25,18 @@ struct CircularPolygon <: AbstractCircularPolygon
 	end
 end
 
+# Constructors
 CircularPolygon(p::ClosedPath) = CircularPolygon(p.curve,p.arclen,p.breakindex)
 CircularPolygon(p::Path;kw...) = CircularPolygon(ClosedPath(p;kw...))
 function CircularPolygon(p::AbstractVector{T};kw...) where T<:AbstractCurve 
 	CircularPolygon(ClosedPath(p;kw...))
 end
 
+# Required methods
 curve(p::CircularPolygon) = p.side 
 breakindex(p::CircularPolygon) = p.breakindex
 arclength(p::CircularPolygon) = sum(p.arclen)
 (p::CircularPolygon)(t::Real) = point(p,t)
-
-# function show(io::IO,L::Line)
-# 	print(IOContext(io,:compact=>true),"Line(...",L(0.5),"...",L((sqrt(5)-1)/2),"...)")
-# end
-# function show(io::IO,::MIME"text/plain",L::Line{T}) where {T}
-# 	print(io,"Line{$T} in the complex plane:\n   through (",L.base,") parallel to (",L.direction,")")
-# end
 
 # 
 # Polygon 
@@ -48,25 +56,84 @@ struct Polygon <: AbstractPolygon
 	end
 end
 
+# Constructors
 Polygon(p::ClosedPath) = Polygon(p.curve,p.arclen,p.breakindex)
 Polygon(p::Path;kw...) = Polygon(ClosedPath(p;kw...))
+
 function Polygon(p::AbstractVector{T};kw...) where T<:AbstractCurve 
 	Polygon(ClosedPath(p;kw...))
 end
-function Polygon(v::AbstractVector{T};kw...) where T<:Number 
+
+function Polygon(v::AbstractVector;kw...)
 	n = length(v)
-	p = [Segment(v[j],v[mod(j,n)]) for j = 1:n]
-	Polygon(ClosedPath(p;kw...))
+	p = Vector{Segment}(undef,n)
+	for j = 1:n
+		vthis = v[j]
+		vnext = v[mod(j,n)+1]
+		if isa(vthis,Tuple)
+			if isa(vnext,Tuple)
+				@error("Cannot have consecutive infinite vertices")
+			else
+				p[j] = Segment(vthis[2],vnext)
+			end 
+		else
+			if isa(vnext,Tuple)
+				p[j] = Segment(vthis,vnext[1])
+			else
+				p[j] = Segment(vthis,vnext)
+			end
+		end
+	end
+	for c in p 
+		println(c)
+	end
+	return Polygon(ClosedPath(p;kw...))
 end
 
+# Required methods
 curve(p::Polygon) = p.side 
 breakindex(p::Polygon) = p.breakindex
 arclength(p::Polygon) = sum(p.arclen)
 (p::Polygon)(t::Real) = point(p,t)
 
-# function show(io::IO,S::Segment{T}) where {T}
-# 	print(IOContext(io,:compact=>true),"Segment(",point(S,0),",",point(S,1),")")
-# end
-# function show(io::IO,::MIME"text/plain",S::Segment{T}) where {T}
-# 	print(io,"Segment{$T} in the complex plane:\n   from (",point(S,0),") to (",point(S,1),")")
-# end
+# Display methods 
+function show(io::IO,::MIME"text/plain",P::Polygon) 
+	print(io,"Polygon with ",length(P)," vertices:")
+	for v in vertex(P)
+		print("\n   ")
+		show(io,MIME("text/plain"),v)
+	end
+end
+
+# Other methods
+function angle(p::Polygon)
+	s = sign.(p) 
+	n = length(p) 
+	θ = [ angle(s[mod(k,n)+1]/s[k]) for k=1:n ]
+	sum(θ) > 0 ? θ : -θ
+end
+
+# unpredictable results for points on the boundary
+# Ref Dan Sunday, http://geomalgorithms.com/a03-_inclusion.html
+
+function winding(z::Number,p::Polygon)
+	wind = 0
+	v = vertex(p)
+	x,y = real(z),imag(z)
+	n = length(v)
+	for j = 1:n 
+		vnext = v[mod(j,n)+1] 
+		if imag(v[j]) ≤ y
+			# upward crossing and to the left of the side
+			if imag(vnext) > y  && isleft(z,p.side[j])
+				wind += 1
+			end
+		else 
+			# downward crossing and to the right of the side
+			if imag(vnext) ≤ y  && !isleft(z,p.side[j])
+				wind -= 1
+			end
+		end
+	end
+	return wind
+end

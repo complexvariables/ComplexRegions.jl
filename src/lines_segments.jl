@@ -151,6 +151,18 @@ function closest(z::Number,S::Segment)
 	end 
 end
 
+sign(S::Segment) = S.reverse ? -sign(S.delta) : sign(S.delta)
+
+function isleft(z::Number,S::Segment) 
+	a,b = point(S,[0.2,0.8])
+	(real(b)-real(a)) * (imag(z)-imag(a)) > (real(z)-real(a)) * (imag(b)-imag(a))
+end
+function isright(z::Number,S::Segment) 
+	a,b = point(S,[0.2,0.8])
+	(real(b)-real(a)) * (imag(z)-imag(a)) < (real(z)-real(a)) * (imag(b)-imag(a))
+end
+
+# Display methods
 function show(io::IO,S::Segment{T}) where {T}
 	print(IOContext(io,:compact=>true),"Segment(",point(S,0),",",point(S,1),")")
 end

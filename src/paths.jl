@@ -24,7 +24,7 @@ end
 
 eltype(::Type{AbstractPath}) = AbstractCurve 
 length(p::AbstractPath) = length(curve(p))
-getindex(p::AbstractPath,k) = getindex(curve(p),k)
+getindex(p::AbstractPath,k) = curve(p,k)
 iterate(p::AbstractPath,state=1) = state > length(curve(p)) ? nothing : (p[state], state+1)
 
 function point(p::AbstractPath,t::Real)
@@ -46,16 +46,19 @@ end
 *(z::Number,p::AbstractPath) = typeof(p)([z*c for c in curve(p)])
 /(p::AbstractPath,z::Number) = typeof(p)([c/z for c in curve(p)])
 
+function show(io::IO,P::AbstractPath)
+	print(IOContext(io,:compact=>true),typeof(P)," with ",length(P)," segments") 
+end
+function show(io::IO,::MIME"text/plain",P::AbstractPath) 
+	print(io,typeof(P)," with ",length(P)," segments")
+end
+
+
 abstract type AbstractClosedPath <: AbstractPath end
 
-function vertex(P::AbstractClosedPath,k::Integer) 
-	C = curve(P)
-	n = length(C)
-	point(C[1+mod(k-1,n)],0)
-end
-function vertex(P::AbstractClosedPath) 
-	[ vertex(P,k) for k = 1:length(P)]
-end
+curve(p::AbstractClosedPath,k::Integer) = curve(p)[mod(k-1,length(p))+1]
+vertex(P::AbstractClosedPath,k::Integer) = point(curve(P,k),0)
+vertex(P::AbstractClosedPath) = [ vertex(P,k) for k = 1:length(P) ]
 
 #
 # Concrete implementations
@@ -84,6 +87,7 @@ breakindex(p::Path) = p.breakindex
 arclength(p::Path) = sum(p.arclen)
 (p::Path)(t::Real) = point(p,t)
 
+
 # ClosedPath
 struct ClosedPath <: AbstractClosedPath 
 	curve
@@ -103,4 +107,5 @@ breakindex(p::ClosedPath) = p.breakindex
 arclength(p::ClosedPath) = sum(p.arclen)
 (p::ClosedPath)(t::Real) = point(p,t)
 
+# 
 include("polygons.jl")
