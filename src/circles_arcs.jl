@@ -36,6 +36,8 @@ arclength(C::Circle) = 2π*C.radius
 (C::Circle)(t::Real) = point(C,t)
 
 # Other methods
+isbounded(::Circle) = true 
+conj(C::Circle) = Circle(conj(C.center),C.radius)
 +(C::Circle,z::Number) = Circle(C.center+z,C.radius)
 +(z::Number,C::Circle) = Circle(C.center+z,C.radius)
 -(C::Circle) = Circle(-C.center,C.radius)
@@ -117,6 +119,8 @@ arclength(A::Arc) = arclength(A.circle)*A.delta
 (C::Arc)(t::Real) = point(C,t)
 
 # Other methods
+isbounded(::Arc) = true
+conj(A::Arc) = Arc(conj(A(0)),conj(A(0.5)),conj(A(1)))
 +(A::Arc,z::Number) = Arc(A.circle+z,A.start,A.delta)
 +(z::Number,A::Arc) = Arc(z+A.circle,A.start,A.delta)
 -(A::Arc,z::Number) = Arc(A.circle-z,A.start,A.delta)

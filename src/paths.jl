@@ -22,6 +22,8 @@ function vertex(P::AbstractPath)
 	[ vertex(P,k) for k = 1:length(P)+1]
 end
 
+point(c::AbstractPath,t::AbstractArray{T}) where T<:Real = [point(c,t) for t in t]
+
 eltype(::Type{AbstractPath}) = AbstractCurve 
 length(p::AbstractPath) = length(curve(p))
 getindex(p::AbstractPath,k) = curve(p,k)
@@ -46,6 +48,7 @@ conj(p::AbstractPath) = typeof(p)(conj.(curve(p)))
 *(p::AbstractPath,z::Number) = typeof(p)([c*z for c in curve(p)])
 *(z::Number,p::AbstractPath) = typeof(p)([z*c for c in curve(p)])
 /(p::AbstractPath,z::Number) = typeof(p)([c/z for c in curve(p)])
+isbounded(p::AbstractPath) = all( isfinite.(vertex(p)) )
 
 function show(io::IO,P::AbstractPath)
 	print(IOContext(io,:compact=>true),typeof(P)," with ",length(P)," segments") 

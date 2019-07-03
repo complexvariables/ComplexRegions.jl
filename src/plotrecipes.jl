@@ -4,24 +4,24 @@ RecipesBase.debug(false)
 
 @recipe function f(C::AbstractCurve,n=600)
     aspect_ratio --> 1.0
-    point(C,LinRange(0,1,n+1))
+    plotdata(C)
 end
 
-@recipe function f(C::Union{Line,Segment})
-    aspect_ratio --> 1.0
-    point(C,[0.0,1.0])
-end
-
-@recipe function f(P::AbstractPath;vertices=false)
+@recipe function f(P::AbstractPath;vertices=false,fillin=false)
     delete!(plotattributes,:vertices) 
+    delete!(plotattributes,:fillin) 
     aspect_ratio --> 1.0  
-    # hard coded in lieu of understanding plot themes
-    palette --> [RGB{Float64}(0.0,0.6056031611752248,0.978680117569607)]
     label --> ""
-    for c in P 
-        @series begin 
-            c
-        end 
+ 
+    data = vcat( [plotdata(c) for c in P]... )
+    if fillin && isa(P,AbstractClosedPath)
+        fillcolor --> :match 
+        y = imag(vertex(P,1)+vertex(P,2))/2
+        fillrange --> y
+    end
+    
+    @series begin
+        data
     end
 
     if vertices 

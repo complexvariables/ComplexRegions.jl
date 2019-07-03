@@ -9,6 +9,7 @@ point(c::AbstractCurve,t::AbstractArray{T}) where T<:Real = [point(c,t) for t in
 start(c::AbstractCurve) = point(c,0.0)
 stop(c::AbstractCurve) = point(c,1.0)
 arclength(c::AbstractCurve) = @error "No arclength() method defined for type $(typeof(c))"
+plotdata(C::AbstractCurve) = point(C,LinRange(0,1,501))
 
 struct Curve <: AbstractCurve 
 	point 

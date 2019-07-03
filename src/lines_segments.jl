@@ -21,6 +21,7 @@ point(L::Line,t::Real) = L.base + (2t-1)/(t-t^2)*L.direction
 (C::Line)(t::Real) = point(C,t)
 
 # Other methods
+isbounded(::Line) = false
 slope(L::Line) = imag(L.direction)/real(L.direction)
 conj(L::Line) = Line(conj(L.base),direction=conj(L.direction))
 +(L::Line,z::Number) = Line(L.base+z,direction=L.direction)
@@ -56,6 +57,8 @@ function show(io::IO,::MIME"text/plain",L::Line{T}) where {T}
 	print(io,"Line{$T} in the complex plane:\n   through (",L.base,") parallel to (",L.direction,")")
 end
 
+plotdata(L::Line) = point(L,[0.1,0.9])
+
 # 
 # Segment 
 # 
@@ -82,6 +85,7 @@ point(S::Segment,t::Real) = (1-t)*S.za + t*S.zb
 (C::Segment)(t::Real) = point(C,t)
 
 # Other methods
+isbounded(::Segment) = true
 conj(S::Segment) = Segment(conj(S.za),conj(S.zb))
 +(S::Segment,z::Number) = Segment(S.za+z,S.zb+z)
 +(z::Number,S::Segment) = Segment(S.za+z,S.zb+z)
@@ -126,6 +130,8 @@ function show(io::IO,::MIME"text/plain",S::Segment{T}) where {T}
 	print(io,"Segment{$T} in the complex plane:\n   from (",point(S,0),") to (",point(S,1),")")
 end
 
+plotdata(S::Segment) = [S.za,S.zb]
+
 #
 # Ray
 # 
@@ -164,6 +170,7 @@ end
 (C::Ray)(t::Real) = point(C,t)
 
 # Other methods
+isbounded(::Ray) = false
 conj(R::Ray) = Ray(conj(R.base),-R.angle,R.reverse)
 +(R::Ray,z::Number) = Ray(R.base+z,R.angle,R.reverse)
 +(z::Number,R::Ray) = Ray(R.base+z,R.angle,R.reverse)
@@ -211,3 +218,5 @@ function show(io::IO,::MIME"text/plain",R::Ray{T}) where {T}
 		print(io,"Ray from ",R.base," at angle ",R.angle)
 	end
 end
+
+plotdata(R::Line) = R.reverse ? [R(0.3),R.base] : [R.base,R(0.7)]
