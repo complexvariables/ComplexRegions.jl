@@ -70,14 +70,16 @@ struct Path <: AbstractPath
 	arclen
 	breakindex
 	function Path(p::AbstractVector;tol::Real=1e-13)
-		for k = 1:length(p)-1
+		n = length(p)
+		for k = 1:n-1
 			@assert p[k] isa AbstractCurve
 			@assert isapprox(point(p[k],1.0),point(p[k+1],0.0),rtol=tol,atol=tol) "Curve endpoints do not match for pieces $(k) and $(k+1)"
 		end
 		@assert p[end] isa AbstractCurve
 		len = [arclength(c) for c in p]
 		s = cumsum(len)
-		new(p,len,s[1:end-1]/s[end])
+		#new(p,len,s[1:end-1]/s[end])
+		new(p,len,(1:n-1)/n)
 	end
 end
 Path(c::AbstractCurve) = Path([c])
