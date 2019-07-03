@@ -147,9 +147,15 @@ end
 
 # Required methods
 arclength(R::Ray) = Inf
-function point(R::Ray,t::Real)
+function point(R::Ray{T},t::Real) where T
 	if R.reverse 
-		R.base + (1-t)/t*exp(complex(0,R.angle))
+		t = 1-t 
+	end
+	# avoid NaNs 
+	if t==0 
+		R.base 
+	elseif t==1 
+		T(Inf)
 	else
 		R.base + t/(1-t)*exp(complex(0,R.angle))
 	end	
