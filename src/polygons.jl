@@ -19,8 +19,8 @@ struct CircularPolygon <: AbstractCircularPolygon
 	breakindex
 	function CircularPolygon(p::AbstractVector,arclen,breakindex)
 		# Assumes continuity and closure have been checked previously
-		valid = isa.(p,Union{Arc,Segment})
-		@assert all(valid) "All sides must be an Arc or a Segment"
+		valid = isa.(p,Union{Arc,Segment,Ray})
+		@assert all(valid) "All sides must be an Arc, Segment, or Ray"
 		new(p,arclen,breakindex)
 	end
 end
@@ -50,8 +50,8 @@ struct Polygon <: AbstractPolygon
 	breakindex
 	function Polygon(p::AbstractVector{T},arclen,breakindex) where T<:AbstractCurve
 		# Assumes continuity and closure have been checked previously
-		valid = isa.(p,Segment)
-		@assert all(valid) "All sides must be an Arc or a Segment"
+		valid = isa.(p,Union{Segment,Ray})
+		@assert all(valid) "All sides must be a Segment or Ray"
 		new(p,arclen,breakindex)
 	end
 end
@@ -66,7 +66,7 @@ end
 
 function Polygon(v::AbstractVector;kw...)
 	n = length(v)
-	p = Vector{Segment}(undef,n)
+	p = Vector{Union{Segment,Ray}}(undef,n)
 	for j = 1:n
 		vthis = v[j]
 		vnext = v[mod(j,n)+1]
@@ -74,18 +74,19 @@ function Polygon(v::AbstractVector;kw...)
 			if isa(vnext,Tuple)
 				@error("Cannot have consecutive infinite vertices")
 			else
-				p[j] = Segment(vthis[2],vnext)
+				p[j] = Ray(vnext,vthis[2],true)
 			end 
 		else
 			if isa(vnext,Tuple)
-				p[j] = Segment(vthis,vnext[1])
+				p[j] = Ray(vthis,vnext[1])
 			else
 				p[j] = Segment(vthis,vnext)
 			end
 		end
 	end
-	for c in p 
-		println(c)
+	@debug for c in p 
+		@show c 
+		@show (c(0),c(1))
 	end
 	return Polygon(ClosedPath(p;kw...))
 end
@@ -107,13 +108,24 @@ end
 
 # Other methods
 function angle(p::Polygon)
+	# computes a turn angle in (-pi,pi]  (neg = left turn)
+	turn(s1,s2) = π - mod2pi(angle(s2/s1)+π)
 	s = sign.(p) 
 	n = length(p) 
-	θ = [ angle(s[mod(k,n)+1]/s[k]) for k=1:n ]
+	v = vertex(p)
+	θ = similar(real(s))
+	for k = 1:n 
+		θ[k] = π + turn(s[mod(k-2,n)+1],s[k])
+		if isinf(v[k]) 
+			θ[k] -= 2π
+		end
+	end
+	# correct for possible clockwise orientation
 	sum(θ) > 0 ? θ : -θ
 end
 
 # unpredictable results for points on the boundary
+# wrong for unbounded polygons
 # Ref Dan Sunday, http://geomalgorithms.com/a03-_inclusion.html
 
 function winding(z::Number,p::Polygon)

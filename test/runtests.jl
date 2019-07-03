@@ -90,3 +90,33 @@ end
 	@test( arclength(P) ≈ 4*sqrt(2) )
 end
 
+@testset "Polygons" begin 
+	s = Segment(2,2im) 
+	p = Polygon([s,1im*s,-s,-1im*s]) 
+	@test( arclength(p) ≈ 8*sqrt(2) ) 
+	@test( winding(-0.4+0.5im,p) == 1 )
+	@test( winding(-4-0.5im,p) == 0 )
+	@test( all( angle(p) .≈ 0.5*pi ) )
+	p = Polygon([4,4+3im,3im,-2im,6-2im,6])
+	@test( arclength(p) ≈ (3+4+5+6+2+2) )
+	@test( winding(5-im,p) == 1 )
+	@test( winding(-1,p) == 0 )
+	@test( sum(angle(p)) ≈ 4*pi )
+	p = Polygon([5,4+3im,3im,-2im,6-2im,(-pi/2,0)])
+	a = angle(p)/pi
+	@test( a[6] ≈ -0.5  )
+	@test( sum(a) ≈ 4 )
+	p = Polygon([(pi/2,pi/2),5,4+3im,3im,-2im,6-2im])
+	a = angle(p)/pi
+	@test( abs(a[1]) < 1e-10 )
+	@test( sum(a) ≈ 4 )
+	p = Polygon([(-pi/2,pi/2),7,4+3im,3im,-2im,6-2im])
+	a = angle(p)/pi
+	@test( a[1] ≈ -1 )
+	@test( sum(a) ≈ 4 )
+	p = Polygon([(0,0),6-2im,-2im,3im,4+3im,7])
+	a = angle(p)/pi
+	@test( a[1] ≈ -2 )
+	@test( sum(a) ≈ 4 )
+end
+
