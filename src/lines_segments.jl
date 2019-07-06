@@ -117,7 +117,7 @@ function closest(z::Number,S::Segment)
 end
 
 function isleft(z::Number,S::Segment) 
-	a,b = point(S,[0.2,0.8])
+	a,b = S.za,S.zb
 	(real(b)-real(a)) * (imag(z)-imag(a)) > (real(z)-real(a)) * (imag(b)-imag(a))
 end
 
@@ -142,7 +142,7 @@ struct Ray{T<:AnyComplex} <: AbstractCurve
 	angle::AbstractFloat  
 	reverse::Bool
 	function Ray{T}(a,d,rev=false) where T<:AnyComplex
-		new(a,d,rev)
+		new(a,mod2pi(d),rev)
 	end
 end
 
@@ -202,8 +202,7 @@ sign(R::Ray) = R.reverse ? -exp(complex(0,R.angle)) : exp(complex(0,R.angle))
 
 function isleft(z::Number,R::Ray) 
 	a,b = point(R,[0.2,0.8])
-	q = (real(b)-real(a)) * (imag(z)-imag(a)) - (real(z)-real(a)) * (imag(b)-imag(a))
-	R.reverse ? q<0 : q>0
+	(real(b)-real(a)) * (imag(z)-imag(a)) > (real(z)-real(a)) * (imag(b)-imag(a))
 end
 
 # Display methods
