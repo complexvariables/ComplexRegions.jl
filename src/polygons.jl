@@ -148,22 +148,53 @@ end
 # Ref Dan Sunday, http://geomalgorithms.com/a03-_inclusion.html
 
 function winding(z::Number,p::Polygon)
+	function crossing(y,s::Segment)
+		if y ≥ imag(s(0))
+			down = false
+			up = y < imag(s(1))
+		else
+			up = false
+			down = y ≥ imag(s(1))
+		end
+		return up,down 
+	end
+
+	function crossing(y,r::Ray)
+		s = sin(r.angle)
+		if y ≥ imag(r.base) 
+			down = false 
+			up = s > 0 
+		else
+			up = false
+			down = s < 0
+		end
+		if r.reverse
+			return down,up 
+		else
+			return up,down 
+		end
+	end
+
 	wind = 0
-	v = vertex(p)
 	x,y = real(z),imag(z)
-	n = length(v)
-	for j = 1:n 
-		vnext = v[mod(j,n)+1] 
-		if imag(v[j]) ≤ y
-			# upward crossing and to the left of the side
-			if imag(vnext) > y  && isleft(z,p.side[j])
-				wind += 1
-			end
-		else 
-			# downward crossing and to the right of the side
-			if imag(vnext) ≤ y  && !isleft(z,p.side[j])
-				wind -= 1
-			end
+	for s in p.side
+		up,down = crossing(y,s)
+		@debug (s,up,down,isleft(z,s))
+		if up && isleft(z,s) 
+			wind += 1
+		elseif down && !isleft(z,s) 
+			wind -= 1
+		end
+	end
+	# If any infinite vertex contains the ray at angle zero, adjust
+	n = length(p)
+	for k in findall(isinf.(vertex(p)))
+		# Ray angles are in [0,2pi), so this test works 
+		α = curve(p,k-1).angle
+		β = curve(p,k).angle
+		if β==0 || α + β > 2π
+			wind += 1
+			break
 		end
 	end
 	return wind
