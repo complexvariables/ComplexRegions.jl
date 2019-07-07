@@ -125,6 +125,24 @@ function angle(p::Polygon)
 	sum(θ) > 0 ? θ : -θ
 end
 
+function truncate(p::Polygon,c::Circle) 
+	n = length(p)
+	vnew = Vector{Any}(undef,n)
+	for (k,v) in enumerate(vertex(p))
+		if isfinite(v)
+			vnew[k] = v 
+		else
+			z1 = intersect(c,curve(p,k-1))
+			z2 = intersect(c,curve(p,k))
+			α = angle(z1[1]-c.center)
+			β = angle(z2[1]-c.center)
+			m = max(3,ceil(Int,(β-α)/0.2))
+			vnew[k] = c.center .+ c.radius*exp.(1im*LinRange(α,β,m+1))
+		end
+	end
+	return Polygon(vcat(vnew...))
+end
+
 # unpredictable results for points on the boundary
 # wrong for unbounded polygons
 # Ref Dan Sunday, http://geomalgorithms.com/a03-_inclusion.html
