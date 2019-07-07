@@ -73,6 +73,55 @@ end
 	@test( closest(-4+1im,s) ≈ -4+2im )
 	@test( closest(6,s) ≈ 2im )
 end
+
+@testset "Intersections" begin 
+	z = intersect(Circle(0,1),Circle(.2+0.5im,1.5))
+	@test( all( @. abs(z-0)≈1 ) )
+	@test( all( @. abs(z-(.2+0.5im))≈1.5 ) )
+	z = intersect(Circle(0,1),Circle(1+1im,1.5))
+	@test( all( @. abs(z-0)≈1 ) )
+	@test( all( @. abs(z-(1+1im))≈1.5 ) )
+	@test( isempty(intersect(Circle(0,1),Circle(.2+0.5im,.1))) )
+	@test( isempty(intersect(Circle(0,1),Circle(.2+0.5im,6))) )
+
+	z = intersect(Line(1,direction=1im),Line(-1,direction=1+1im))
+	@test( z≈1+2im )
+	@test( isempty(intersect(Line(1,direction=1im),Line(-2,direction=1im))) )
+	l = Line(2,direction=3+1im)
+	@test( intersect(l,l+1e-15) ≈ l )
+
+	z = intersect(Segment(0,1),Segment(.4-1im,.7+2im))
+	@test( z≈0.5 )
+	z = intersect(Segment(2+3im,3+3im),Segment(-1+3im,4+3im))
+	@test( z≈Segment(2+3im,3+3im) )
+	z = intersect(2-Segment(2+3im,3+3im),2-Segment(3im,2.4+3im))
+	@test( z≈2-Segment(2+3im,2.4+3im) )
+	z = intersect(1im*Segment(2+3im,3+3im),1im*Segment(2.7+3im,3.4+3im))
+	@test( z≈1im*Segment(2.7+3im,3+3im) )
+	z = intersect(Segment(2+3im,3+3im),Segment(2.7+4im,3.4+6im))
+	@test( isempty(z) )
+
+	z = intersect(Ray(0,pi/4),Segment(.5-1im,.5+2im))
+	@test( z≈0.5 )
+	z = intersect(Ray(0,pi/4),Ray(2+2im,pi/4))
+	@test( z≈Ray(2+2im,pi/4) )
+	z = intersect(Ray(0,pi/6),Ray(-1,-pi/2))
+	@test( isempty(z) )
+
+	z = intersect(3+Circle(0,1),3+Line(0.5,0.5+3im))
+	@test( z[1]≈(3.5+sqrt(3)/2*1im) || z[1]≈(3.5-sqrt(3)/2*1im) )
+	z = intersect(Circle(-2im,2),Line(3im,3))
+	@test( isempty(z) )
+
+	z = intersect(3+Ray(0.5+0.1im,pi/2,true),3+Circle(0,1))
+	@test( z[1]≈(3.5+sqrt(3)/2*1im) && length(z)==1 )
+
+	z = intersect(3+Circle(0,1),3+Segment(0.5,0.5+3im))
+	@test( z[1]≈(3.5+sqrt(3)/2*1im) || z[1]≈(3.5-sqrt(3)/2*1im) )
+	z = intersect(Circle(-2im,2),Segment(-1im,.5-1im))
+	@test( isempty(z) )
+
+end
 	
 @testset "Paths" begin
 	S = Segment(1,1im)
@@ -102,18 +151,32 @@ end
 	@test( winding(5-im,p) == 1 )
 	@test( winding(-1,p) == 0 )
 	@test( sum(angle(p)) ≈ 4*pi )
+end
+
+@testset "Unbounded polygons" begin
 	p = Polygon([5,4+3im,3im,-2im,6-2im,(-pi/2,0)])
 	a = angle(p)/pi
 	@test( a[6] ≈ -0.5  )
 	@test( sum(a) ≈ 4 )
+
 	p = Polygon([(pi/2,pi/2),5,4+3im,3im,-2im,6-2im])
 	a = angle(p)/pi
 	@test( abs(a[1]) < 1e-10 )
 	@test( sum(a) ≈ 4 )
+	w = [winding(z,p) for z in [1+2im,5-1im,5.5+6im]]
+	@test( all(w.==1) )
+	w = [winding(z,p) for z in [-3im,3+5im,5.5-6im]]
+	@test( all(w.==0) )
+
 	p = Polygon([(-pi/2,pi/2),7,4+3im,3im,-2im,6-2im])
 	a = angle(p)/pi
 	@test( a[1] ≈ -1 )
 	@test( sum(a) ≈ 4 )
+	w = [winding(z,p) for z in [4,7-2im,9]]
+	@test( all(w.==1) )
+	w = [winding(z,p) for z in [4+4im,6+2im,4-3im]]
+	@test( all(w.==0) )
+
 	p = Polygon([(0,0),6-2im,-2im,3im,4+3im,7])
 	a = angle(p)/pi
 	@test( a[1] ≈ -2 )

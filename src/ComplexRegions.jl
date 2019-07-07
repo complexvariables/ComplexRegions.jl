@@ -6,7 +6,7 @@ using ComplexValues,LinearAlgebra
 AllComplex(T::Type{S}) where {S<:AbstractFloat} = Union{Complex{T},Polar{T},Spherical{T}}
 AnyComplex{S} = Union{Complex{S},Polar{S},Spherical{S}} where {S<:AbstractFloat}
 
-import Base: +,-,*,/,sign,inv,angle,real,imag,conj,show,iterate,eltype,length,getindex,isapprox
+import Base: +,-,*,/,sign,inv,angle,real,imag,conj,show,iterate,eltype,length,getindex,isapprox,intersect
 
 export inf
 include("utilities.jl")
