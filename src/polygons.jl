@@ -143,8 +143,8 @@ function truncate(p::Polygon,c::Circle)
 	return Polygon(vcat(vnew...))
 end
 
-# unpredictable results for points on the boundary
-# wrong for unbounded polygons
+# TODO: unpredictable results for points on the boundary
+# TODO: maybe wrong for some unbounded polygons
 # Ref Dan Sunday, http://geomalgorithms.com/a03-_inclusion.html
 
 function winding(z::Number,p::Polygon)
@@ -182,3 +182,6 @@ function winding(z::Number,p::Polygon)
 	end
 	return wind
 end
+
+isleft(z::Number,p::Polygon) = winding(z,p) > 0
+isright(z::Number,p::Polygon) = winding(z,p) < 0

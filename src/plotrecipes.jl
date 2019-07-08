@@ -4,24 +4,17 @@ RecipesBase.debug(false)
 
 @recipe function f(C::AbstractCurve,n=600)
     aspect_ratio --> 1.0
+    label --> ""
     plotdata(C)
 end
 
-@recipe function f(P::AbstractPath;vertices=false,fillin=false)
+@recipe function f(P::AbstractPath;vertices=false)
     delete!(plotattributes,:vertices) 
-    delete!(plotattributes,:fillin) 
     aspect_ratio --> 1.0  
     label --> ""
  
-    data = vcat( [plotdata(c) for c in P]... )
-    if fillin && isa(P,AbstractClosedPath)
-        fillcolor --> :match 
-        y = imag(vertex(P,1)+vertex(P,2))/2
-        fillrange --> y
-    end
-    
     @series begin
-        data
+        vcat( [plotdata(c) for c in P]... )
     end
 
     if vertices 
@@ -32,4 +25,10 @@ end
             vertex(P) 
         end
     end
+end
+
+@recipe function f(R::Region)
+    fill --> true
+    C = R.boundary
+    C isa AbstractClosedCurve ? ClosedPath(C) : C
 end

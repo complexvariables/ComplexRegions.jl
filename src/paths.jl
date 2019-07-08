@@ -114,6 +114,16 @@ breakindex(p::ClosedPath) = p.breakindex
 arclength(p::ClosedPath) = sum(p.arclen)
 (p::ClosedPath)(t::Real) = point(p,t)
 
+function isleft(z::Number,P::AbstractClosedPath)
+	# TODO: this isn't foolproof
+	d = dist(z,P) 
+	t = 0:d/10:1 
+	if t[end]==1
+		t = t[1:end-1]
+	end
+	isleft(z,Polygon(P.(t)))
+end
+
 # 
 include("polygons.jl")
 
