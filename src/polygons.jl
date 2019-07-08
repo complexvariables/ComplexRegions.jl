@@ -159,20 +159,14 @@ function winding(z::Number,p::Polygon)
 		return up,down 
 	end
 
-	function crossing(y,r::Ray)
-		s = sin(r.angle)
-		if y ≥ imag(r.base) 
-			down = false 
-			up = s > 0 
-		else
-			up = false
-			down = s < 0
-		end
-		if r.reverse
-			return down,up 
-		else
-			return up,down 
-		end
+	# To do a lot of points, it's better to truncate before calling. But here we go. 
+	if !isbounded(p) 
+		v = vertex(p)
+		vfin = filter(isfinite,v)
+		zbar = sum(vfin)/length(vfin) 
+		R = maximum( abs.( vfin .- zbar) )
+		R = max(R,abs(z-zbar)) 
+		return winding(z,truncate(p,Circle(zbar,100*R)))
 	end
 
 	wind = 0
@@ -184,17 +178,6 @@ function winding(z::Number,p::Polygon)
 			wind += 1
 		elseif down && !isleft(z,s) 
 			wind -= 1
-		end
-	end
-	# If any infinite vertex contains the ray at angle zero, adjust
-	n = length(p)
-	for k in findall(isinf.(vertex(p)))
-		# Ray angles are in [0,2pi), so this test works 
-		α = curve(p,k-1).angle
-		β = curve(p,k).angle
-		if β==0 || α + β > 2π
-			wind += 1
-			break
 		end
 	end
 	return wind
