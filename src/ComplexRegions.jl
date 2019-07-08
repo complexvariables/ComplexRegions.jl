@@ -16,7 +16,7 @@ export Curve,ClosedCurve,Circle,Line,Arc,Segment,Ray
 include("curves.jl")
 
 export Path,ClosedPath,Polygon,CircularPolygon
-export curve,vertex,side,breakindex,isbounded,sign,angle,winding
+export curve,vertex,side,breakindex,isbounded,sign,angle,winding,rectangle
 include("paths.jl")
 
 include("plotrecipes.jl")

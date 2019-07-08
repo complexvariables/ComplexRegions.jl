@@ -116,3 +116,11 @@ arclength(p::ClosedPath) = sum(p.arclen)
 
 # 
 include("polygons.jl")
+
+function rectangle(xlim::AbstractVector,ylim::AbstractVector)  
+	x = [xlim[1],xlim[2],xlim[2],xlim[1],xlim[1]]
+	y = [ylim[1],ylim[1],ylim[2],ylim[2],ylim[1]]
+	Polygon( [Segment(complex(x[k],y[k]),complex(x[k+1],y[k+1])) for k in 1:4] )
+end
+rectangle(z1::AnyComplex,z2::AnyComplex) = rectangle([real(z1),real(z2)],[imag(z1),imag(z2)])
+rectangle(z1::Number,z2::Number) = rectangle(promote(float(z1),float(z2))...)
