@@ -24,6 +24,7 @@ point(L::Line,t::Real) = L.base + (2t-1)/(t-t^2)*L.direction
 isbounded(::Line) = false
 slope(L::Line) = imag(L.direction)/real(L.direction)
 conj(L::Line) = Line(conj(L.base),direction=conj(L.direction))
+reverse(L::Line) = Line(L.base,direction=-L.direction)
 +(L::Line,z::Number) = Line(L.base+z,direction=L.direction)
 +(z::Number,L::Line) = Line(L.base+z,direction=L.direction)
 -(L::Line) = Line(-L.base,direction=-L.direction)
@@ -43,6 +44,8 @@ function isapprox(L1::Line,L2::Line;tol=1e-12)
 	return isapprox(real(w1)*imag(w2),imag(w1)*real(w2),rtol=tol,atol=tol) &&
 		isapprox(real(w1)*imag(dz),imag(w1)*real(dz),rtol=tol,atol=tol)
 end
+
+isleft(z::Number,L::Line) = angle((z-L.base)/L.direction) > 0 
 
 dist(z::Number,L::Line) = imag( (z-L.base)/L.direction )
 function closest(z::Number,L::Line) 
@@ -87,6 +90,7 @@ point(S::Segment,t::Real) = (1-t)*S.za + t*S.zb
 # Other methods
 isbounded(::Segment) = true
 conj(S::Segment) = Segment(conj(S.za),conj(S.zb))
+reverse(S::Segment) = Segment(S.zb,S.za)
 +(S::Segment,z::Number) = Segment(S.za+z,S.zb+z)
 +(z::Number,S::Segment) = Segment(S.za+z,S.zb+z)
 -(S::Segment,z::Number) = Segment(S.za-z,S.zb-z)
@@ -172,6 +176,7 @@ end
 # Other methods
 isbounded(::Ray) = false
 conj(R::Ray) = Ray(conj(R.base),-R.angle,R.reverse)
+reverse(R::Ray) = Ray(R.base,R.angle,!R.reverse)
 +(R::Ray,z::Number) = Ray(R.base+z,R.angle,R.reverse)
 +(z::Number,R::Ray) = Ray(R.base+z,R.angle,R.reverse)
 -(R::Ray,z::Number) = Ray(R.base-z,R.angle,R.reverse)
@@ -201,7 +206,7 @@ end
 sign(R::Ray) = R.reverse ? -exp(complex(0,R.angle)) : exp(complex(0,R.angle))
 
 function isleft(z::Number,R::Ray) 
-	a,b = point(R,[0.2,0.8])
+	a,b = point(R,[0.2,0.8])  # accounts for reversal
 	(real(b)-real(a)) * (imag(z)-imag(a)) > (real(z)-real(a)) * (imag(b)-imag(a))
 end
 

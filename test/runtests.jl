@@ -19,6 +19,7 @@ end
 	@test( arclength(c) ≈ 2*sqrt(2)*pi )
 	@test( dist(-1+1im,c) ≈ sqrt(2) )
 	@test( closest(1+4im,c) ≈ 1+1im*(sqrt(2)-1) )
+	@test( isleft(1.5-1im,c) && isleft(1.5+1im,reverse(c)) )
 	c = Circle(1-1im,sqrt(2))
 	@test( point(c,.25) ≈ complex(1,sqrt(2)-1) )
 	@test( 2/c isa Line )
@@ -42,6 +43,7 @@ end
 @testset "Lines & Segments" begin
 	@test( Line(1,5) isa Line )
 	l = Line(1im,direction=1+2im)
+	@test( isleft(2im,l) && !isleft(0,l) )
 	dz = point(l,.6)-point(l,.1)
 	@test( angle(dz) ≈ angle(1+2im) )
 	@test( 1/l isa Circle )
@@ -53,6 +55,7 @@ end
 	@test( closest(z,l) ≈ l(0.3) )
 
 	s = Segment(1,3.0+5.0im)
+	@test( isleft(-1,s) && !isleft(2,s) )
 	zz = 2 + 2.5im
 	@test( point(2 - 3im*s,0.5) ≈ 2 - 3im*zz)
 	@test( closest(4+6im,s) ≈ 3+5im )
@@ -64,12 +67,14 @@ end
 @testset "Rays" begin
 	s = Ray(Polar(2,0),pi/2)
 	@test( isinf(arclength(s)) )
+	@test( isleft(-1im,s) && !isleft(-1im,reverse(s)) )
 	@test( real(s(0.23)) ≈ 2 )
 	@test( imag(s(0.9)) > imag(s(0.7)) )
 	@test( closest(5im,s) ≈ 2+5im )
 	s = Ray(Spherical(2im),pi,true)
 	@test( imag(s(0.5)) ≈ 2 )
 	@test( real(s(0.3)) < real(s(0.4)) )
+	@test( !isleft(4,s) && isleft(-1+3im,s) )
 	@test( closest(-4+1im,s) ≈ -4+2im )
 	@test( closest(6,s) ≈ 2im )
 end
@@ -137,6 +142,7 @@ end
 	P = ClosedPath([S,1im*S,-S,-1im*S])
 	@test( vertex(P,3) ≈ -1 )
 	@test( arclength(P) ≈ 4*sqrt(2) )
+	@test( isa(reverse(P),ClosedPath) )
 end
 
 @testset "Polygons" begin 
@@ -144,6 +150,7 @@ end
 	p = Polygon([s,1im*s,-s,-1im*s]) 
 	@test( arclength(p) ≈ 8*sqrt(2) ) 
 	@test( winding(-0.4+0.5im,p) == 1 )
+	@test( winding(-0.4+0.5im,reverse(p)) == -1 )
 	@test( winding(-4-0.5im,p) == 0 )
 	@test( all( angle(p) .≈ 0.5*pi ) )
 	p = Polygon([4,4+3im,3im,-2im,6-2im,6])

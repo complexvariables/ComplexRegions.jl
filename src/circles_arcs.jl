@@ -3,9 +3,10 @@
 struct Circle{T<:AnyComplex} <: AbstractClosedCurve 
 	center::T
 	radius::Float64
+	ccw::Bool
 end
-Circle(z::AnyComplex,r::Real) = Circle{typeof(z)}(z,r)
-Circle(z::Number,r::Real) = Circle(complex(float(z)),r)
+Circle(z::AnyComplex,r::Real,ccw::Bool=true) = Circle{typeof(z)}(z,r,ccw)
+Circle(z::Number,r::Real,ccw::Bool=true) = Circle(complex(float(z)),r,ccw)
 
 # Construction by three points
 function Circle(a::Number,b::Number,c::Number) 
@@ -14,7 +15,7 @@ function Circle(a::Number,b::Number,c::Number)
 end
 function Circle(a::T,b::T,c::T) where {T<:AnyComplex}
 	isinf(a) && return Line(b,c)
-	isinf(b) && return Line(a,c)
+	isinf(b) && return Line(c,a)
 	isinf(c) && return Line(a,b)
 	# Use intersection of chord bisectors to find the center of the circle. 
 	w = (a-c)/2
@@ -26,7 +27,8 @@ function Circle(a::T,b::T,c::T) where {T<:AnyComplex}
 	else
 		p =  M \ [imag(w);-real(w)] 
 		cen = (a+b)/2 - 1im*p[1]*d1
-		return Circle{T}(cen,abs(a-cen))
+		ccw = mod2pi(angle((b-cen)/(a-cen))) < mod2pi(angle((c-cen)/(a-cen)))
+		return Circle{T}(cen,abs(a-cen),ccw)
 	end
 end
 
@@ -37,19 +39,22 @@ arclength(C::Circle) = 2π*C.radius
 
 # Other methods
 isbounded(::Circle) = true 
-conj(C::Circle) = Circle(conj(C.center),C.radius)
-+(C::Circle,z::Number) = Circle(C.center+z,C.radius)
-+(z::Number,C::Circle) = Circle(C.center+z,C.radius)
--(C::Circle) = Circle(-C.center,C.radius)
--(C::Circle,z::Number) = Circle(C.center-z,C.radius)
--(z::Number,C::Circle) = Circle(z-C.center,C.radius)
-*(C::Circle,z::Number) = Circle(C.center*z,C.radius*abs(z))
-*(z::Number,C::Circle) = Circle(C.center*z,C.radius*abs(z))
-/(C::Circle,z::Number) = Circle(C.center/z,C.radius/abs(z))
+conj(C::Circle) = Circle(conj(C.center),C.radius,!C.ccw)
+reverse(C::Circle) = Circle(C.center,C.radius,!C.ccw)
++(C::Circle,z::Number) = Circle(C.center+z,C.radius,C.ccw)
++(z::Number,C::Circle) = Circle(C.center+z,C.radius,C.ccw)
+-(C::Circle) = Circle(-C.center,C.radius,!C.ccw)
+-(C::Circle,z::Number) = Circle(C.center-z,C.radius,C.ccw)
+-(z::Number,C::Circle) = z + (-C)
+*(C::Circle,z::Number) = Circle(C.center*z,C.radius*abs(z),C.ccw)
+*(z::Number,C::Circle) = Circle(C.center*z,C.radius*abs(z),C.ccw)
+/(C::Circle,z::Number) = Circle(C.center/z,C.radius/abs(z),C.ccw)
 function /(z::Number,C::Circle) 
 	w = z./point(C,[0,0.25,0.5])
 	Circle(w...)
 end
+
+isleft(z::Number,C::Circle) = !xor(C.ccw,abs(z-C.center) < C.radius) 
 
 function isapprox(C1::Circle,C2::Circle;tol=1e-12)
 	return isapprox(C1.center,C2.center,rtol=tol,atol=tol) &&
@@ -91,7 +96,7 @@ function Arc(a::Number,m::Number,b::Number)
 	else
 		α,β = a-C.center,b-C.center
 		ti = mod(angle(α)/(2π),1)
-		delta = mod(angle(β/α)/(2π),1)
+		delta = angle(β/α)/(2π)
 		Arc(C,ti,delta)
 	end
 end
@@ -105,7 +110,7 @@ function Arc(a::Number,b::Number;center=0)
 	else
 		α,β = a-C.center,b-C.center
 		ti = mod(angle(α)/(2π),1)
-		delta = mod(angle(β/α)/(2π),1)
+		delta = angle(β/α)/(2π)
 		Arc(C,ti,delta)
 	end
 end
@@ -121,6 +126,7 @@ arclength(A::Arc) = arclength(A.circle)*A.delta
 # Other methods
 isbounded(::Arc) = true
 conj(A::Arc) = Arc(conj(A(0)),conj(A(0.5)),conj(A(1)))
+reverse(A::Arc) = Arc(A(1),A(0.5),A(0))
 +(A::Arc,z::Number) = Arc(A.circle+z,A.start,A.delta)
 +(z::Number,A::Arc) = Arc(z+A.circle,A.start,A.delta)
 -(A::Arc,z::Number) = Arc(A.circle-z,A.start,A.delta)

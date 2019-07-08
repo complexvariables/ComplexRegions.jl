@@ -40,6 +40,7 @@ function point(p::AbstractPath,t::Real)
 end
 
 conj(p::AbstractPath) = typeof(p)(conj.(curve(p)))
+reverse(p::AbstractPath) = typeof(p)(reverse(reverse.(curve(p))))
 +(p::AbstractPath,z::Number) = typeof(p)([c+z for c in curve(p)])
 +(z::Number,p::AbstractPath) = typeof(p)([z+c for c in curve(p)])
 -(p::AbstractPath) = typeof(p)([-c for c in curve(p)])

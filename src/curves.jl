@@ -22,6 +22,7 @@ point(C::Curve,t::Real) = C.point(t)
 (C::Curve)(t::Real) = point(C,t)
 arclength(C::Curve) = C.arclength 
 conj(C::Curve) = Curve(t->conj(C.point(t)),C.arclength)
+reverse(C::Curve) = Curve(t->C.point(1-t),C.arclength)
 
 #
 # closed curves
@@ -43,6 +44,7 @@ point(C::ClosedCurve,t::Real) = C.point(t)
 (C::ClosedCurve)(t::Real) = point(C,t)
 arclength(C::ClosedCurve) = C.arclength 
 conj(C::ClosedCurve) = ClosedCurve(t->conj(C.point(t)),C.arclength)
+reverse(C::ClosedCurve) = ClosedCurve(t->C.point(1-t),C.arclength)
 
 include("lines_segments.jl")
 include("circles_arcs.jl")
