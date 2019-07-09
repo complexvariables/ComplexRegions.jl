@@ -27,7 +27,7 @@ end
     end
 end
 
-@recipe function f(R::Region)
+@recipe function f(R::SimplyConnectedRegion)
     fill --> true
     C = R.boundary
     C isa AbstractClosedCurve ? ClosedPath(C) : C

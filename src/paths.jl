@@ -58,7 +58,6 @@ function show(io::IO,::MIME"text/plain",P::AbstractPath)
 	print(io,typeof(P)," with ",length(P)," segments")
 end
 
-
 abstract type AbstractClosedPath <: AbstractPath end
 
 curve(p::AbstractClosedPath,k::Integer) = curve(p)[mod(k-1,length(p))+1]
@@ -88,6 +87,7 @@ struct Path <: AbstractPath
 	end
 end
 Path(c::AbstractCurve) = Path([c])
+promote_rule(Curve,Path) = Path
 
 curve(p::Path) = p.curve 
 breakindex(p::Path) = p.breakindex
@@ -113,6 +113,7 @@ curve(p::ClosedPath) = p.curve
 breakindex(p::ClosedPath) = p.breakindex
 arclength(p::ClosedPath) = sum(p.arclen)
 (p::ClosedPath)(t::Real) = point(p,t)
+promote_rule(ClosedCurve,ClosedPath) = ClosedPath
 
 function isleft(z::Number,P::AbstractClosedPath)
 	# TODO: this isn't foolproof
