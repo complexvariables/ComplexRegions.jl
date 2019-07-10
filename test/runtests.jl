@@ -20,6 +20,9 @@ end
 	@test( dist(-1+1im,c) ≈ sqrt(2) )
 	@test( closest(1+4im,c) ≈ 1+1im*(sqrt(2)-1) )
 	@test( isleft(1.5-1im,c) && isleft(1.5+1im,reverse(c)) )
+	@test( isinf(reflect(c.center,c)) )
+	@test( reflect(reflect(-1+2im,c),c) ≈ -1+2im )
+
 	c = Circle(1-1im,sqrt(2))
 	@test( point(c,.25) ≈ complex(1,sqrt(2)-1) )
 	@test( 2/c isa Line )
@@ -32,6 +35,8 @@ end
 	a = Arc(1.0,1im,center=0)
 	zz = 1/sqrt(2)*(1+1im)
 	@test( point(a,0.5) ≈ zz)
+	@test( reflect(reflect(-1+2im,a),a) ≈ -1+2im )
+
 	b = Arc(point(a,0),point(a,.25),point(a,1))
 	@test( point(b,0.5) ≈ zz)
 	@test( point(0.1 - 3im*a,0.5) ≈ 0.1 - 3im*zz)
@@ -53,6 +58,7 @@ end
 	z = l(0.3) + 1im*sign(l.direction)
 	@test( dist(z,l) ≈ 1 )
 	@test( closest(z,l) ≈ l(0.3) )
+	@test( reflect(z,l) ≈ l(0.3) - 1im*sign(l.direction))
 
 	s = Segment(1,3.0+5.0im)
 	@test( isleft(-1,s) && !isleft(2,s) )
@@ -62,6 +68,7 @@ end
 	@test( dist(-1,s) ≈ 2 )
 	z = s(0.7) + 1im*sign(s(0.9)-s(0.7))
 	@test( closest(z,s) ≈ s(0.7) )
+	@test( reflect(z,s) ≈ s(0.7) - (z-s(0.7)) )
 end
 
 @testset "Rays" begin

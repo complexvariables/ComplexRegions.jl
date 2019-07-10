@@ -52,6 +52,10 @@ function closest(z::Number,L::Line)
 	s = L.direction
 	L.base + real((z-L.base)/s)*s 
 end	
+function reflect(z::Number,L::Line) 
+	ζ = z - L.base 
+	L.base + L.direction*conj(ζ/L.direction)
+end
 
 function show(io::IO,L::Line)
 	print(IOContext(io,:compact=>true),"Line(...",L(0.5),"...",L((sqrt(5)-1)/2),"...)")
@@ -119,6 +123,7 @@ function closest(z::Number,S::Segment)
 	ζ = (z-S.za)/s
 	S.za + s*min( max(real(ζ),0), abs(d) ) 
 end
+reflect(z::Number,S::Segment) = reflect(z,Line(S.za,S.zb))
 
 function isleft(z::Number,S::Segment) 
 	a,b = S.za,S.zb

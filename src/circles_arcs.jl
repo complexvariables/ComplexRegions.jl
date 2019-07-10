@@ -63,6 +63,10 @@ end
 
 dist(z::Number,C::Circle) = abs( abs(z-C.center) - C.radius )
 closest(z::Number,C::Circle) =	C.center + C.radius*sign(z - C.center)
+function reflect(z::Number,C::Circle)
+	ζ = z-C.center
+	ζ==0 ? convert(typeof(z),Inf) : C.center + ζ/abs2(ζ)
+end
 
 function show(io::IO,C::Circle)
 	print(IOContext(io,:compact=>true),"Circle(",C.center,",",C.radius,")")
@@ -169,6 +173,7 @@ function closest(z::Number,A::Arc)
 		A.circle.center + A.circle.radius*sign(ζ)
 	end
 end
+reflect(z::Number,A::Arc) = reflect(z,A.circle)
 
 function show(io::IO,A::Arc{T}) where {T}
 	print(IOContext(io,:compact=>true),"Arc(",A(0.0),"...",A(1.0),")")
