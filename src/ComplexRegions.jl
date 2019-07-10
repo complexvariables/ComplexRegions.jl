@@ -22,7 +22,7 @@ include("paths.jl")
 export SimplyConnectedRegion,ConnectedRegion,Disk,UnitDisk,Annulus,PolygonalRegion 
 export Halfplane,UpperHalfplane,LowerHalfplane,LeftHalfplane,RightHalfplane
 export RegionIntersection,RegionUnion
-export region,interior,exterior
+export region,interior,exterior,between,boundary
 include("regions.jl")
 
 include("plotrecipes.jl")
