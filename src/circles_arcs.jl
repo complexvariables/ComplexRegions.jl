@@ -20,12 +20,12 @@ function Circle(a::T,b::T,c::T) where {T<:AnyComplex}
 	# Use intersection of chord bisectors to find the center of the circle. 
 	w = (a-c)/2
 	d1,d2 = a-b,c-b
-	M = [ real(d1) real(d2); imag(d1) imag(d2) ]
+	M = SMatrix{2,2}(real(d1),imag(d1),real(d2),imag(d2))
 	if cond(M) > 0.1/eps(typeof(float(real(a))))
 		# Collinear points
 		return Line(a,b)
 	else
-		p =  M \ [imag(w);-real(w)] 
+		p =  M \ SVector(imag(w),-real(w))
 		cen = (a+b)/2 - 1im*p[1]*d1
 		ccw = isccw(a-cen,b-cen,c-cen)
 		return Circle{T}(cen,abs(a-cen),ccw)
