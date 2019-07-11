@@ -25,6 +25,9 @@ export RegionIntersection,RegionUnion
 export region,interior,exterior,between,boundary
 include("regions.jl")
 
+export Möbius,Mobius
+include("mobius.jl")
+
 include("plotrecipes.jl")
 
 end # module
