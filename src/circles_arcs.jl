@@ -27,7 +27,7 @@ function Circle(a::T,b::T,c::T) where {T<:AnyComplex}
 	else
 		p =  M \ [imag(w);-real(w)] 
 		cen = (a+b)/2 - 1im*p[1]*d1
-		ccw = mod2pi(angle((b-cen)/(a-cen))) < mod2pi(angle((c-cen)/(a-cen)))
+		ccw = isccw(a-cen,b-cen,c-cen)
 		return Circle{T}(cen,abs(a-cen),ccw)
 	end
 end

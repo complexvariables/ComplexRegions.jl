@@ -1,7 +1,7 @@
 module ComplexRegions
 
 export Polar,Spherical
-using ComplexValues,LinearAlgebra
+using ComplexValues,LinearAlgebra,StaticArrays
 
 AllComplex(T::Type{S}) where {S<:AbstractFloat} = Union{Complex{T},Polar{T},Spherical{T}}
 AnyComplex{S} = Union{Complex{S},Polar{S},Spherical{S}} where {S<:AbstractFloat}
