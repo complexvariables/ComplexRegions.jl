@@ -197,3 +197,12 @@ end
 	@test( sum(a) ≈ 4 )
 end
 
+@testset "Möbius" begin
+	z = [0,1,2+2im]
+	w = [Inf,-1im,-1]
+	f = Möbius(z,w)
+	@test(isinf(f(0)) && f(1)≈1 && f(2+2im)≈-1)
+	@test(f(Circle(z...))≈Line(w[2],w[3]))
+	g = inv(f) 
+	@test( all(g.(w).≈z) )
+end

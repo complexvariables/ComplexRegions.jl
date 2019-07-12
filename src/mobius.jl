@@ -44,3 +44,5 @@ end
 (f::Möbius)(C::Line_Circle) = Circle( f.(point(C,[0,0.25,0.5]))... )
 (f::Möbius)(C::Union{Arc,Segment}) = Arc( f.(point(C,[0,0.5,1]))... )
 
+inv(f::Möbius) = Möbius(f.coeff[4],-f.coeff[2],-f.coeff[3],f.coeff[1])
+

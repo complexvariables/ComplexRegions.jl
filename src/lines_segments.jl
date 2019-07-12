@@ -37,6 +37,7 @@ function /(z::Number,L::Line)
 	w = z./point(L,[0.25,0.5,0.75])
 	Circle(w...)
 end
+inv(L::Line) = 1/L
 
 function isapprox(L1::Line,L2::Line;tol=1e-12)
 	dz = L1.base - L2.base
@@ -108,6 +109,7 @@ function /(z::Number,S::Segment)
 	w = z./point(S,[0,0.5,1])
 	Arc(w...)
 end
+inv(S::Segment) = 1/S
 sign(S::Segment) = sign(S.zb-S.za)
 
 function isapprox(S1::Segment,S2::Segment;tol=1e-12)
@@ -195,6 +197,7 @@ function /(z::Number,R::Ray)
 	w = z./point(R,[0,0.5,1])
 	Arc(w...)
 end
+inv(R::Ray) = 1/R
 
 function isapprox(R1::Ray,R2::Ray;tol=1e-12)
 	return isapprox(R1.base,R2.base,rtol=tol,atol=tol) && (abs(mod2pi(R1.angle-R2.angle)) < tol)
