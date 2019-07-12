@@ -1,7 +1,8 @@
 abstract type AbstractMap end
 Line_Circle = Union{Line,Circle}
 
-struct Möbius <: AbstractMap 
+struct Möbius <: AbstractMap
+	# interpreted as [a,b,c,d], where f(z)=(az+b)/(cz+d) 
 	coeff::SVector{4} 
 end 
 
@@ -98,13 +99,37 @@ an `Arc` or a `Segment`.
 
 If `R` is an `AbstractDisk` or an `AbstractHalfplane`, find its image under the `Möbius` map `f`. The result is also either 
 an `AbstractDisk` or an `AbstractHalfplane`.
-```jldoctest
+# Examples
+```julia-repl
+julia> f = Möbius(Line(-1,1),Circle(0,1))
+Möbius transformation:
 
+   (1.0 + 0.9999999999999999im) z + (3.666666666666666 - 1.666666666666667im)
+   ––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––
+   (1.0 + 0.9999999999999999im) z + (-1.666666666666666 + 3.6666666666666665im)
+
+julia> f(upperhalfplane)
+Disk interior to:
+   Circle(-5.55112e-17+2.22045e-16im,1.0)
+
+julia> isapprox(ans,unitdisk)
+true
+```
 """
 (f::Möbius)(R::Union{AbstractDisk,AbstractHalfplane}) = interior(f(R.boundary)) 
 
+"""
+inv(f::Möbius)
+
+Find the inverse of a `Möbius` transformation. This is the functional inverse, *not* 1/f(z). 
+"""
 inv(f::Möbius) = Möbius(f.coeff[4],-f.coeff[2],-f.coeff[3],f.coeff[1])
 
+"""
+∘(f::Möbius,g::Möbius)
+
+Compose two `Möbius` transformations.
+"""
 function ∘(f::Möbius,g::Möbius)
 	A = SMatrix{2,2}(f.coeff[1],f.coeff[3],f.coeff[2],f.coeff[4])
 	B = SMatrix{2,2}(g.coeff[1],g.coeff[3],g.coeff[2],g.coeff[4])
