@@ -19,8 +19,8 @@ export Path,ClosedPath,Polygon,CircularPolygon
 export curve,vertex,side,breakindex,isbounded,sign,angle,winding,rectangle
 include("paths.jl")
 
-export SimplyConnectedRegion,ConnectedRegion,Disk,UnitDisk,Annulus,PolygonalRegion 
-export Halfplane,UpperHalfplane,LowerHalfplane,LeftHalfplane,RightHalfplane
+export SimplyConnectedRegion,ConnectedRegion,disk,unitdisk,Annulus,PolygonalRegion 
+export halfplane,upperhalfplane,lowerhalfplane,lefthalfplane,righthalfplane
 export RegionIntersection,RegionUnion
 export region,interior,exterior,between,boundary
 include("regions.jl")

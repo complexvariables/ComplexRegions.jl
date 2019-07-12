@@ -44,7 +44,7 @@ end
 in(z::Number,R::SimplyConnectedRegion) = !xor(R.left,isleft(z,R.boundary))
 !(R::SimplyConnectedRegion) = SimplyConnectedRegion(R.boundary,!R.left)
 function isapprox(R1::SimplyConnectedRegion,R2::SimplyConnectedRegion)
-	if xor(R1.left,R1.right)
+	if xor(R1.left,R2.left)
 		R1.boundary ≈ reverse(R2.boundary)
 	else
 		R1.boundary ≈ R2.boundary
@@ -82,20 +82,23 @@ interior(C::AbstractJordan) = region(C,true)
 exterior(C::AbstractJordan) = region(C,false)
 between(outer::AbstractJordan,inner::AbstractJordan) = ConnectedRegion{2}(outer,inner)
 
-Disk = SimplyConnectedRegion{Circle} 
-SimplyConnectedRegion{Circle}(center::Number,radius::Real) = Disk(Circle(center,radius))
-UnitDisk = Disk(complex(0.0),1.0)
-function show(io::IO,::MIME"text/plain",R::Disk)
+AbstractDisk = SimplyConnectedRegion{T} where T<:Circle
+disk(C::Circle) = interior(C) 
+disk(center::Number,radius::Real) = interior(Circle(center,radius))
+unitdisk = disk(complex(0.0),1.0)
+function show(io::IO,::MIME"text/plain",R::AbstractDisk)
 	side = R.left ? "interior" : "exterior"
 	print(io,"Disk $side to:\n   ",R.boundary)
 end
 
-Halfplane = SimplyConnectedRegion{Line} 
-UpperHalfplane = Halfplane(Line(0.0,direction=1.0))
-LowerHalfplane = Halfplane(Line(0.0,direction=-1.0))
-LeftHalfplane = Halfplane(Line(0.0,direction=1.0im))
-RightHalfplane = Halfplane(Line(0.0,direction=-1.0im))
-function show(io::IO,::MIME"text/plain",R::Halfplane)
+AbstractHalfplane = SimplyConnectedRegion{T} where T<:Line 
+halfplane(L::Line) = interior(L)
+halfplane(a::Number,b::Number) = interior(Line(a,b))
+upperhalfplane = halfplane(Line(0.0,direction=1.0))
+lowerhalfplane = halfplane(Line(0.0,direction=-1.0))
+lefthalfplane = halfplane(Line(0.0,direction=1.0im))
+righthalfplane = halfplane(Line(0.0,direction=-1.0im))
+function show(io::IO,::MIME"text/plain",R::AbstractHalfplane)
 	dir = R.left ? "left" : "right"
 	print(io,"Half-plane to the $dir of:\n   ",R.boundary)
 end

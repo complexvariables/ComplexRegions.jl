@@ -207,7 +207,8 @@ end
 	c = Circle(z...)
 	l = Line(w[2],w[3])
 	@test( f(c)≈l && g(l)≈c )
-	# d = Disk(c,false) 
-	# h = Halfplane(l) 
-	# @test( f(d)≈!h && g(h)≈!d )
+	d = exterior(c) 
+	h = halfplane(l) 
+	@test( f(d)≈!h && g(h)≈!d )
+	@test( f(!d)≈h && g(!h)≈d )
 end
