@@ -31,6 +31,10 @@ end
 
 Möbius(c1::Line_Circle,c2::Line_Circle) = Möbius(point(c1,[0,0.25,0.5]),point(c2,[0,0.25,0.5]))
 
+#
+# Evaluation
+#
+# at point
 function (f::Möbius)(z::Number)
 	a,b,c,d = f.coeff
 	if isinf(z) 
@@ -41,8 +45,16 @@ function (f::Möbius)(z::Number)
 	# note: 1 over complex zero is NaN, not Inf
 	iszero(den) ? complex(abs(num)/abs(den)) : num/den
 end
+
+# for Circle or Line 
 (f::Möbius)(C::Line_Circle) = Circle( f.(point(C,[0,0.25,0.5]))... )
 (f::Möbius)(C::Union{Arc,Segment}) = Arc( f.(point(C,[0,0.5,1]))... )
+
+# for Disk or Halfplane
+function (f::Möbius)(R::Union{Disk,Halfplane})
+	c = f(R.boundary) 
+	c isa Circle ? Disk(c,R.left) : Halfplane(c,R.left) 
+end
 
 inv(f::Möbius) = Möbius(f.coeff[4],-f.coeff[2],-f.coeff[3],f.coeff[1])
 

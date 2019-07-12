@@ -201,8 +201,13 @@ end
 	z = [0,1,2+2im]
 	w = [Inf,-1im,-1]
 	f = Möbius(z,w)
-	@test(isinf(f(0)) && f(1)≈1 && f(2+2im)≈-1)
-	@test(f(Circle(z...))≈Line(w[2],w[3]))
+	@test( all(f.(z).≈w) )
 	g = inv(f) 
 	@test( all(g.(w).≈z) )
+	c = Circle(z...)
+	l = Line(w[2],w[3])
+	@test( f(c)≈l && g(l)≈c )
+	# d = Disk(c,false) 
+	# h = Halfplane(l) 
+	# @test( f(d)≈!h && g(h)≈!d )
 end
