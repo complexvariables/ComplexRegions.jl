@@ -211,4 +211,8 @@ end
 	h = halfplane(l) 
 	@test( f(d)≈!h && g(h)≈!d )
 	@test( f(!d)≈h && g(!h)≈d )
+	f = Möbius([2,3+im,-5],z)
+	g = Möbius(w,[2,3+im,-5])
+	h = f ∘ g
+	@test( all(h.(w).≈z) )
 end
