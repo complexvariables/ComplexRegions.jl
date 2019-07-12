@@ -39,6 +39,25 @@ breakindex(p::CircularPolygon) = p.breakindex
 arclength(p::CircularPolygon) = sum(p.arclen)
 (p::CircularPolygon)(t::Real) = point(p,t)
 
+# Other methods
+function winding(z::Number,p::CircularPolygon)
+	# Approximate by a thoughtfully chosen polygon. The problem is that while we ought to customize the discretized polygon by how close z is to the boundary, it's going to get slow to do that for each new point z.  
+	#p = truncate(p)  # TODO: no infinities
+	n = length(p)
+	L = arclength(p)
+	w = Vector{Any}(undef,n) 
+	for (k,s) in enumerate(side(p))
+		if s isa Segment
+			w[k] = [s.za,s.zb]
+		else
+			m = min(10*n,ceil(Int,20*arclength(s)/L))
+			w[k] = point(s,LinRange(0,1,m+1))
+		end
+	end
+	return winding(z,Polygon(vcat(w...)))
+end
+
+
 # 
 # Polygon 
 # 
@@ -125,22 +144,40 @@ function angle(p::Polygon)
 	sum(θ) > 0 ? θ : -θ
 end
 
+function truncate(p::Polygon) 
+	# try to find a circle clear of the polygon
+	v = filter(isfinite,vertex(p))
+	length(v) == length(p) && return p   # nothing to do
+	zc = sum(v)/length(v) 
+	R = maximum(@. abs(v - zc))
+	return truncate(p,Circle(zc,2*R))
+end
+
 function truncate(p::Polygon,c::Circle) 
 	n = length(p)
-	vnew = Vector{Any}(undef,n)
-	for (k,v) in enumerate(vertex(p))
-		if isfinite(v)
-			vnew[k] = v 
+	s,v = side(p),vertex(p)
+	snew = Vector{Any}(undef,n)
+	z_pre = NaN
+	if isa(s[1],Ray) && isa(s[n],Ray)
+		# recognize that first side is actually the return from an infinite vertex 
+		z_pre = intersect(c,s[n])[1]
+	end
+	for k = 1:n	
+		if !isa(s[k],Ray)
+			snew[k] = s[k] 
 		else
-			z1 = intersect(c,curve(p,k-1))
-			z2 = intersect(c,curve(p,k))
-			α = angle(z1[1]-c.center)
-			β = angle(z2[1]-c.center)
-			m = max(3,ceil(Int,(β-α)/0.2))
-			vnew[k] = c.center .+ c.radius*exp.(1im*LinRange(α,β,m+1))
+			# first of a pair? 
+			if isnan(z_pre) 
+				z_pre = intersect(c,s[k])[1]
+				snew[k] = Segment(s[k].base,z_pre)
+			else
+				z_post = intersect(c,s[k])[1]
+				snew[k] = [Arc(z_pre,z_post,center=c.center),Segment(z_post,s[k].base)]
+				z_pre = NaN
+			end
 		end
 	end
-	return Polygon(vcat(vnew...))
+	return CircularPolygon(vcat(snew...))
 end
 
 # TODO: unpredictable results for points on the boundary
@@ -161,12 +198,7 @@ function winding(z::Number,p::Polygon)
 
 	# To do a lot of points, it's better to truncate before calling. But here we go. 
 	if !isbounded(p) 
-		v = vertex(p)
-		vfin = filter(isfinite,v)
-		zbar = sum(vfin)/length(vfin) 
-		R = maximum( abs.( vfin .- zbar) )
-		R = max(R,abs(z-zbar)) 
-		return winding(z,truncate(p,Circle(zbar,100*R)))
+		return winding(z,truncate(p))
 	end
 
 	wind = 0

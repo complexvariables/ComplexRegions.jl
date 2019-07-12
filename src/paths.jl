@@ -51,6 +51,8 @@ reverse(p::AbstractPath) = typeof(p)(reverse(reverse.(curve(p))))
 /(p::AbstractPath,z::Number) = typeof(p)([c/z for c in curve(p)])
 isbounded(p::AbstractPath) = all( isfinite.(vertex(p)) )
 
+dist(z::Number,P::AbstractPath) = minimum(dist(z,C) for C in P)
+
 function show(io::IO,P::AbstractPath)
 	print(IOContext(io,:compact=>true),typeof(P)," with ",length(P)," segments") 
 end

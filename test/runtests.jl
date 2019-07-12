@@ -171,12 +171,12 @@ end
 	p = Polygon([5,4+3im,3im,-2im,6-2im,(-pi/2,0)])
 	a = angle(p)/pi
 	@test( a[6] ≈ -0.5  )
-	@test( sum(a) ≈ 4 )
+	@test( sum(a.-1) ≈ -2 )
 
 	p = Polygon([(pi/2,pi/2),5,4+3im,3im,-2im,6-2im])
 	a = angle(p)/pi
 	@test( abs(a[1]) < 1e-10 )
-	@test( sum(a) ≈ 4 )
+	@test( sum(a.-1) ≈ -2 )
 	w = [winding(z,p) for z in [1+2im,5-1im,5.5+6im]]
 	@test( all(w.==1) )
 	w = [winding(z,p) for z in [-3im,3+5im,5.5-6im]]
@@ -185,16 +185,16 @@ end
 	p = Polygon([(-pi/2,pi/2),7,4+3im,3im,-2im,6-2im])
 	a = angle(p)/pi
 	@test( a[1] ≈ -1 )
-	@test( sum(a) ≈ 4 )
+	@test( sum(a.-1) ≈ -2 )
 	w = [winding(z,p) for z in [4,7-2im,9]]
 	@test( all(w.==1) )
 	w = [winding(z,p) for z in [4+4im,6+2im,4-3im]]
 	@test( all(w.==0) )
 
-	p = Polygon([(0,0),6-2im,-2im,3im,4+3im,7])
+	p = Polygon([4+3im,7,(0,0),6-2im,-2im,3im])
 	a = angle(p)/pi
-	@test( a[1] ≈ -2 )
-	@test( sum(a) ≈ 4 )
+	@test( a[3] ≈ -2 )
+	@test( sum(a.-1) ≈ -2 )
 end
 
 @testset "Möbius" begin
