@@ -25,31 +25,21 @@ AbstractSimplyConnectedRegion = AbstractConnectedRegion{1}
 
 struct SimplyConnectedRegion{T<:AbstractJordan} <: AbstractConnectedRegion{1}
 	boundary::T 
-	left::Bool
-	SimplyConnectedRegion{T}(C::T,left=true) where T<:AbstractJordan = new(C,left)
 end
-SimplyConnectedRegion(C::AbstractJordan,left=true) = SimplyConnectedRegion{typeof(C)}(C,left)
+SimplyConnectedRegion(C::AbstractJordan) = SimplyConnectedRegion{typeof(C)}(C)
 
 boundary(R::SimplyConnectedRegion) = R.boundary
 
 function show(io::IO,R::SimplyConnectedRegion)
-	dir = R.left ? "left" : "right"
-	print(IOContext(io,:compact=>true),"Region to the $dir of ",R.boundary)
+	print(IOContext(io,:compact=>true),"Region to the left of ",R.boundary)
 end
 function show(io::IO,::MIME"text/plain",R::SimplyConnectedRegion)
-	dir = R.left ? "left" : "right"
-	print(io,"Region to the $dir of:\n   ",R.boundary)
+	print(io,"Region to the left of:\n   ",R.boundary)
 end
 
-in(z::Number,R::SimplyConnectedRegion) = !xor(R.left,isleft(z,R.boundary))
-!(R::SimplyConnectedRegion) = SimplyConnectedRegion(R.boundary,!R.left)
-function isapprox(R1::SimplyConnectedRegion,R2::SimplyConnectedRegion)
-	if xor(R1.left,R2.left)
-		R1.boundary ≈ reverse(R2.boundary)
-	else
-		R1.boundary ≈ R2.boundary
-	end 
-end
+in(z::Number,R::SimplyConnectedRegion) = isleft(z,R.boundary)
+!(R::SimplyConnectedRegion) = SimplyConnectedRegion(reverse(R.boundary))
+isapprox(R1::SimplyConnectedRegion,R2::SimplyConnectedRegion) = R1.boundary ≈ R2.boundary
 
 struct ConnectedRegion{N} <: AbstractConnectedRegion{N}
 	outer::Union{Nothing,AbstractJordan} 
@@ -77,9 +67,9 @@ end
 # special cases
 #
 
-region(C::AbstractJordan,left=true) = SimplyConnectedRegion{typeof(C)}(C,left)
-interior(C::AbstractJordan) = region(C,true)
-exterior(C::AbstractJordan) = region(C,false)
+region(C::AbstractJordan,left=true) = SimplyConnectedRegion{typeof(C)}(C)
+interior(C::AbstractJordan) = region(C)
+exterior(C::AbstractJordan) = region(reverse(C))
 between(outer::AbstractJordan,inner::AbstractJordan) = ConnectedRegion{2}(outer,inner)
 
 AbstractDisk = SimplyConnectedRegion{T} where T<:Circle
@@ -87,7 +77,7 @@ disk(C::Circle) = interior(C)
 disk(center::Number,radius::Real) = interior(Circle(center,radius))
 unitdisk = disk(complex(0.0),1.0)
 function show(io::IO,::MIME"text/plain",R::AbstractDisk)
-	side = R.left ? "interior" : "exterior"
+	side = in(Inf,R) ? "exterior" : "interior"
 	print(io,"Disk $side to:\n   ",R.boundary)
 end
 
@@ -99,8 +89,7 @@ lowerhalfplane = halfplane(Line(0.0,direction=-1.0))
 lefthalfplane = halfplane(Line(0.0,direction=1.0im))
 righthalfplane = halfplane(Line(0.0,direction=-1.0im))
 function show(io::IO,::MIME"text/plain",R::AbstractHalfplane)
-	dir = R.left ? "left" : "right"
-	print(io,"Half-plane to the $dir of:\n   ",R.boundary)
+	print(io,"Half-plane to the left of:\n   ",R.boundary)
 end
 
 PolygonalRegion = SimplyConnectedRegion{Polygon} 

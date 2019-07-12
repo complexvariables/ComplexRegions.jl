@@ -51,7 +51,7 @@ end
 (f::Möbius)(C::Union{Arc,Segment}) = Arc( f.(point(C,[0,0.5,1]))... )
 
 # for Disk or Halfplane
-(f::Möbius)(R::Union{AbstractDisk,AbstractHalfplane}) = region(f(R.boundary),R.left) 
+(f::Möbius)(R::Union{AbstractDisk,AbstractHalfplane}) = interior(f(R.boundary)) 
 
 inv(f::Möbius) = Möbius(f.coeff[4],-f.coeff[2],-f.coeff[3],f.coeff[1])
 
