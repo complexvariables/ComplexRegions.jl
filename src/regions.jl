@@ -26,7 +26,6 @@ AbstractSimplyConnectedRegion = AbstractConnectedRegion{1}
 struct SimplyConnectedRegion{T<:AbstractJordan} <: AbstractConnectedRegion{1}
 	boundary::T 
 end
-SimplyConnectedRegion(C::AbstractJordan) = SimplyConnectedRegion{typeof(C)}(C)
 
 boundary(R::SimplyConnectedRegion) = R.boundary
 

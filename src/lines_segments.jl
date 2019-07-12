@@ -231,4 +231,4 @@ function show(io::IO,::MIME"text/plain",R::Ray{T}) where {T}
 	end
 end
 
-plotdata(R::Line) = R.reverse ? [R(0.3),R.base] : [R.base,R(0.7)]
+plotdata(R::Ray) = R.reverse ? [R(0.3),R.base] : [R.base,R(0.7)]

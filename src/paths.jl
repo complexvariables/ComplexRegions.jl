@@ -87,7 +87,6 @@ struct Path <: AbstractPath
 	end
 end
 Path(c::AbstractCurve) = Path([c])
-promote_rule(Curve,Path) = Path
 
 curve(p::Path) = p.curve 
 breakindex(p::Path) = p.breakindex
@@ -113,7 +112,6 @@ curve(p::ClosedPath) = p.curve
 breakindex(p::ClosedPath) = p.breakindex
 arclength(p::ClosedPath) = sum(p.arclen)
 (p::ClosedPath)(t::Real) = point(p,t)
-promote_rule(ClosedCurve,ClosedPath) = ClosedPath
 
 function isleft(z::Number,P::AbstractClosedPath)
 	# TODO: this isn't foolproof
