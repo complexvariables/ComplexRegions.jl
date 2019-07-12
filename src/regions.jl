@@ -42,6 +42,14 @@ function show(io::IO,::MIME"text/plain",R::SimplyConnectedRegion)
 end
 
 in(z::Number,R::SimplyConnectedRegion) = !xor(R.left,isleft(z,R.boundary))
+!(R::SimplyConnectedRegion) = SimplyConnectedRegion(R.boundary,!R.left)
+function isapprox(R1::SimplyConnectedRegion,R2::SimplyConnectedRegion)
+	if xor(R1.left,R1.right)
+		R1.boundary ≈ reverse(R2.boundary)
+	else
+		R1.boundary ≈ R2.boundary
+	end 
+end
 
 struct ConnectedRegion{N} <: AbstractConnectedRegion{N}
 	outer::Union{Nothing,AbstractJordan} 
