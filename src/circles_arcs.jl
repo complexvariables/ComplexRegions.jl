@@ -101,7 +101,11 @@ function Arc(a::Number,m::Number,b::Number)
 	else
 		α,β = a-C.center,b-C.center
 		ti = mod(angle(α)/(2π),1)
-		delta = angle(β/α)/(2π)
+		delta = mod(angle(β/α)/(2π),1) # force into (0,1)
+		# which of the two circle pieces do we use? 
+		if mod(angle((m-C.center)/α)/(2π),1) > delta 
+			delta = delta-1
+		end	
 		Arc(C,ti,delta)
 	end
 end
