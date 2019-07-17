@@ -135,10 +135,10 @@ arclength(A::Arc) = arclength(A.circle)*A.delta
 (C::Arc)(t::Real) = point(C,t)
 function arg(A::Arc,z::Number)
 	tc = arg(A.circle,z)
-	t = (tc-A.start)/A.delta
-	t < 0 ? mod(t,1) : t 
+	t = mod(tc-A.start,1)
+	A.delta < 0 ? -mod(1-t,1)/A.delta : t/A.delta
 end
-tangent(A::Arc,t::Real) = tangent(A.circle,t)
+tangent(A::Arc,t::Real) = tangent(A.circle,A.start + t*A.delta)
 
 # Other methods
 isbounded(::Arc) = true
@@ -171,8 +171,19 @@ function isapprox(A1::Arc,A2::Arc;tol=1e-12)
 		isapprox(A1.delta,A2.delta,rtol=tol,atol=tol) 
 end
 function dist(z::Number,A::Arc) 
-	ζ = z - A.circle.center 
-	min( abs(abs(ζ)-A.circle.radius), abs(z-point(A,0)), abs(z-point(A,1)) )
+	if A.delta > 0
+		ti,del = A.start,A.delta
+	else
+		ti = mod(A.start+A.delta,1)
+		del = -A.delta 
+	end
+	ζ = z - A.circle.center
+	α = mod(angle(ζ)/(2π)-ti,1)
+	if 0 ≤ α ≤ del 
+		return abs(abs(ζ)-A.circle.radius)
+	else
+		return min(abs(z-point(A,0)), abs(z-point(A,1)) )
+	end
 end
 function closest(z::Number,A::Arc)
 	ζ = z - A.circle.center

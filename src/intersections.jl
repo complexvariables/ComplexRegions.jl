@@ -161,7 +161,16 @@ function intersect(c::Circle,s::Segment;tol=1e-12)
 end
 
 function intersect(a1::Arc,a2::Arc;tol=1e-12) 
+	z = intersect(a1.circle,a2.circle) 
+	f = w -> (dist(w,a1) < tol) & (dist(w,a2) < tol)
+	return filter(f,z)
 end 
+
+intersect(c::AbstractCurve,a::Arc;tol=1e-12) = intersect(a,c,tol=tol)
+function intersect(a::Arc,c::AbstractCurve;tol=1e-12) 
+	z = intersect(a.circle,c)
+	return filter(v->dist(v,a)<tol,z)
+end
 
 # Determine the (directional) crossings of a horizontal line at `y` with a given curve.
 function horizontalcrossing(y,c::AbstractCurve)

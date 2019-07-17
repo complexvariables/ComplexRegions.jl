@@ -21,13 +21,21 @@ point(L::Line,t::Real) = L.base + (2t-1)/(t-t^2)*L.direction
 (C::Line)(t::Real) = point(C,t)
 function arg(L::Line,z::Number)
 	isinf(z) && return float(0)
-	del = abs(z-L.base)
-	for t in quadroots(del,2-del,-1)
+	del = z-L.base
+	if abs(real(del)) > abs(imag(del)) 
+		del = real(del) 
+		α = real(L.direction)
+	else
+		del = imag(del) 
+		α = imag(L.direction)
+	end
+	for t in quadroots(del,2α-del,-α)
 		0-eps(del) ≤ t ≤ 1+eps(del) && return t 
 	end
 	return []
 end
-tangent(L::Line,t::Real) = L.direction
+tangent(L::Line) = L.direction
+tangent(L::Line,t::Real) = tangent(L)
 
 # Other methods
 isbounded(::Line) = false
@@ -101,7 +109,8 @@ arclength(S::Segment) = abs(S.zb-S.za)
 point(S::Segment,t::Real) = (1-t)*S.za + t*S.zb
 (C::Segment)(t::Real) = point(C,t)
 arg(S::Segment,z::Number) = (real(z) - real(S.za)) / (real(S.zb) - real(S.za))
-tangent(S::Segment,t::Real) = sign(S)
+tangent(S::Segment,t::Real) = tangent(S)
+tangent(S::Segment) = sign(S.zb-S.za)
 
 # Other methods
 isbounded(::Segment) = true
@@ -121,7 +130,7 @@ function /(z::Number,S::Segment)
 	Arc(w...)
 end
 inv(S::Segment) = 1/S
-sign(S::Segment) = sign(S.zb-S.za)
+sign(S::Segment) = tangent(S)
 
 function isapprox(S1::Segment,S2::Segment;tol=1e-12)
 	return isapprox(S1.za,S2.za,rtol=tol,atol=tol) &&
@@ -199,6 +208,8 @@ function arg(R::Ray,z::Number)
 	end
 	return R.reverse ? 1-t : t 
 end
+tangent(R::Ray,t::Real) = tangent(R::Ray)
+tangent(R::Ray) = R.reverse ? -exp(1im*R.angle) : exp(1im*R.angle)
 
 # Other methods
 isbounded(::Ray) = false
@@ -231,7 +242,7 @@ function closest(z::Number,R::Ray)
 	R.base + max(real(ζ),0)*s
 end
 
-sign(R::Ray) = R.reverse ? -exp(complex(0,R.angle)) : exp(complex(0,R.angle))
+sign(R::Ray) = tangent(R)
 
 function isleft(z::Number,R::Ray) 
 	a,b = point(R,[0.2,0.8])  # accounts for reversal
