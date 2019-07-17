@@ -36,6 +36,8 @@ end
 point(C::Circle,t::Real) = C.center + C.radius*exp(2im*pi*t)
 arclength(C::Circle) = 2π*C.radius
 (C::Circle)(t::Real) = point(C,t)
+arg(C::Circle,z::Number) = mod(angle(z-C.center)/(2π),1)
+tangent(C::Circle,t::Real) = C.ccw ? 1im*exp(2im*pi*t) : -1im*exp(2im*pi*t)
 
 # Other methods
 isbounded(::Circle) = true 
@@ -117,9 +119,9 @@ function Arc(a::Number,b::Number;center=0)
 	if isa(C,Line)  # collinear
 		Segment(a,b)
 	else
-		α,β = a-C.center,b-C.center
+		α = a-C.center
 		ti = mod(angle(α)/(2π),1)
-		delta = angle(β/α)/(2π)
+		delta = angle((b-C.center)/α)/(2π)
 		Arc(C,ti,delta)
 	end
 end
@@ -131,6 +133,12 @@ function point(A::Arc,t::Real)
 end
 arclength(A::Arc) = arclength(A.circle)*A.delta
 (C::Arc)(t::Real) = point(C,t)
+function arg(A::Arc,z::Number)
+	tc = arg(A.circle,z)
+	t = (tc-A.start)/A.delta
+	t < 0 ? mod(t,1) : t 
+end
+tangent(A::Arc,t::Real) = tangent(A.circle,t)
 
 # Other methods
 isbounded(::Arc) = true

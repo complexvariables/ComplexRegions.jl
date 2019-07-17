@@ -22,12 +22,14 @@ end
 	@test( isleft(1.5-1im,c) && isleft(1.5+1im,reverse(c)) )
 	@test( isinf(reflect(c.center,c)) )
 	@test( reflect(reflect(-1+2im,c),c) ≈ -1+2im )
+	@test( arg(c,c(0.3))≈0.3 && arg(c,c(1))≈1 )
 
 	c = Circle(1-1im,sqrt(2))
 	@test( point(c,.25) ≈ complex(1,sqrt(2)-1) )
 	@test( 2/c isa Line )
 	c = Circle(1f0,-1im,0)
 	@test( c.radius ≈ 1/sqrt(2f0) )
+	@test( arg(c,c(0.3))≈0.3 && arg(c,c(1))≈1 )
 	zz = point(5im - c/3im,.23)
 	@test( abs(zz-(5im-c.center/3im)) ≈ c.radius/3 )
 	@test( Circle(1+3im,Polar(1-1im),1.0) isa Line )
@@ -36,13 +38,21 @@ end
 	zz = 1/sqrt(2)*(1+1im)
 	@test( point(a,0.5) ≈ zz)
 	@test( reflect(reflect(-1+2im,a),a) ≈ -1+2im )
-
-	b = Arc(point(a,0),point(a,.25),point(a,1))
-	@test( point(b,0.5) ≈ zz)
-	@test( point(0.1 - 3im*a,0.5) ≈ 0.1 - 3im*zz)
-	@test( closest(-1+5im,a) ≈ 1im )
-	@test( closest(2-5im,a+1) ≈ 1+1 )
+	@test( arg(a,a(0.3))≈0.3 && arg(a,a(1))≈1 )
 	@test( dist(3im+.5*2im*exp(1im*pi/5),3im+2im*a) ≈ 2*0.5 )
+	a = (a-2)/1im 
+	@test( arg(a,a(0.5))≈0.5 && arg(a,a(0))≈0 )
+
+	b = Arc(-1im,1im,-1)
+	@test( point(b,2/3) ≈ 1im )
+	@test( point(0.1 - 3im*b,2/3) ≈ 0.1 - 3im*1im )
+	@test( closest(5im,b) ≈ 1im )
+	@test( closest(2-5im,b+2) ≈ 2-1im )
+	@test( arg(b,b(0.3))≈0.3 && arg(b,b(0))≈0 )
+
+	b = reverse(b) 
+	@test( point(b,1/3) ≈ 1im )
+	@test( arg(b,b(0.3))≈0.3 && arg(b,b(0))≈0 )
 end 
 
 @testset "Lines & Segments" begin
@@ -59,6 +69,7 @@ end
 	@test( dist(z,l) ≈ 1 )
 	@test( closest(z,l) ≈ l(0.3) )
 	@test( reflect(z,l) ≈ l(0.3) - 1im*sign(l.direction))
+	@test( arg(l,l(0.5))≈0.5 && arg(l,l(0))≈0 )
 
 	s = Segment(1,3.0+5.0im)
 	@test( isleft(-1,s) && !isleft(2,s) )
@@ -69,6 +80,7 @@ end
 	z = s(0.7) + 1im*sign(s(0.9)-s(0.7))
 	@test( closest(z,s) ≈ s(0.7) )
 	@test( reflect(z,s) ≈ s(0.7) - (z-s(0.7)) )
+	@test( arg(s,s(0.3))≈0.3 && arg(s,s(1))≈1 )
 end
 
 @testset "Rays" begin
@@ -78,12 +90,14 @@ end
 	@test( real(s(0.23)) ≈ 2 )
 	@test( imag(s(0.9)) > imag(s(0.7)) )
 	@test( closest(5im,s) ≈ 2+5im )
+	@test( arg(s,s(0.3))≈0.3 && arg(s,s(1))≈1 )
 	s = Ray(Spherical(2im),pi,true)
 	@test( imag(s(0.5)) ≈ 2 )
 	@test( real(s(0.3)) < real(s(0.4)) )
 	@test( !isleft(4,s) && isleft(-1+3im,s) )
 	@test( closest(-4+1im,s) ≈ -4+2im )
 	@test( closest(6,s) ≈ 2im )
+	@test( arg(s,s(0.3))≈0.3 && arg(s,s(1))≈1 )
 end
 
 @testset "Intersections" begin 

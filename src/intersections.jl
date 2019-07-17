@@ -20,7 +20,7 @@ function intersect(l1::Line,l2::Line;tol=1e-12)
 		# either identical or no intersection
 		return dist(z2,l1) < tol*(abs(z2)+1) ? l1 : []
 	else
-		return z1 + t1*s1,t1,t2 
+		return z1 + t1*s1
 	end
 end
 
@@ -36,28 +36,28 @@ function intersect(g1::Segment,g2::Segment;tol=1e-12)
 			c = b; b = a; a = c 
 		end
 		if b < -tol || a > 1+tol
-			return [],[],[]
+			return []
 		else
-			return Segment(z1+max(0,a)*s1,z1+min(1,b)*s1),NaN,NaN
+			return Segment(z1+max(0,a)*s1,z1+min(1,b)*s1)
 		end
 	else   # nonparallel
 		if (-tol ≤ t1 ≤ 1+tol) && (-tol ≤ t2 ≤ 1+tol)
-			return z1 + t1*s1,t1,t2 
+			return z1 + t1*s1
 		else
-			return [],[],[] 
+			return [] 
 		end
 	end
 end
 
-intersect(g::Segment,l::Line;tol=1e-12) = intersect(l,g,tol=tol)[1,3,2]
+intersect(g::Segment,l::Line;tol=1e-12) = intersect(l,g,tol=tol)
 function intersect(l::Line,g::Segment;tol=1e-12)
 	z1,z2 = l.base,g.za
 	s1,s2 = l.direction,g.zb-g.za
 	t1,t2 = twolines_meet(z1,s1,z2,s2,tol)
 	if isnan(t1)   # parallel lines
-		return dist(g.za,l) < tol*(1+abs(g.za)) ? (g,NaN,NaN) : ([],[],[])
+		return dist(g.za,l) < tol*(1+abs(g.za)) ? g : []
 	else
-		return 0 ≤ t2 ≤ 1 ? (z1+t1*s1,t1,t2) : ([],[],[])
+		return 0 ≤ t2 ≤ 1 ? z1+t1*s1 : []
 	end
 end
 
@@ -67,28 +67,28 @@ function intersect(r1::Ray,r2::Ray;tol=1e-12)
 	t1,t2 = twolines_meet(z1,s1,z2,s2,tol)
 	if isnan(t1)     # parallel lines
 		if dist(z2,r1) < tol*(abs(z2)+1)
-			return r2,NaN,NaN 
+			return r2
 		else
-			dist(z1,r2) < tol*(abs(z1)+1) ? (r1,NaN,NaN) : ([],[],[])
+			dist(z1,r2) < tol*(abs(z1)+1) ? r1 : []
 		end
 	else
-		return (t1 ≥ 0) && (t2 ≥ 0) ? (z1 + t1*s1,t1,t2) : ([],[],[])
+		return (t1 ≥ 0) && (t2 ≥ 0) ? z1 + t1*s1 : []
 	end
 end
 
-intersect(r::Ray,l::Line;tol=1e-12) = intersect(l,r,tol=tol)[1,3,2]
+intersect(r::Ray,l::Line;tol=1e-12) = intersect(l,r,tol=tol)
 function intersect(l::Line,r::Ray;tol=1e-12)
 	z1,z2 = l.base,r.base
 	s1,s2 = l.direction,exp(1im*r.angle)
 	t1,t2 = twolines_meet(z1,s1,z2,s2,tol)
 	if isnan(t1)   # parallel lines
-		return dist(r.base,l) < tol*(1+abs(r.base)) ? (r,NaN,NaN) : ([],[],[]) 
+		return dist(r.base,l) < tol*(1+abs(r.base)) ? r : [] 
 	else
-		return 0 ≤ t2 ? (z1+t1*s1,t1,t2) : ([],[],[])
+		return 0 ≤ t2 ? z1+t1*s1 : []
 	end
 end
 
-intersect(g::Segment,r::Ray;tol=1e-12) = intersect(r,g,tol=tol)[1,3,2]
+intersect(g::Segment,r::Ray;tol=1e-12) = intersect(r,g,tol=tol)
 function intersect(r::Ray,g::Segment;tol=1e-12)
 	z1,z2 = r.base,g.za
 	s1,s2 = exp(1im*r.base),g.zb-g.za
@@ -100,9 +100,9 @@ function intersect(r::Ray,g::Segment;tol=1e-12)
 		if a > b 
 			c = b; b = a; a = c 
 		end
-		return b < -tol ? ([],[],[]) : (Segment(z1+max(0,a)*s1,z1+b*s1),NaN,NaN)
+		return b < -tol ? [] : Segment(z1+max(0,a)*s1,z1+b*s1)
 	else   # nonparallel
-		return (-tol ≤ t1) && (-tol ≤ t2 ≤ 1+tol) ? (z1 + t1*s1,t1,t2)  : ([],[],[])
+		return (-tol ≤ t1) && (-tol ≤ t2 ≤ 1+tol) ? z1 + t1*s1  : []
 	end
 end
 
@@ -114,25 +114,23 @@ function intersect(c1::Circle,c2::Circle;tol=1e-12)
 	d = abs(delta) 
 	if abs(d) < tol 
 		if isapprox(r1,r2,rtol=tol,atol=tol) 
-			return c1,NaN,NaN 
+			return c1 
 		else
-			return [],[],[]
+			return []
 		end
 	elseif (d > r1+r2) || d < abs(r1-r2) 
-		return [],[],[] 
+		return [] 
 	else
 		a = (r1^2 - r2^2 + d^2)/(2d) 
 		p = z1 + a*delta/d 
 		h = sqrt(r1^2-a^2) 
 		w = 1im*h*delta/d
 		z = [p+w,p-w]
-		t1 = @. mod(angle(z-c1.center)/(2π),1)
-		t2 = @. mod(angle(z-c2.center)/(2π),1)
-		return z,t1,t2
+		return z
 	end
 end
 
-intersect(l::Line,c::Circle;tol=1e-12) = intersect(c,l,tol=tol)[1,3,2]
+intersect(l::Line,c::Circle;tol=1e-12) = intersect(c,l,tol=tol)
 function intersect(c::Circle,l::Line;tol=1e-12)
 	# find a radius that is perpendicular to the line
 	p = Line(c.center,direction=1im*l.direction)
@@ -140,9 +138,7 @@ function intersect(c::Circle,l::Line;tol=1e-12)
 	a,r = abs(zi-c.center),c.radius
 	if a ≤ r + tol 
 		c = sqrt(r^2-a^2)*l.direction
-		z = [zi+c,zi-c] 
-		t2 = real(z-l.base)/l.direction
-		return 
+		return [zi+c,zi-c]  
 	else 
 		return []
 	end
@@ -162,4 +158,26 @@ function intersect(c::Circle,s::Segment;tol=1e-12)
 	z = intersect(c,Line(s.za,s.zb),tol=tol)
 	d = [ dist(z,s) for z in z ]
 	return z[d.<=tol]
+end
+
+function intersect(a1::Arc,a2::Arc;tol=1e-12) 
+end 
+
+# Determine the (directional) crossings of a horizontal line at `y` with a given curve.
+function horizontalcrossing(y,c::AbstractCurve)
+	if c isa Segment  # faster shortcut
+		if y ≥ imag(c(0))
+			s = y < imag(c(1)) ? 1 : 0
+		else
+			s = y ≥ imag(c(1)) ? -1 : 0
+		end
+	else
+		s = 0
+		for z in intersect(Line(complex(0,y),direction=1),c) 
+			t = arg(c,z) 
+#			τ = tangent(c,t) 
+			s += sign(imag(tangent(c,t)))
+		end
+	end
+	return s
 end

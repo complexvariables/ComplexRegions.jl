@@ -19,6 +19,15 @@ Line(z::Number;direction) = Line(z,z+direction)
 arclength(::Line) = Inf
 point(L::Line,t::Real) = L.base + (2t-1)/(t-t^2)*L.direction
 (C::Line)(t::Real) = point(C,t)
+function arg(L::Line,z::Number)
+	isinf(z) && return float(0)
+	del = abs(z-L.base)
+	for t in quadroots(del,2-del,-1)
+		0-eps(del) ≤ t ≤ 1+eps(del) && return t 
+	end
+	return []
+end
+tangent(L::Line,t::Real) = L.direction
 
 # Other methods
 isbounded(::Line) = false
@@ -91,6 +100,8 @@ end
 arclength(S::Segment) = abs(S.zb-S.za)
 point(S::Segment,t::Real) = (1-t)*S.za + t*S.zb
 (C::Segment)(t::Real) = point(C,t)
+arg(S::Segment,z::Number) = (real(z) - real(S.za)) / (real(S.zb) - real(S.za))
+tangent(S::Segment,t::Real) = sign(S)
 
 # Other methods
 isbounded(::Segment) = true
@@ -179,6 +190,15 @@ function point(R::Ray{T},t::Real) where T
 	end	
 end
 (C::Ray)(t::Real) = point(C,t)
+function arg(R::Ray,z::Number)
+	if isinf(z)
+		t = 1
+	else
+		δ = abs(z - R.base) 
+		t = δ / (1+δ)
+	end
+	return R.reverse ? 1-t : t 
+end
 
 # Other methods
 isbounded(::Ray) = false

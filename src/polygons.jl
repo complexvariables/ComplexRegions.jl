@@ -57,6 +57,8 @@ function winding(z::Number,p::CircularPolygon)
 	return winding(z,Polygon(vcat(w...)))
 end
 
+# TODO truncate circular polygons
+
 
 # 
 # Polygon 

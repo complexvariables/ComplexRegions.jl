@@ -52,6 +52,7 @@ reverse(p::AbstractPath) = typeof(p)(reverse(reverse.(curve(p))))
 isbounded(p::AbstractPath) = all( isfinite.(vertex(p)) )
 
 dist(z::Number,P::AbstractPath) = minimum(dist(z,C) for C in P)
+# TODO: Closest point for Path
 
 function show(io::IO,P::AbstractPath)
 	print(IOContext(io,:compact=>true),typeof(P)," with ",length(P)," segments") 
