@@ -138,7 +138,11 @@ function intersect(c::Circle,l::Line;tol=1e-12)
 	a,r = abs(zi-c.center),c.radius
 	if a ≤ r + tol 
 		c = sqrt(r^2-a^2)*l.direction
-		return [zi+c,zi-c]  
+		if abs(c) > tol
+			return [zi+c,zi-c]  
+		else
+			return [zi]
+		end 
 	else 
 		return []
 	end
@@ -173,19 +177,37 @@ function intersect(a::Arc,c::AbstractCurve;tol=1e-12)
 end
 
 # Determine the (directional) crossings of a horizontal line at `y` with a given curve.
-function horizontalcrossing(y,c::AbstractCurve)
+function raycrossing(z,c::AbstractCurve)
+	# only count left endpoint intersections, not the right, for the sake of winding number
+	s = 0
 	if c isa Segment  # faster shortcut
-		if y ≥ imag(c(0))
-			s = y < imag(c(1)) ? 1 : 0
+		y = imag(z) 
+		a,b = imag(c(0)),imag(c(1))
+		if y ≥ a
+			if y < b && isleft(z,c)
+				s += 1
+			end
 		else
-			s = y ≥ imag(c(1)) ? -1 : 0
+			if y ≥ b && !isleft(z,c) 
+				s -= 1
+			end
 		end
-	else
-		s = 0
-		for z in intersect(Line(complex(0,y),direction=1),c) 
+	else   # general case 
+		for z in intersect(c,Ray(z,0)) 
 			t = arg(c,z) 
-#			τ = tangent(c,t) 
-			s += sign(imag(tangent(c,t)))
+			if t < 1.0-10*eps(1.0)
+				y = imag(tangent(c,t))
+				if abs(y) < 10*eps(1.0) 
+					# horiztonal tangent; check a perturbed location
+					ϵ = sqrt(eps(one(t)))
+					if t < 0.5 
+						y = imag(tangent(c,t+2ϵ))
+					else 
+						y = -imag(tangent(c,t-2ϵ))
+					end
+				end
+				s += copysign(1,y)
+			end
 		end
 	end
 	return s

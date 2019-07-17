@@ -10,6 +10,13 @@ function show(io::IO,::MIME"text/plain",P::AbstractCircularPolygon)
 	print(io,typeof(P)," with ",length(P)," sides")
 end
 
+# Other methods
+# TODO: unreliable results for points on the boundary
+# Ref Dan Sunday, http://geomalgorithms.com/a03-_inclusion.html
+function winding(z::Number,p::AbstractCircularPolygon)
+	sum( raycrossing(z,s) for s in side(truncate(p)) )
+end
+
 #
 # CircularPolygon
 #
@@ -39,25 +46,14 @@ breakindex(p::CircularPolygon) = p.breakindex
 arclength(p::CircularPolygon) = sum(p.arclen)
 (p::CircularPolygon)(t::Real) = point(p,t)
 
-# Other methods
-function winding(z::Number,p::CircularPolygon)
-	# Approximate by a thoughtfully chosen polygon. The problem is that while we ought to customize the discretized polygon by how close z is to the boundary, it's going to get slow to do that for each new point z.  
-	#p = truncate(p)  # TODO: no infinities
-	n = length(p)
-	L = arclength(p)
-	w = Vector{Any}(undef,n) 
-	for (k,s) in enumerate(side(p))
-		if s isa Segment
-			w[k] = [s.za,s.zb]
-		else
-			m = min(10*n,ceil(Int,20*arclength(s)/L))
-			w[k] = point(s,LinRange(0,1,m+1))
-		end
-	end
-	return winding(z,Polygon(vcat(w...)))
-end
 
 # TODO truncate circular polygons
+function truncate(p::CircularPolygon) 
+	# try to find a circle clear of the polygon
+	v = filter(isfinite,vertex(p))
+	length(v) == length(p) && return p   # nothing to do
+	@error "Truncation of CircularPolygon not yet implemented"
+end
 
 
 # 
@@ -180,41 +176,6 @@ function truncate(p::Polygon,c::Circle)
 		end
 	end
 	return CircularPolygon(vcat(snew...))
-end
-
-# TODO: unpredictable results for points on the boundary
-# TODO: maybe wrong for some unbounded polygons
-# Ref Dan Sunday, http://geomalgorithms.com/a03-_inclusion.html
-
-function winding(z::Number,p::Polygon)
-	function crossing(y,s::Segment)
-		if y ≥ imag(s(0))
-			down = false
-			up = y < imag(s(1))
-		else
-			up = false
-			down = y ≥ imag(s(1))
-		end
-		return up,down 
-	end
-
-	# To do a lot of points, it's better to truncate before calling. But here we go. 
-	if !isbounded(p) 
-		return winding(z,truncate(p))
-	end
-
-	wind = 0
-	x,y = real(z),imag(z)
-	for s in p.side
-		up,down = crossing(y,s)
-		@debug (s,up,down,isleft(z,s))
-		if up && isleft(z,s) 
-			wind += 1
-		elseif down && !isleft(z,s) 
-			wind -= 1
-		end
-	end
-	return wind
 end
 
 isleft(z::Number,p::Polygon) = winding(z,p) > 0

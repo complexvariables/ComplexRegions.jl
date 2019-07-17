@@ -180,11 +180,16 @@ end
 	@test( winding(-0.4+0.5im,reverse(p)) == -1 )
 	@test( winding(-4-0.5im,p) == 0 )
 	@test( all( angle(p) .≈ 0.5*pi ) )
+	
 	p = Polygon([4,4+3im,3im,-2im,6-2im,6])
 	@test( arclength(p) ≈ (3+4+5+6+2+2) )
 	@test( winding(5-im,p) == 1 )
 	@test( winding(-1,p) == 0 )
 	@test( sum(angle(p)) ≈ 4*pi )
+
+	p = CircularPolygon([Arc(1,2+1im,1im),Segment(1im,-1),Arc(-1,-0.5im,-1im),Segment(-1im,1)])
+	@test( all(winding(z,p)==1 for z in [1+0.5im,1.7+1im,0,-1+0.05*exp(1im*pi/5),-1im+0.05*exp(1im*0.3*pi)]) )
+	@test( all(winding(z,p)==0 for z in [-.999im,0.001-1im,-.999,-1.001,1.001,1.999im]) )
 end
 
 @testset "Unbounded polygons" begin
