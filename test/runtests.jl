@@ -1,9 +1,14 @@
 using ComplexRegions
+CR = ComplexRegions
 
 using Test
 @testset "Utilities" begin
-	 @test(ComplexRegions.@scaleto(1im,3im,[0.5,0.75]) ≈ [2.0im,2.5im])
-	 @test(ComplexRegions.@scalefrom(1im,3im,[2im,1im,1.5im]) ≈ [0.5,0,0.25])
+	 @test(CR.scaleto(1im,3im,[0.5,0.75]) ≈ [2.0im,2.5im])
+	 @test(CR.scalefrom(1im,3im,[2im,1im,1.5im]) ≈ [0.5,0,0.25])
+	 x = CR.realroots(3,16,1)
+	 @test( all(@. abs(3x^2 + 16x + 1)<1e-12 ) )
+	 z = 2im .+ 3*exp.(2im*pi*[0.8,0.1,0.25])
+	 @test( CR.isccw(z...) )
 end
 
 @testset "Curves" begin
@@ -180,7 +185,7 @@ end
 	@test( winding(-0.4+0.5im,reverse(p)) == -1 )
 	@test( winding(-4-0.5im,p) == 0 )
 	@test( all( angle(p) .≈ 0.5*pi ) )
-	
+
 	p = Polygon([4,4+3im,3im,-2im,6-2im,6])
 	@test( arclength(p) ≈ (3+4+5+6+2+2) )
 	@test( winding(5-im,p) == 1 )

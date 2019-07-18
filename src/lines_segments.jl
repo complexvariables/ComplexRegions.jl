@@ -29,7 +29,7 @@ function arg(L::Line,z::Number)
 		del = imag(del) 
 		α = imag(L.direction)
 	end
-	for t in quadroots(del,2α-del,-α)
+	for t in realroots(del,2α-del,-α)
 		0-eps(del) ≤ t ≤ 1+eps(del) && return t 
 	end
 	return []
