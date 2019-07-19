@@ -14,11 +14,13 @@ function Ray(a::Number,d::Number,rev=false)
 	Ray{typeof(a)}(a,float(d),rev)
 end
 
-function Spherical(R::Ray{T}) where T<:AnyComplex 
-	Ray(Spherical(R.base),R.angle,R.reverse)
-end	
-function Polar(R::Ray{T}) where T<:AnyComplex 
-	Ray(Polar(R.base),R.angle,R.reverse)
+# Complex type converters
+for ctype in [:Spherical,:Polar,:Complex]
+	@eval begin 
+		function $ctype(R::Ray{T}) where T<:AnyComplex 
+			Ray($ctype(R.base),R.angle,R.reverse)
+		end
+	end
 end	
 
 # Required methods

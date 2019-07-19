@@ -1,10 +1,19 @@
 # Type and constructors
 # Default constructor is for the line through two points
+"""
+(type) Line in the complex plane 
+"""
 struct Line{T<:AnyComplex} <: AbstractClosedCurve 
 	base::T 
 	direction::T
 	Line{T}(a,b) where T = new(a,sign(b-a))
 end
+"""
+	Line(a,b)
+	Line(a,direction=z)
+
+Construct a line, either through the two given points, or by giving one point and a direction value `z` whose complex sign is parallel to the line. 
+"""
 function Line(a::Number,b::Number)
 	a,b = promote(complex(float(a)),complex(float(b)))
 	Line{typeof(a)}(a,b)
@@ -14,11 +23,13 @@ end
 Line(z::Number;direction) = Line(z,z+direction)
 #Line(z::Number;angle) = Line(z,z+exp(complex(0,angle)))
 
-function Spherical(L::Line{T}) where T<:AnyComplex 
-	Line(Spherical(L.base),Spherical(L.base+L.direction))
-end	
-function Polar(L::Line{T}) where T<:AnyComplex 
-	Line(Polar(L.base),Polar(L.base+L.direction))
+# Complex type converters
+for ctype in [:Spherical,:Polar,:Complex]
+	@eval begin 
+		function $ctype(L::Line{T}) where T<:AnyComplex 
+			Line($ctype(L.base),$ctype(L.base+L.direction))
+		end
+	end
 end	
 
 # Required methods

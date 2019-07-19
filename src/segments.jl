@@ -14,13 +14,14 @@ function Segment(a::Number,b::Number)
 	Segment{typeof(a)}(a,b)
 end
 
-# Converters
-function Spherical(S::Segment{T}) where T<:AnyComplex 
-	Segment(Spherical(S.za),Spherical(S.zb))
-end	
-function Polar(S::Segment{T}) where T<:AnyComplex 
-	Segment(Polar(S.za),Polar(S.zb))
-end	
+# Complex type converters
+for ctype in [:Spherical,:Polar,:Complex]
+	@eval begin 
+		function $ctype(S::Segment{T}) where T<:AnyComplex 
+			Segment($ctype(S.za),$ctype(S.zb))
+		end	
+	end
+end
 
 # Required methods
 arclength(S::Segment) = abs(S.zb-S.za)

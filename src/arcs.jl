@@ -42,13 +42,14 @@ function Arc(a::Number,b::Number;center=0)
 	end
 end
 
-# Converters
-function Spherical(A::Arc{T}) where T<:AnyComplex 
-	Arc(Spherical(A.circle),A.start,A.delta)
-end	
-function Polar(A::Arc{T}) where T<:AnyComplex 
-	Arc(Polar(A.circle),A.start,A.delta)
-end	
+# Complex type converters
+for ctype in [:Spherical,:Polar,:Complex]
+	@eval begin 
+		function $ctype(A::Arc{T}) where T<:AnyComplex 
+			Arc($ctype(A.circle),A.start,A.delta)
+		end	
+	end
+end
 
 # Required methods
 function point(A::Arc,t::Real) 

@@ -1,4 +1,3 @@
-# Circle 
 # Type and constructors
 struct Circle{T<:AnyComplex} <: AbstractClosedCurve 
 	center::T
@@ -32,13 +31,14 @@ function Circle(a::T,b::T,c::T) where {T<:AnyComplex}
 	end
 end
 
-# Converters
-function Spherical(C::Circle{T}) where T<:AnyComplex 
-	Circle(Spherical(C.center),C.radius,C.ccw)
-end	
-function Polar(C::Circle{T}) where T<:AnyComplex 
-	Circle(Polar(C.center),C.radius,C.ccw)
-end	
+# Complex type converters
+for ctype in [:Spherical,:Polar,:Complex]
+	@eval begin 
+		function $ctype(C::Circle{T}) where T<:AnyComplex 
+			Circle($ctype(C.center),C.radius,C.ccw)
+		end	
+	end
+end
 
 # Required methods
 point(C::Circle,t::Real) = C.center + C.radius*exp(2im*pi*t)
