@@ -115,6 +115,9 @@ arclength(C::ClosedCurve) = C.arclength
 conj(C::ClosedCurve) = ClosedCurve(t->conj(C.point(t)),C.arclength)
 reverse(C::ClosedCurve) = ClosedCurve(t->C.point(1-t),C.arclength)
 
-include("lines_segments.jl")
-include("circles_arcs.jl")
+include("lines.jl")
+include("rays.jl")
+include("segments.jl")
+include("circles.jl")
+include("arcs.jl")
 include("intersections.jl")
