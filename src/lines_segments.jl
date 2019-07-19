@@ -1,4 +1,6 @@
+#
 # Line
+#
 
 # Type and constructors
 # Default constructor is for the line through two points
@@ -12,8 +14,16 @@ function Line(a::Number,b::Number)
 	Line{typeof(a)}(a,b)
 end
 
-# Construct by giving a direction keyword
+# Construct by giving a keyword
 Line(z::Number;direction) = Line(z,z+direction)
+Line(z::Number;angle) = Line(z,z+exp(complex(0,angle)))
+
+function Spherical(L::Line{T}) where T<:AnyComplex 
+	Line(Spherical(L.base),Spherical(L.base+L.direction))
+end	
+function Polar(L::Line{T}) where T<:AnyComplex 
+	Line(Polar(L.base),Polar(L.base+L.direction))
+end	
 
 # Required methods
 arclength(::Line) = Inf
@@ -82,7 +92,7 @@ function show(io::IO,::MIME"text/plain",L::Line{T}) where {T}
 	print(io,"Line{$T} in the complex plane:\n   through (",L.base,") parallel to (",L.direction,")")
 end
 
-plotdata(L::Line) = point(L,[0.1,0.9])
+plotdata(L::Line{T}) where T<:Union{Complex,Polar} = point(L,[0.1,0.9])
 
 # 
 # Segment 
@@ -103,6 +113,14 @@ function Segment(a::Number,b::Number)
 	a,b = promote(complex(float(a)),b)
 	Segment{typeof(a)}(a,b)
 end
+
+# Converters
+function Spherical(S::Segment{T}) where T<:AnyComplex 
+	Segment(Spherical(S.za),Spherical(S.zb))
+end	
+function Polar(S::Segment{T}) where T<:AnyComplex 
+	Segment(Polar(S.za),Polar(S.zb))
+end	
 
 # Required methods
 arclength(S::Segment) = abs(S.zb-S.za)
@@ -161,7 +179,7 @@ function show(io::IO,::MIME"text/plain",S::Segment{T}) where {T}
 	print(io,"Segment{$T} in the complex plane:\n   from (",point(S,0),") to (",point(S,1),")")
 end
 
-plotdata(S::Segment) = [S.za,S.zb]
+plotdata(S::Segment{T}) where T<:Union{Complex,Polar} = [S.za,S.zb]
 
 #
 # Ray
@@ -182,6 +200,13 @@ function Ray(a::Number,d::Number,rev=false)
 	a = complex(float(a))
 	Ray{typeof(a)}(a,float(d),rev)
 end
+
+function Spherical(R::Ray{T}) where T<:AnyComplex 
+	Ray(Spherical(R.base),R.angle,R.reverse)
+end	
+function Polar(R::Ray{T}) where T<:AnyComplex 
+	Ray(Polar(R.base),R.angle,R.reverse)
+end	
 
 # Required methods
 arclength(R::Ray) = Inf
@@ -262,4 +287,4 @@ function show(io::IO,::MIME"text/plain",R::Ray{T}) where {T}
 	end
 end
 
-plotdata(R::Ray) = R.reverse ? [R(0.3),R.base] : [R.base,R(0.7)]
+plotdata(R::Ray{T}) where T<:Union{Complex,Polar} = R.reverse ? [R(0.3),R.base] : [R.base,R(0.7)]

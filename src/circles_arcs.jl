@@ -32,6 +32,14 @@ function Circle(a::T,b::T,c::T) where {T<:AnyComplex}
 	end
 end
 
+# Converters
+function Spherical(C::Circle{T}) where T<:AnyComplex 
+	Circle(Spherical(C.center),C.radius,C.ccw)
+end	
+function Polar(C::Circle{T}) where T<:AnyComplex 
+	Circle(Polar(C.center),C.radius,C.ccw)
+end	
+
 # Required methods
 point(C::Circle,t::Real) = C.center + C.radius*exp(2im*pi*t)
 arclength(C::Circle) = 2π*C.radius
@@ -125,6 +133,14 @@ function Arc(a::Number,b::Number;center=0)
 		Arc(C,ti,delta)
 	end
 end
+
+# Converters
+function Spherical(A::Arc{T}) where T<:AnyComplex 
+	Arc(Spherical(A.circle),A.start,A.delta)
+end	
+function Polar(A::Arc{T}) where T<:AnyComplex 
+	Arc(Polar(A.circle),A.start,A.delta)
+end	
 
 # Required methods
 function point(A::Arc,t::Real) 
