@@ -32,7 +32,7 @@ tangent(S::Segment,t::Real) = tangent(S)
 tangent(S::Segment) = sign(S.zb-S.za)
 
 # Other methods
-isbounded(::Segment) = true
+isfinite(::Segment) = true
 conj(S::Segment) = Segment(conj(S.za),conj(S.zb))
 reverse(S::Segment) = Segment(S.zb,S.za)
 +(S::Segment,z::Number) = Segment(S.za+z,S.zb+z)

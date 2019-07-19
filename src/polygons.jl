@@ -49,9 +49,9 @@ arclength(p::CircularPolygon) = sum(p.arclen)
 
 # TODO truncate circular polygons
 function truncate(p::CircularPolygon) 
+	isfinite(p) && return p   # nothing to do
 	# try to find a circle clear of the polygon
 	v = filter(isfinite,vertex(p))
-	length(v) == length(p) && return p   # nothing to do
 	@error "Truncation of CircularPolygon not yet implemented"
 end
 
@@ -143,9 +143,9 @@ function angle(p::Polygon)
 end
 
 function truncate(p::Polygon) 
+	isfinite(p) && return p   # nothing to do
 	# try to find a circle clear of the polygon
 	v = filter(isfinite,vertex(p))
-	length(v) == length(p) && return p   # nothing to do
 	zc = sum(v)/length(v) 
 	R = maximum(@. abs(v - zc))
 	return truncate(p,Circle(zc,2*R))

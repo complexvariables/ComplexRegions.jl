@@ -52,7 +52,7 @@ tangent(R::Ray,t::Real) = tangent(R::Ray)
 tangent(R::Ray) = R.reverse ? -exp(1im*R.angle) : exp(1im*R.angle)
 
 # Other methods
-isbounded(::Ray) = false
+isfinite(::Ray) = false
 conj(R::Ray) = Ray(conj(R.base),-R.angle,R.reverse)
 reverse(R::Ray) = Ray(R.base,R.angle,!R.reverse)
 +(R::Ray,z::Number) = Ray(R.base+z,R.angle,R.reverse)

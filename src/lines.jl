@@ -55,7 +55,7 @@ tangent(L::Line) = L.direction
 tangent(L::Line,t::Real) = tangent(L)
 
 # Other methods
-isbounded(::Line) = false
+isfinite(::Line) = false
 slope(L::Line) = imag(L.direction)/real(L.direction)
 conj(L::Line) = Line(conj(L.base),direction=conj(L.direction))
 reverse(L::Line) = Line(L.base,direction=-L.direction)

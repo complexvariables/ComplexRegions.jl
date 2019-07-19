@@ -53,6 +53,13 @@ conj(C::AbstractCurve) = @error "No conj() method defined for type $(typeof(C))"
 Construct a curve identical to `C` except for the direction of traversal. (Essentially, replace "t" by "1-t" in the parameterization.)
 """
 reverse(C::AbstractCurve) = @error "No reverse() method defined for type $(typeof(C))"
+""" 
+	isfinite(C::AbstractCurve) 
+
+Return `true` if the curve is bounded in the complex plane (i.e., does not pass through infinity).
+"""
+isfinite(C::AbstractCurve) = @error "No isfinite() method defined for type $(typeof(C))"
+
 
 #
 # generic curve type 

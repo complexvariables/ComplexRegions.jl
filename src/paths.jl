@@ -21,14 +21,19 @@ end
 function vertex(P::AbstractPath) 
 	[ vertex(P,k) for k = 1:length(P)+1]
 end
+""" 
+	isfinite(P::AbstractPath) 
 
-point(c::AbstractPath,t::AbstractArray{T}) where T<:Real = [point(c,t) for t in t]
+Return `true` if the path is bounded in the complex plane (i.e., does not pass through infinity).
+"""
+isfinite(p::AbstractPath) = all(isfinite(s) for s in curve(p))
 
 eltype(::Type{AbstractPath}) = AbstractCurve 
 length(p::AbstractPath) = length(curve(p))
 getindex(p::AbstractPath,k) = curve(p,k)
 iterate(p::AbstractPath,state=1) = state > length(curve(p)) ? nothing : (p[state], state+1)
 
+point(c::AbstractPath,t::AbstractArray{T}) where T<:Real = [point(c,t) for t in t]
 function point(p::AbstractPath,t::Real)
 	@assert (0 ≤ t ≤ 1) "Parameter is out of the range [0,1]."
 	offset = [-eps(); breakindex(p); 1]
@@ -49,7 +54,7 @@ reverse(p::AbstractPath) = typeof(p)(reverse(reverse.(curve(p))))
 *(p::AbstractPath,z::Number) = typeof(p)([c*z for c in curve(p)])
 *(z::Number,p::AbstractPath) = typeof(p)([z*c for c in curve(p)])
 /(p::AbstractPath,z::Number) = typeof(p)([c/z for c in curve(p)])
-isbounded(p::AbstractPath) = all( isfinite.(vertex(p)) )
+isfinite(p::AbstractPath) = all( isfinite.(vertex(p)) )
 
 dist(z::Number,P::AbstractPath) = minimum(dist(z,C) for C in P)
 # TODO: Closest point for Path

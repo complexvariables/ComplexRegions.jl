@@ -48,7 +48,7 @@ arg(C::Circle,z::Number) = mod(angle(z-C.center)/(2π),1)
 tangent(C::Circle,t::Real) = C.ccw ? 1im*exp(2im*pi*t) : -1im*exp(2im*pi*t)
 
 # Other methods
-isbounded(::Circle) = true 
+isfinite(::Circle) = true 
 conj(C::Circle) = Circle(conj(C.center),C.radius,!C.ccw)
 reverse(C::Circle) = Circle(C.center,C.radius,!C.ccw)
 +(C::Circle,z::Number) = Circle(C.center+z,C.radius,C.ccw)

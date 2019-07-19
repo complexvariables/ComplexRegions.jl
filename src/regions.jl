@@ -1,6 +1,13 @@
 AbstractJordan = Union{AbstractClosedCurve,AbstractClosedPath}
 abstract type AbstractRegion end
 
+""" 
+	isfinite(R::AbstractRegion) 
+
+Return `true` if the region is bounded in the complex plane.
+"""
+isfinite(r::AbstractRegion) = @error "No isfinite() method defined for type $(typeof(r))"
+
 struct RegionIntersection <: AbstractRegion
 	one::AbstractRegion
 	two::AbstractRegion 
@@ -28,6 +35,7 @@ struct SimplyConnectedRegion{T<:AbstractJordan} <: AbstractConnectedRegion{1}
 end
 
 boundary(R::SimplyConnectedRegion) = R.boundary
+isfinite(R::SimplyConnectedRegion) = isfinite(boundary(R))
 
 function show(io::IO,R::SimplyConnectedRegion)
 	print(IOContext(io,:compact=>true),"Region to the left of ",R.boundary)
@@ -104,7 +112,8 @@ end
 Annulus(outerrad::Real,innerrad::Real) = Annulus(complex(0.0),outerrad,innerrad)
 
 in(z::Number,A::Annulus) = isleft(z,A.outer) && !isleft(z,A.inner)
-boundary(A::Annulus) = A.outer,A.inner
+boundary(A::Annulus) = A.outer,A.inner 
+isfinite(A::Annulus) = isfinite(A.outer) 
 
 function show(io::IO,::MIME"text/plain",R::Annulus)
 	print(io,"Annulus interior to:\n   ",R.outer,"\nand exterior to:\n   ",R.inner)

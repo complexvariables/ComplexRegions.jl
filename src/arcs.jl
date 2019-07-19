@@ -66,7 +66,7 @@ end
 tangent(A::Arc,t::Real) = tangent(A.circle,A.start + t*A.delta)
 
 # Other methods
-isbounded(::Arc) = true
+isfinite(::Arc) = true
 conj(A::Arc) = Arc(conj(A(0)),conj(A(0.5)),conj(A(1)))
 reverse(A::Arc) = Arc(A(1),A(0.5),A(0))
 +(A::Arc,z::Number) = Arc(A.circle+z,A.start,A.delta)
