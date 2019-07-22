@@ -12,10 +12,12 @@ struct Line{T<:AnyComplex} <: AbstractClosedCurve
 end
 """
 	Line(a,b)
+
+Construct the line passing through the two given points. 
+
 	Line(a,direction=z)
 
-Construct a line, either through the two given points, or by giving one point and a `direction` value whose complex sign is parallel to the line. 
-"""
+Construct the line through the given point and parallel to the complex sign of the given `direction` value. """
 function Line(a::Number,b::Number)
 	a,b = promote(complex(float(a)),complex(float(b)))
 	Line{typeof(a)}(a,b)
@@ -28,7 +30,7 @@ Line(z::Number;direction) = Line(z,z+direction)
 # Complex type converters
 for ctype in [:Spherical,:Polar,:Complex]
 """
-Convert `L` to `Line{$ctype}`. This is useful for plotting curves in a desired way.
+Convert to `Line{$ctype}`. This is useful for plotting curves in a desired way.
 """
 	@eval begin 
 		function $ctype(L::Line{T}) where T<:AnyComplex 
@@ -108,7 +110,7 @@ Multiply a line `L` by the number `1/z`; i.e., scale and rotate it about the ori
 	z/L 
 	inv(L) 
 
-Invert a line `L` through the origin (and optionally multiply by the number `1/z`) In general the inverse is a `Circle` through the inverse of any three points on the line.
+Invert a line `L` through the origin (and optionally multiply by the number `1/z`). In general the inverse is a `Circle` through the inverse of any three points on the line.
 """
 /(L::Line,z::Number) = Line(L.base/z,direction=L.direction/sign(z))
 function /(z::Number,L::Line) 
@@ -165,7 +167,7 @@ end
 """ 
 	reflect(z,L::Line) 
 
-Reflect the value `z` across the line `L`. (For reflection of a line through a point, use translation and `inv`.)
+Reflect the value `z` across the line `L`. (For reflection of a line through a point, use translation and negation.)
 """
 function reflect(z::Number,L::Line) 
 	ζ = z - L.base 
