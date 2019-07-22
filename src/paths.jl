@@ -54,7 +54,6 @@ reverse(p::AbstractPath) = typeof(p)(reverse(reverse.(curve(p))))
 *(p::AbstractPath,z::Number) = typeof(p)([c*z for c in curve(p)])
 *(z::Number,p::AbstractPath) = typeof(p)([z*c for c in curve(p)])
 /(p::AbstractPath,z::Number) = typeof(p)([c/z for c in curve(p)])
-isfinite(p::AbstractPath) = all( isfinite.(vertex(p)) )
 
 dist(z::Number,P::AbstractPath) = minimum(dist(z,C) for C in P)
 # TODO: Closest point for Path

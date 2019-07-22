@@ -51,7 +51,7 @@ end
 inv(S::Segment) = 1/S
 sign(S::Segment) = tangent(S)
 
-function isapprox(S1::Segment,S2::Segment;tol=1e-12)
+function isapprox(S1::Segment,S2::Segment;tol=DEFAULT[:tol])
 	return isapprox(S1.za,S2.za,rtol=tol,atol=tol) &&
 		isapprox(S1.zb,S2.zb,rtol=tol,atol=tol)
 end

@@ -90,7 +90,7 @@ function /(z::Number,A::Arc)
 end
 inv(A::Arc) = 1/A
 
-function isapprox(A1::Arc,A2::Arc;tol=1e-12)
+function isapprox(A1::Arc,A2::Arc;tol=DEFAULT[:tol])
 	return isapprox(A1.Circle,A2.Circle,tol) &&
 		isapprox(A1.start,A2.start,rtol=tol,atol=tol) &&
 		isapprox(A1.delta,A2.delta,rtol=tol,atol=tol) 

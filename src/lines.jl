@@ -73,7 +73,7 @@ function /(z::Number,L::Line)
 end
 inv(L::Line) = 1/L
 
-function isapprox(L1::Line,L2::Line;tol=1e-12)
+function isapprox(L1::Line,L2::Line;tol=DEFAULT[:tol])
 	dz = L1.base - L2.base
 	w1,w2 = L1.direction,L2.direction
 	return isapprox(real(w1)*imag(w2),imag(w1)*real(w2),rtol=tol,atol=tol) &&

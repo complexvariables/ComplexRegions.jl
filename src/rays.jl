@@ -70,7 +70,7 @@ function /(z::Number,R::Ray)
 end
 inv(R::Ray) = 1/R
 
-function isapprox(R1::Ray,R2::Ray;tol=1e-12)
+function isapprox(R1::Ray,R2::Ray;tol=DEFAULT[:tol])
 	return isapprox(R1.base,R2.base,rtol=tol,atol=tol) && (abs(mod2pi(R1.angle-R2.angle)) < tol)
 end
 

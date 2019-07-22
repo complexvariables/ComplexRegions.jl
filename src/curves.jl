@@ -101,14 +101,14 @@ reverse(C::Curve) = Curve(t->C.point(1-t),C.arclength)
 struct ClosedCurve <: AbstractClosedCurve 
 	point 
 	arclength 
-	function ClosedCurve(f,arclen=missing;tol=1e-12)
+	function ClosedCurve(f,arclen=missing;tol=DEFAULT[:tol])
 		@assert isapprox(f(0),f(1);rtol=tol,atol=tol) "Curve does not close"
 		new(f,arclen)
 	end
 end
 """
-	ClosedCurve(f,arclen=missing;tol=1e-12)
-	ClosedCurve(f,a,b,arclen=missing;tol=1e-12)
+	ClosedCurve(f,arclen=missing;tol=DEFAULT[:tol])
+	ClosedCurve(f,a,b,arclen=missing;tol=DEFAULT[:tol])
 
 Construct a `ClosedCurve` object from the complex-valued function `point` accepting an argument in the interval [0,1]. If given, `arclen` should be the arclength of the curve. The constructor checks whether `f(0)≈f(1)` to tolerance `tol`. 
 

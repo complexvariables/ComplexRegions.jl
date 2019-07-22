@@ -67,7 +67,7 @@ inv(C::Circle) = 1/C
 
 isleft(z::Number,C::Circle) = !xor(C.ccw,abs(z-C.center) < C.radius) 
 
-function isapprox(C1::Circle,C2::Circle;tol=1e-12)
+function isapprox(C1::Circle,C2::Circle;tol=DEFAULT[:tol])
 	return isapprox(C1.center,C2.center,rtol=tol,atol=tol) &&
 		isapprox(C1.radius,C2.radius,rtol=tol,atol=tol)
 end

@@ -1,5 +1,21 @@
 module ComplexRegions
 
+DEFAULT = Dict(:tol=>1e-12)
+function default(;kw...) 
+	if isempty(kw) 
+		return DEFAULT
+	end
+	for (sym,val) in kw
+		if !haskey(DEFAULT,sym)
+			@error "Unrecognized default setting `$sym`" 
+		else
+			DEFAULT[sym] = val
+			@info "Default value of `$sym` set to $val."
+		end
+	end
+	return nothing
+end
+
 export Polar,Spherical
 using ComplexValues,LinearAlgebra,StaticArrays
 
