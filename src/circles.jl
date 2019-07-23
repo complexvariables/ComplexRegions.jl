@@ -47,10 +47,12 @@ end
 
 # Complex type converters
 for ctype in [:Spherical,:Polar,:Complex]
-"""
+	docstr = """
+	$ctype(::Circle)
 Convert to `Circle{$ctype}`. This is useful for plotting curves in a desired way.
 """
-		@eval begin 
+	@eval begin
+		@doc $docstr -> 
 		function $ctype(C::Circle{T}) where T<:AnyComplex 
 			Circle($ctype(C.center),C.radius,C.ccw)
 		end	
@@ -109,8 +111,8 @@ Multiply the circle `C` by real or complex number `z`; i.e., scale and rotate it
 
 Multiply the circle `C` by the number `1/z`; i.e., scale and rotate it about the origin.
 
-	z/L 
-	inv(L) 
+	z/C 
+	inv(C) 
 
 Invert the circle `C` through the origin (and optionally multiply by the number `1/z`). In general the inverse is a `Circle`, though the result is a `Line` if `C` passes through the origin.
 """

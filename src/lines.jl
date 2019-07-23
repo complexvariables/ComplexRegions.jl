@@ -29,10 +29,12 @@ Line(z::Number;direction) = Line(z,z+direction)
 
 # Complex type converters
 for ctype in [:Spherical,:Polar,:Complex]
-"""
+	docstr = """
+	$ctype(::Line)
 Convert to `Line{$ctype}`. This is useful for plotting curves in a desired way.
 """
-	@eval begin 
+	@eval begin
+		@doc $docstr -> 
 		function $ctype(L::Line{T}) where T<:AnyComplex 
 			Line($ctype(L.base),$ctype(L.base+L.direction))
 		end

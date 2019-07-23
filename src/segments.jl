@@ -1,4 +1,9 @@
 # Type  
+"""
+	(type) Segment{T<:AnyComplex} in the complex plane 
+
+Each `Segment` type is parameterized according to the common type of its input arguments. 
+"""
 struct Segment{T<:AnyComplex} <: AbstractCurve 
 	za::T 
 	zb::T 
@@ -9,6 +14,11 @@ struct Segment{T<:AnyComplex} <: AbstractCurve
 end
 
 # Untyped constructor
+"""
+	Segment(a,b)
+
+Consruct a segment that starts at value `a` and ends at `b`. 
+"""
 function Segment(a::Number,b::Number) 
 	a,b = promote(complex(float(a)),b)
 	Segment{typeof(a)}(a,b)
@@ -16,7 +26,12 @@ end
 
 # Complex type converters
 for ctype in [:Spherical,:Polar,:Complex]
+	docstr = """
+	$ctype(::Segment)
+Convert to `Segment{$ctype}`. This is useful for plotting curves in a desired way.
+"""
 	@eval begin 
+		@doc $docstr ->
 		function $ctype(S::Segment{T}) where T<:AnyComplex 
 			Segment($ctype(S.za),$ctype(S.zb))
 		end	
@@ -27,6 +42,13 @@ end
 arclength(S::Segment) = abs(S.zb-S.za)
 point(S::Segment,t::Real) = (1-t)*S.za + t*S.zb
 (C::Segment)(t::Real) = point(C,t)
+""" 
+	arg(S::Segment,z) 
+
+Find the parameter argument `t` such that `S(t)==z` is true. 
+
+This gives undefined results if `z` is not actually on the segment. 
+"""
 arg(S::Segment,z::Number) = (real(z) - real(S.za)) / (real(S.zb) - real(S.za))
 tangent(S::Segment,t::Real) = tangent(S)
 tangent(S::Segment) = sign(S.zb-S.za)
@@ -35,14 +57,46 @@ tangent(S::Segment) = sign(S.zb-S.za)
 isfinite(::Segment) = true
 conj(S::Segment) = Segment(conj(S.za),conj(S.zb))
 reverse(S::Segment) = Segment(S.zb,S.za)
+"""
+	S + z
+	z + S 
+
+Translate the segment `S` by a number `z`. 
+"""
 +(S::Segment,z::Number) = Segment(S.za+z,S.zb+z)
 +(z::Number,S::Segment) = Segment(S.za+z,S.zb+z)
+"""
+	S - z
+
+Translate the segment `S` by a number `-z`.
+
+	-S 
+	z - S 
+
+Negate a segment `S` (reflect through the origin), and optionally translate by a number `z`.
+"""
 -(S::Segment,z::Number) = Segment(S.za-z,S.zb-z)
 -(z::Number,S::Segment) = Segment(z-S.za,z-S.zb)
 -(S::Segment) = Segment(-S.za,-S.zb)
 # these need to recompute the final parameter values
+"""
+	z*S 
+	S*z 
+
+Multiply the segment `S` by real or complex number `z`; i.e., scale and rotate it about the origin.
+"""
 *(S::Segment,z::Number) = Segment(S.za*z,S.zb*z)
 *(z::Number,S::Segment) = Segment(S.za*z,S.zb*z)
+"""
+	S/z 
+
+Multiply the segment `S` by the number `1/z`; i.e., scale and rotate it about the origin.
+
+	z/S 
+	inv(S) 
+
+Invert the segment `S` through the origin (and optionally multiply by the number `1/z`). In general the inverse is an `Arc`, though the result is a `Segment` if `S` would pass through the origin when extended.
+"""
 /(S::Segment,z::Number) = *(S,1/z)
 function /(z::Number,S::Segment) 
 	w = z./point(S,[0,0.5,1])
@@ -51,12 +105,51 @@ end
 inv(S::Segment) = 1/S
 sign(S::Segment) = tangent(S)
 
+"""
+	isapprox(S1::Segment,S2::Segment; tol=<default>) 
+	S1 ≈ S2 
+
+Determine if `S1` and `S2` represent the same segment, irrespective of the type or values of its parameters. Identity is determined by agreement within `tol`, which is interpreted as the weaker of absolute and relative differences.
+"""
 function isapprox(S1::Segment,S2::Segment;tol=DEFAULT[:tol])
 	return isapprox(S1.za,S2.za,rtol=tol,atol=tol) &&
 		isapprox(S1.zb,S2.zb,rtol=tol,atol=tol)
 end
 
+""" 
+	isleft(z,S::Segment) 
+
+Determine whether the number `z` lies "to the left" of segment `S`. This means that the angle it makes with `tangent(S)` is in the interval (0,π).
+
+Note that `isleft` and `isright` are *not* logical opposites; a point on the (extended) segment should give `false` in both cases.
+"""
+function isleft(z::Number,S::Segment) 
+	a,b = S.za,S.zb
+	(real(b)-real(a)) * (imag(z)-imag(a)) > (real(z)-real(a)) * (imag(b)-imag(a))
+end
+""" 
+	isright(z,S::Segment) 
+
+Determine whether the number `z` lies "to the right" of segment `S`. This means that the angle it makes with `tangent(S)` is in the interval (-π,0).
+
+Note that `isleft` and `isright` are *not* logical opposites; a point on the (extended) segment should give `false` in both cases.
+"""
+function isright(z::Number,S::Segment) 
+	a,b = S.za,S.zb
+	(real(b)-real(a)) * (imag(z)-imag(a)) < (real(z)-real(a)) * (imag(b)-imag(a))
+end
+
+""" 
+	dist(z,S::Segment) 
+
+Compute the distance from number `z` to the segment `S`. 
+"""
 dist(z::Number,S::Segment) = abs(z - closest(z,S))
+""" 
+	closest(z,S::Segment) 
+
+Find the point on segment `S` that lies closest to `z`.
+"""
 function closest(z::Number,S::Segment) 
 	# translate and rotate segment to positive Re axis
 	d = S.zb-S.za
@@ -64,12 +157,12 @@ function closest(z::Number,S::Segment)
 	ζ = (z-S.za)/s
 	S.za + s*min( max(real(ζ),0), abs(d) ) 
 end
-reflect(z::Number,S::Segment) = reflect(z,Line(S.za,S.zb))
+""" 
+	reflect(z,S::Segment) 
 
-function isleft(z::Number,S::Segment) 
-	a,b = S.za,S.zb
-	(real(b)-real(a)) * (imag(z)-imag(a)) > (real(z)-real(a)) * (imag(b)-imag(a))
-end
+Reflect the value `z` across the extension of segment `S` to a line. (For reflection of a segment through a point, use translation and negation.)
+"""
+reflect(z::Number,S::Segment) = reflect(z,Line(S.za,S.zb))
 
 # Display methods
 function show(io::IO,S::Segment{T}) where {T}
