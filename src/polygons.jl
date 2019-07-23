@@ -1,7 +1,7 @@
 abstract type AbstractCircularPolygon <: AbstractClosedPath end
+abstract type AbstractPolygon <: AbstractCircularPolygon end
 
-# Common methods
-side = curve
+side(p::AbstractCircularPolygon,args...) = curve(p,args...)
 
 function show(io::IO,P::AbstractCircularPolygon)
 	print(IOContext(io,:compact=>true),typeof(P)," with ",length(P)," sides") 
@@ -22,30 +22,26 @@ end
 #
 
 struct CircularPolygon <: AbstractCircularPolygon
-	side
-	arclen
-	breakindex
-	function CircularPolygon(p::AbstractVector,arclen,breakindex)
+	path
+	function CircularPolygon(p::AbstractClosedPath)
 		# Assumes continuity and closure have been checked previously
-		valid = isa.(p,Union{Arc,Segment,Ray})
+		valid = isa.(curve(p),Union{Arc,Segment,Ray})
 		@assert all(valid) "All sides must be an Arc, Segment, or Ray"
-		new(p,arclen,breakindex)
+		new(p)
 	end
 end
 
 # Constructors
-CircularPolygon(p::ClosedPath) = CircularPolygon(p.curve,p.arclen,p.breakindex)
-CircularPolygon(p::Path;kw...) = CircularPolygon(ClosedPath(p;kw...))
+CircularPolygon(p::AbstractPath;kw...) = CircularPolygon(ClosedPath(p;kw...))
 function CircularPolygon(p::AbstractVector{T};kw...) where T<:AbstractCurve 
 	CircularPolygon(ClosedPath(p;kw...))
 end
 
 # Required methods
-curve(p::CircularPolygon) = p.side 
-breakindex(p::CircularPolygon) = p.breakindex
-arclength(p::CircularPolygon) = sum(p.arclen)
-(p::CircularPolygon)(t::Real) = point(p,t)
-
+curve(p::CircularPolygon) = curve(p.path) 
+curve(p::CircularPolygon,k::Integer) = curve(p.path,k) 
+arclength(p::CircularPolygon) = arclength(p.path)
+(p::CircularPolygon)(t) = point(p.path,t)
 
 # TODO truncate circular polygons
 function truncate(p::CircularPolygon) 
@@ -55,34 +51,29 @@ function truncate(p::CircularPolygon)
 	@error "Truncation of CircularPolygon not yet implemented"
 end
 
-
 # 
 # Polygon 
 # 
-abstract type AbstractPolygon <: AbstractCircularPolygon end
 
 # Type 
 struct Polygon <: AbstractPolygon
-	side
-	arclen
-	breakindex
-	function Polygon(p::AbstractVector{T},arclen,breakindex) where T<:AbstractCurve
+	path
+	function Polygon(p::AbstractClosedPath) where T<:AbstractCurve
 		# Assumes continuity and closure have been checked previously
-		valid = isa.(p,Union{Segment,Ray})
+		valid = isa.(curve(p),Union{Segment,Ray})
 		@assert all(valid) "All sides must be a Segment or Ray"
-		new(p,arclen,breakindex)
+		new(p)
 	end
 end
 
 # Constructors
-Polygon(p::ClosedPath) = Polygon(p.curve,p.arclen,p.breakindex)
-Polygon(p::Path;kw...) = Polygon(ClosedPath(p;kw...))
+Polygon(p::AbstractPath;kw...) = Polygon(ClosedPath(p;kw...))
 
 function Polygon(p::AbstractVector{T};kw...) where T<:AbstractCurve 
 	Polygon(ClosedPath(p;kw...))
 end
 
-function Polygon(v::AbstractVector;kw...)
+function Polygon(v::AbstractVector;kw...) 
 	n = length(v)
 	p = Vector{Union{Segment,Ray}}(undef,n)
 	for j = 1:n
@@ -110,10 +101,9 @@ function Polygon(v::AbstractVector;kw...)
 end
 
 # Required methods
-curve(p::Polygon) = p.side 
-breakindex(p::Polygon) = p.breakindex
-arclength(p::Polygon) = sum(p.arclen)
-(p::Polygon)(t::Real) = point(p,t)
+curve(p::Polygon) = curve(p.path)
+arclength(p::Polygon) = arclength(p.path)
+(p::Polygon)(t) = point(p.path,t)
 
 # Display methods 
 function show(io::IO,::MIME"text/plain",P::Polygon) 

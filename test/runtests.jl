@@ -43,7 +43,6 @@ end
 	a = Arc(1.0,1im,center=0)
 	zz = 1/sqrt(2)*(1+1im)
 	@test( point(a,0.5) ≈ zz)
-	@test( reflect(reflect(-1+2im,a),a) ≈ -1+2im )
 	@test( all( abs(arg(a,a(t))-t) < 1e-11 for t in 0:0.1:1 ) )
 	@test( dist(3im+.5*2im*exp(1im*pi/5),3im+2im*a) ≈ 2*0.5 )
 	@test( angle(tangent(a,0.5)) ≈ 0.75π )
@@ -163,18 +162,17 @@ end
 @testset "Paths" begin
 	S = Segment(1,1im)
 	A = Arc(1im,-1+0.5im,-1)
-	l1,l2 = arclength(S),arclength(A)
-	l = l1+l2
 	P = Path([S,A,-S])
-	t = (l1+0.5l2)/(2l1+l2)
-	@test( P(t) ≈ A(0.5) )
+	@test( all( point(P,[0,1,1.5,2.5,3]) .≈ [S(0),S(1),A(0.5),-S(0.5),-S(1)] ) )
 	Q = 1 - 3im*P 
-	@test( Q(t) ≈ 1 - 3im*A(0.5) )
+	@test( Q(1.5) ≈ 1 - 3im*A(0.5) )
 
 	P = ClosedPath([S,1im*S,-S,-1im*S])
 	@test( vertex(P,3) ≈ -1 )
 	@test( arclength(P) ≈ 4*sqrt(2) )
 	@test( isa(reverse(P),ClosedPath) )
+	@test( all( point(P,[0,1,1.25,2.5,3,4]) .≈ [S(0),S(1),1im*S(.25),-S(0.5),-S(1),S(0)] ) )
+
 end
 
 @testset "Polygons" begin 

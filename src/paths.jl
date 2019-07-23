@@ -9,11 +9,9 @@ Return an array of the curves that make up the path `P`.
 Return the `k`th curve in the path `P`. 
 """
 curve(p::AbstractPath) = @error "No curve() method defined for type $(typeof(p))"
-breakindex(p::AbstractPath) = @error "No breakindex() method defined for type $(typeof(p))"
 
 # Methods in common
 curve(p::AbstractPath,k::Integer) = curve(p)[k]
-breakindex(p::AbstractPath,k::Integer) = breakindex(p)[k]
 """
 	vertex(P::AbstractPath)
 Return an array of the vertices (endpoints of the curves) of the path `P`. The length is one greater than the number of curves in `P`.
@@ -50,20 +48,22 @@ iterate(p::AbstractPath,state=1) = state > length(curve(p)) ? nothing : (p[state
 """
 	point(P::AbstractPath,t::Real)
 	P(t)
-Compute the point along path `P` at parameter value `t`. The integer part of `t` determines which of the path's curves is to be selected, and the fractional part is the parameter value along that curve.
+Compute the point along path `P` at parameter value `t`. Values of `t` in [k,k+1] correspond to values in [0,1] along curve k of the path, for k = 1,2,...,length(P)-1. 
 
 	point(P::AbstractPath,t::AbstractVector)
 Vectorize the `point` method for path `P`. 
 """
 point(p::AbstractPath,t::AbstractArray{T}) where T<:Real = [point(p,t) for t in t]
 function point(p::AbstractPath,t::Real)
-	@assert (0 ≤ t ≤ 1) "Parameter is out of the range [0,1]."
-	offset = [-eps(); breakindex(p); 1]
+	if (t < 0) || (t>length(p)) 
+		throw(BoundsError(p))
+	end
 	c = curve(p)
-	j = findlast(t .> offset)
-	offset[1] = 0;
-	s = scalefrom(offset[j],offset[j+1],t) 
-	point(c[j],s)
+	if t==length(c) 
+		point(c[end],1)
+	else
+		point(c[1+floor(Int,t)],t%1)
+	end
 end
 
 """
@@ -162,8 +162,6 @@ Generic implementation of an `AbstractPath`.
 """
 struct Path <: AbstractPath 
 	curve
-	arclen
-	breakindex
 	function Path(p::AbstractVector;tol::Real=DEFAULT[:tol])
 		n = length(p)
 		for k = 1:n-1
@@ -171,10 +169,7 @@ struct Path <: AbstractPath
 			@assert isapprox(point(p[k],1.0),point(p[k+1],0.0),rtol=tol,atol=tol) "Curve endpoints do not match for pieces $(k) and $(k+1)"
 		end
 		@assert p[end] isa AbstractCurve
-		len = [arclength(c) for c in p]
-		s = cumsum(len)
-		#new(p,len,s[1:end-1]/s[end])
-		new(p,len,(1:n-1)/n)
+		new(p)
 	end
 end
 """
@@ -184,13 +179,12 @@ Given a vector `c` of curves, construct a path. The path is checked for continui
 Path(c::AbstractCurve) = Path([c])
 
 curve(p::Path) = p.curve 
-breakindex(p::Path) = p.breakindex
 """
 	arclength(P::Path)
 Compute the arclength of the path `P`.
 """
-arclength(p::Path) = sum(p.arclen)
-(p::Path)(t::Real) = point(p,t)
+arclength(p::Path) = sum(arclength(c) for c in p)
+(p::Path)(t) = point(p,t)
 
 # ClosedPath
 """
@@ -199,12 +193,10 @@ Generic implementation of an `AbstractClosedPath`.
 """
 struct ClosedPath <: AbstractClosedPath 
 	curve
-	arclen
-	breakindex
 	function ClosedPath(p::AbstractVector;tol::Real=1e-13)
 		q = Path(p)
-		@assert isapprox(point(q,1.0),point(q,0.0),rtol=tol,atol=tol) "Path endpoints do not match"
-		new(p,q.arclen,q.breakindex)
+		@assert isapprox(point(q,length(q)),point(q,0),rtol=tol,atol=tol) "Path endpoints do not match"
+		new(p)
 	end
 end
 """
@@ -216,9 +208,8 @@ ClosedPath(c::AbstractCurve) = ClosedPath([c])
 ClosedPath(p::Path;kw...) = ClosedPath(p.curve;kw...)
 
 curve(p::ClosedPath) = p.curve 
-breakindex(p::ClosedPath) = p.breakindex
-arclength(p::ClosedPath) = sum(p.arclen)
-(p::ClosedPath)(t::Real) = point(p,t)
+arclength(p::ClosedPath) = sum(arclength(c) for c in p)
+(p::ClosedPath)(t) = point(p,t)
 
 # Still experimental; don't document.
 function isleft(z::Number,P::AbstractClosedPath)

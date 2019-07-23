@@ -31,7 +31,7 @@ export Curve,ClosedCurve,Circle,Line,Arc,Segment,Ray
 include("curves.jl")
 
 export Path,ClosedPath,Polygon,CircularPolygon
-export curve,vertex,side,breakindex,isfinite,sign,angle,winding,rectangle
+export curve,vertex,side,isfinite,sign,angle,winding,rectangle
 include("paths.jl")
 
 export SimplyConnectedRegion,ConnectedRegion,disk,unitdisk,Annulus,PolygonalRegion 
