@@ -19,7 +19,7 @@ function intersect(l1::Line,l2::Line;tol=DEFAULT[:tol])
 		# either identical or no intersection
 		return dist(z2,l1) < tol*(abs(z2)+1) ? l1 : []
 	else
-		return z1 + t1*s1
+		return [z1 + t1*s1]
 	end
 end
 
@@ -41,7 +41,7 @@ function intersect(g1::Segment,g2::Segment;tol=DEFAULT[:tol])
 		end
 	else   # nonparallel
 		if (-tol ≤ t1 ≤ 1+tol) && (-tol ≤ t2 ≤ 1+tol)
-			return z1 + t1*s1
+			return [z1 + t1*s1]
 		else
 			return [] 
 		end
@@ -56,7 +56,7 @@ function intersect(l::Line,g::Segment;tol=DEFAULT[:tol])
 	if isnan(t1)   # parallel lines
 		return dist(g.za,l) < tol*(1+abs(g.za)) ? g : []
 	else
-		return 0 ≤ t2 ≤ 1 ? z1+t1*s1 : []
+		return 0 ≤ t2 ≤ 1 ? [z1+t1*s1] : []
 	end
 end
 
@@ -71,7 +71,7 @@ function intersect(r1::Ray,r2::Ray;tol=DEFAULT[:tol])
 			dist(z1,r2) < tol*(abs(z1)+1) ? r1 : []
 		end
 	else
-		return (t1 ≥ 0) && (t2 ≥ 0) ? z1 + t1*s1 : []
+		return (t1 ≥ 0) && (t2 ≥ 0) ? [z1 + t1*s1] : []
 	end
 end
 
@@ -83,11 +83,11 @@ function intersect(l::Line,r::Ray;tol=DEFAULT[:tol])
 	if isnan(t1)   # parallel lines
 		return dist(r.base,l) < tol*(1+abs(r.base)) ? r : [] 
 	else
-		return 0 ≤ t2 ? z1+t1*s1 : []
+		return 0 ≤ t2 ? [z1+t1*s1] : []
 	end
 end
 
-intersect(g::Segment,r::Ray;tol=DEFAULT[:tol]) = intersect(r,g,tol=tol)
+intersect(g::Segment,r::Ray;kw...) = intersect(r,g;kw...)
 function intersect(r::Ray,g::Segment;tol=DEFAULT[:tol])
 	z1,z2 = r.base,g.za
 	s1,s2 = exp(1im*r.base),g.zb-g.za
@@ -101,7 +101,7 @@ function intersect(r::Ray,g::Segment;tol=DEFAULT[:tol])
 		end
 		return b < -tol ? [] : Segment(z1+max(0,a)*s1,z1+b*s1)
 	else   # nonparallel
-		return (-tol ≤ t1) && (-tol ≤ t2 ≤ 1+tol) ? z1 + t1*s1  : []
+		return (-tol ≤ t1) && (-tol ≤ t2 ≤ 1+tol) ? [z1 + t1*s1]  : []
 	end
 end
 
@@ -129,18 +129,18 @@ function intersect(c1::Circle,c2::Circle;tol=DEFAULT[:tol])
 	end
 end
 
-intersect(l::Line,c::Circle;tol=DEFAULT[:tol]) = intersect(c,l,tol=tol)
+intersect(l::Line,c::Circle;kw...) = intersect(c,l;kw...)
 function intersect(c::Circle,l::Line;tol=DEFAULT[:tol])
 	# find a radius that is perpendicular to the line
 	p = Line(c.center,direction=1im*l.direction)
-	zi = intersect(p,l) 
+	zi = intersect(p,l)[1] 
 	a,r = abs(zi-c.center),c.radius
 	if a ≤ r + tol 
 		c = sqrt(r^2-a^2)*l.direction
 		if abs(c) > tol
 			return [zi+c,zi-c]  
 		else
-			return zi
+			return [zi]
 		end 
 	else 
 		return []
@@ -169,7 +169,7 @@ function intersect(a1::Arc,a2::Arc;tol=DEFAULT[:tol])
 	return filter(f,z)
 end 
 
-intersect(c::AbstractCurve,a::Arc;tol=DEFAULT[:tol]) = intersect(a,c,tol=tol)
+intersect(c::AbstractCurve,a::Arc;kw...) = intersect(a,c;kw...)
 function intersect(a::Arc,c::AbstractCurve;tol=DEFAULT[:tol]) 
 	z = intersect(a.circle,c)
 	return filter(v->dist(v,a)<tol,z)
@@ -177,7 +177,7 @@ end
 
 @doc """
 	intersect(c1::AbstractCurve,c2::AbstractCurve; tol=<default>)
-Find the intersection(s) of two curves. The result could be a single value, a vector of values, an empty vector, or a curve. 
+Find the intersection(s) of two curves. The result could be a vector of zero or more values, or a curve. 
 """ intersect
 
 # Determine the (directional) crossings of a Ray(y*1im,0) with a given curve.
