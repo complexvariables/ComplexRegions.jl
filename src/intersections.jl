@@ -1,4 +1,4 @@
-# utility used below
+# utility, to be used in what follows
 function twolines_meet(z1,s1,z2,s2,tol) 
 	M = [ real(s1) -real(s2); imag(s1) -imag(s2) ]
 	if cond(M) > 1/tol
@@ -10,7 +10,6 @@ function twolines_meet(z1,s1,z2,s2,tol)
 		return t[1],t[2]
 	end
 end
-
 
 function intersect(l1::Line,l2::Line;tol=DEFAULT[:tol]) 
 	s1,s2 = l1.direction,l2.direction
@@ -141,7 +140,7 @@ function intersect(c::Circle,l::Line;tol=DEFAULT[:tol])
 		if abs(c) > tol
 			return [zi+c,zi-c]  
 		else
-			return [zi]
+			return zi
 		end 
 	else 
 		return []
@@ -176,7 +175,12 @@ function intersect(a::Arc,c::AbstractCurve;tol=DEFAULT[:tol])
 	return filter(v->dist(v,a)<tol,z)
 end
 
-# Determine the (directional) crossings of a horizontal line at `y` with a given curve.
+@doc """
+	intersect(c1::AbstractCurve,c2::AbstractCurve; tol=<default>)
+Find the intersection(s) of two curves. The result could be a single value, a vector of values, an empty vector, or a curve. 
+""" intersect
+
+# Determine the (directional) crossings of a Ray(y*1im,0) with a given curve.
 function raycrossing(z,c::AbstractCurve)
 	# only count left endpoint intersections, not the right, for the sake of winding number
 	s = 0

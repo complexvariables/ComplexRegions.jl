@@ -80,19 +80,16 @@ reverse(C::Circle) = Circle(C.center,C.radius,!C.ccw)
 """
 	C + z
 	z + C 
-
 Translate the circle `C` by a number `z`. 
 """
 +(C::Circle,z::Number) = Circle(C.center+z,C.radius,C.ccw)
 +(z::Number,C::Circle) = Circle(C.center+z,C.radius,C.ccw)
 """
 	C - z
-
 Translate the circle `C` by a number `-z`.
 
 	-C 
 	z - C 
-
 Negate a circle `C` (reflect through the origin), and optionally translate by a number `z`.
 """
 -(C::Circle) = Circle(-C.center,C.radius,!C.ccw)
@@ -101,19 +98,16 @@ Negate a circle `C` (reflect through the origin), and optionally translate by a 
 """
 	z*C 
 	C*z 
-
 Multiply the circle `C` by real or complex number `z`; i.e., scale and rotate it about the origin.
 """
 *(C::Circle,z::Number) = Circle(C.center*z,C.radius*abs(z),C.ccw)
 *(z::Number,C::Circle) = Circle(C.center*z,C.radius*abs(z),C.ccw)
 """
 	C/z 
-
 Multiply the circle `C` by the number `1/z`; i.e., scale and rotate it about the origin.
 
 	z/C 
 	inv(C) 
-
 Invert the circle `C` through the origin (and optionally multiply by the number `1/z`). In general the inverse is a `Circle`, though the result is a `Line` if `C` passes through the origin.
 """
 /(C::Circle,z::Number) = Circle(C.center/z,C.radius/abs(z),C.ccw)
@@ -126,7 +120,6 @@ inv(C::Circle) = 1/C
 """
 	isapprox(C1::Circle,C2::Circle; tol=<default>) 
 	C1 ≈ C2 
-
 Determine if `C1` and `C2` represent the same circle, irrespective of the type or values of its parameters. Identity is determined by agreement within `tol`, which is interpreted as the weaker of absolute and relative differences.
 """
 function isapprox(C1::Circle,C2::Circle;tol=DEFAULT[:tol])
@@ -136,7 +129,6 @@ end
 
 """ 
 	isleft(z,C::Circle) 
-
 Determine whether the number `z` lies "to the left" of circle `C`. This means that the point lies inside the circle if it is positively oriented, and outside the circle otherwise. 
 
 Note that `isleft` and `isright` are *not* logical opposites; a point on the curve should give `false` in both cases.
@@ -144,7 +136,6 @@ Note that `isleft` and `isright` are *not* logical opposites; a point on the cur
 isleft(z::Number,C::Circle) = !xor(C.ccw,abs(z-C.center) < C.radius) 
 """ 
 	isright(z,C::Circle) 
-
 Determine whether the number `z` lies "to the right" of circle `C`. This means that the point lies outside the circle if it is positively oriented, and inside the circle otherwise. 
 
 Note that `isleft` and `isright` are *not* logical opposites; a point on the curve should give `false` in both cases.
@@ -153,19 +144,16 @@ isright(z::Number,C::Circle) = !xor(C.ccw,abs(z-C.center) < C.radius)
 
 """ 
 	dist(z,C::Circle) 
-
 Compute the distance from number `z` to the circle `C`. 
 """
 dist(z::Number,C::Circle) = abs( abs(z-C.center) - C.radius )
 """ 
 	closest(z,C::Circle) 
-
 Find the point on circle `C` that lies closest to `z`.
 """
 closest(z::Number,C::Circle) =	C.center + C.radius*sign(z - C.center)
 """ 
 	reflect(z,C::Circle) 
-
 Reflect the value `z` across the circle `C`. (For reflection of a circle through a point, use translation and negation.)
 """
 function reflect(z::Number,C::Circle)
