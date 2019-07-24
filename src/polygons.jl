@@ -13,14 +13,34 @@ end
 # Other methods
 # TODO: unreliable results for points on the boundary
 # Ref Dan Sunday, http://geomalgorithms.com/a03-_inclusion.html
+"""
+	winding(z,P::AbstractCircularPolygon)
+Compute the winding number of `P` about the point `z`. Each counterclockwise rotation about `z` contributes +1, and each clockwise rotation about it counts -1. The winding number is zero for points not in the region enclosed by `P`. 
+
+The result is unreliable for points on the boundary of `P` (for which the problem is ill-posed).
+"""
 function winding(z::Number,p::AbstractCircularPolygon)
 	sum( raycrossing(z,s) for s in side(truncate(p)) )
 end
 
+""" 
+	isleft(z,P::AbstractCircularPolygon) 
+Determine whether the number `z` lies "to the left" of the polygon `P`. This means that the point lies inside the bounded region if the path is positively oriented, and outside otherwise. 
+"""
+isleft(z::Number,p::AbstractCircularPolygon) = winding(z,p) > 0
+""" 
+	isright(z,P::AbstractCircularPolygon) 
+Determine whether the number `z` lies "to the right" of the polygon `P`. This means that the point lies outside the bounded region if the path is positively oriented, and inside otherwise. 
+"""
+isright(z::Number,p::AbstractCircularPolygon) = winding(z,p) < 0
+
 #
 # CircularPolygon
 #
-
+"""
+	(type) CircularPolygon 
+Type for closed paths consisting entirely of arcs, segments, and rays. 
+"""
 struct CircularPolygon <: AbstractCircularPolygon
 	path
 	function CircularPolygon(p::AbstractClosedPath)
@@ -32,6 +52,11 @@ struct CircularPolygon <: AbstractCircularPolygon
 end
 
 # Constructors
+""" 
+	CircularPolygon(p::AbstractPath; tol=<default>) 
+	CircularPolygon(p::AbstractVector; tol=<default>)
+Construct a circular polygon from a (possibly closed) path, or from a vector of curves. The `tol` parameter is a tolerance used when checking continuity and closedness of the path.
+"""
 CircularPolygon(p::AbstractPath;kw...) = CircularPolygon(ClosedPath(p;kw...))
 function CircularPolygon(p::AbstractVector{T};kw...) where T<:AbstractCurve 
 	CircularPolygon(ClosedPath(p;kw...))
@@ -56,6 +81,10 @@ end
 # 
 
 # Type 
+"""
+	(type) Polygon 
+Type for closed paths consisting entirely of segments and rays. 
+"""
 struct Polygon <: AbstractPolygon
 	path
 	function Polygon(p::AbstractClosedPath) where T<:AbstractCurve
@@ -67,13 +96,20 @@ struct Polygon <: AbstractPolygon
 end
 
 # Constructors
+""" 
+	Polygon(p::AbstractPath; tol=<default>) 
+	Polygon(p::AbstractVector{T<:AbstractCurve}; tol=<default>)
+Construct a polygon from a (possibly closed) path, or from a vector of curves. The `tol` parameter is a tolerance used when checking continuity and closedness of the path.
+"""
 Polygon(p::AbstractPath;kw...) = Polygon(ClosedPath(p;kw...))
-
 function Polygon(p::AbstractVector{T};kw...) where T<:AbstractCurve 
 	Polygon(ClosedPath(p;kw...))
 end
-
-function Polygon(v::AbstractVector;kw...) 
+"""
+	Polygon(v::AbstractVector)
+Construct a polygon from a vector of its vertices. Each element of `v` should be either a finite vertex, or a tuple of two angles that indicate the angles of two rays incident to an infinite vertex: one "to" infinity, and a second "from" infinity.  
+"""
+function Polygon(v::AbstractVector) 
 	n = length(v)
 	p = Vector{Union{Segment,Ray}}(undef,n)
 	for j = 1:n
@@ -82,6 +118,7 @@ function Polygon(v::AbstractVector;kw...)
 		if isa(vthis,Tuple)
 			if isa(vnext,Tuple)
 				@error("Cannot have consecutive infinite vertices")
+				return nothing
 			else
 				p[j] = Ray(vnext,vthis[2],true)
 			end 
@@ -93,11 +130,7 @@ function Polygon(v::AbstractVector;kw...)
 			end
 		end
 	end
-	@debug for c in p 
-		@show c 
-		@show (c(0),c(1))
-	end
-	return Polygon(ClosedPath(p;kw...))
+	return Polygon(ClosedPath(p))
 end
 
 # Required methods
@@ -115,6 +148,10 @@ function show(io::IO,::MIME"text/plain",P::Polygon)
 end
 
 # Other methods
+"""
+	angle(P::Polygon) 
+Compute a vector of interior angles at the vertices of the polygon `P`. At a finite vertex these lie in (0,2π]; at an infinite vertex, the angle is in [-2π,0]. 
+"""
 function angle(p::Polygon)
 	# computes a turn angle in (-pi,pi]  (neg = left turn)
 	turn(s1,s2) = π - mod2pi(angle(s2/s1)+π)
@@ -132,15 +169,10 @@ function angle(p::Polygon)
 	sum(θ) > 0 ? θ : -θ
 end
 
-function truncate(p::Polygon) 
-	isfinite(p) && return p   # nothing to do
-	# try to find a circle clear of the polygon
-	v = filter(isfinite,vertex(p))
-	zc = sum(v)/length(v) 
-	R = maximum(@. abs(v - zc))
-	return truncate(p,Circle(zc,2*R))
-end
-
+"""
+	trunctate(P::Polygon,C::Circle) 
+Compute a trucated form of the polygon by replacing each pair of rays incident at infinity with two segments connected by an arc along the given circle. This is *not* a true clipping of the polygon, as finite sides are not altered. The result is either a CircularPolygon or the original `P`. 
+"""
 function truncate(p::Polygon,c::Circle) 
 	n = length(p)
 	s,v = side(p),vertex(p)
@@ -168,5 +200,15 @@ function truncate(p::Polygon,c::Circle)
 	return CircularPolygon(vcat(snew...))
 end
 
-isleft(z::Number,p::Polygon) = winding(z,p) > 0
-isright(z::Number,p::Polygon) = winding(z,p) < 0
+"""
+	trunctate(P::Polygon) 
+Apply `truncate` to `P` using a circle that is centered at the centroid of its finite vertices, and a radius twice the maximum from the centroid to the finite vertices. 
+"""
+function truncate(p::Polygon) 
+	isfinite(p) && return p   # nothing to do
+	# try to find a circle clear of the polygon
+	v = filter(isfinite,vertex(p))
+	zc = sum(v)/length(v) 
+	R = maximum(@. abs(v - zc))
+	return truncate(p,Circle(zc,2*R))
+end
