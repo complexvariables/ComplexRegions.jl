@@ -1,6 +1,10 @@
 abstract type AbstractMap end
 Line_Circle = Union{Line,Circle}
 
+"""
+	(type) Möbius
+Representation of a Möbius or bilinear transformation.
+"""
 struct Möbius <: AbstractMap
 	# interpreted as [a,b,c,d], where f(z)=(az+b)/(cz+d) 
 	coeff::SVector{4} 
