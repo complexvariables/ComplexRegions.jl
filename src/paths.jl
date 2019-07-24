@@ -113,6 +113,22 @@ Invert the path `P` through the origin (and optionally multiply by the number `1
 /(z::Number,p::AbstractPath) = typeof(p)([z/c for c in curve(p)])
 inv(p::AbstractPath) = typeof(p)([inv(c) for c in curve(p)])
 
+"""
+	isapprox(P1::AbstractPath,R2::AbstractPath; tol=<default>)
+	P1 ≈ P2       (type "\\approx" followed by tab key)
+Determine whether `P1` and `P2` represent the same path, up to tolerance `tol`, irrespective of the parameterization of its curves.
+"""
+function isapprox(P1,P2;tol=DEFAULT[:tol]) 
+	if length(P1) != length(P2) 
+		return false
+	else
+		c1,c2 = curve(P1),curve(P2)
+		all( isapprox(c1[k],c2[k]) for k in eachindex(c1) )
+	end
+end
+isapprox(::AbstractCurve,::AbstractPath;kw...) = false
+isapprox(::AbstractPath,::AbstractCurve;kw...) = false
+
 """ 
 	dist(z,P::AbstractPath) 
 Find the distance from the path `P` to the point `z`.
