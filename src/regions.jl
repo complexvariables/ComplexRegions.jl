@@ -108,7 +108,7 @@ struct ConnectedRegion{N} <: AbstractConnectedRegion{N}
 			# correct orientation of outer component 
 			R = interior(outer)
 			isin = [point(c(0)) ∈ R for c in inner ]
-			if all(!.isin)
+			if all(.!isin)
 				outer = reverse(outer) 
 			else
 				@assert !all(isin) "Inner components appear to be crossing the outer boundary"

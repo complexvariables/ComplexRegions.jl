@@ -121,13 +121,13 @@ end
 	@test( isempty(intersect(Circle(0,1),Circle(.2+0.5im,6))) )
 
 	z = intersect(Line(1,direction=1im),Line(-1,direction=1+1im))
-	@test( z≈1+2im )
+	@test( z[1]≈1+2im )
 	@test( isempty(intersect(Line(1,direction=1im),Line(-2,direction=1im))) )
 	l = Line(2,direction=3+1im)
 	@test( intersect(l,l+1e-15) ≈ l )
 
 	z = intersect(Segment(0,1),Segment(.4-1im,.7+2im))
-	@test( z≈0.5 )
+	@test( z[1]≈0.5 )
 	z = intersect(Segment(2+3im,3+3im),Segment(-1+3im,4+3im))
 	@test( z≈Segment(2+3im,3+3im) )
 	z = intersect(2-Segment(2+3im,3+3im),2-Segment(3im,2.4+3im))
@@ -138,7 +138,7 @@ end
 	@test( isempty(z) )
 
 	z = intersect(Ray(0,pi/4),Segment(.5-1im,.5+2im))
-	@test( z≈0.5 )
+	@test( z[1]≈0.5 )
 	z = intersect(Ray(0,pi/4),Ray(2+2im,pi/4))
 	@test( z≈Ray(2+2im,pi/4) )
 	z = intersect(Ray(0,pi/6),Ray(-1,-pi/2))
