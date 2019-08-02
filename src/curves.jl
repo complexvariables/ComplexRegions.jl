@@ -60,7 +60,6 @@ Return `true` if the curve is bounded in the complex plane (i.e., does not pass 
 """
 isfinite(C::AbstractCurve) = @error "No isfinite() method defined for type $(typeof(C))"
 
-
 #
 # generic curve type 
 #
@@ -70,26 +69,22 @@ isfinite(C::AbstractCurve) = @error "No isfinite() method defined for type $(typ
 """
 struct Curve <: AbstractCurve 
 	point 
-	arclength 
 end
-# TODO: Compute arclength automatically when not supplied. 
+# TODO: Use ApproxFun internally in Curve values 
 """
-	Curve(f,arclen=missing)
-	Curve(f,a,b,arclen=missing)
+	Curve(f)
+	Curve(f,a,b)
 
-Construct a `Curve` object from the complex-valued function `point` accepting an argument in the interval [0,1]. If given, `arclen` should be the arclength of the curve. 
-
-If `a` and `b` are given, they are the limits of the parameter in the call to the supplied `f`. However, the resulting object will be defined on [0,1], which is internally scaled to [a,b].
+Construct a `Curve` object from the complex-valued function `f` accepting an argument in the interval [0,1]. If `a` and `b` are given, they are the limits of the parameter in the call to the supplied `f`. However, the resulting object will be defined on [0,1], which is internally scaled to [a,b].
 """
-Curve(f) = Curve(f,missing)
-Curve(f,a::Real,b::Real,arclen=missing) = Curve(t -> f(scaleto(a,b,t)),arclen)
+Curve(f) = Curve(f)
+Curve(f,a::Real,b::Real) = Curve(t -> f(scaleto(a,b,t)))
 
 # Required methods
 point(C::Curve,t::Real) = C.point(t)
 (C::Curve)(t::Real) = point(C,t)
-arclength(C::Curve) = C.arclength 
-conj(C::Curve) = Curve(t->conj(C.point(t)),C.arclength)
-reverse(C::Curve) = Curve(t->C.point(1-t),C.arclength)
+conj(C::Curve) = Curve(t->conj(C.point(t)))
+reverse(C::Curve) = Curve(t->C.point(1-t))
 
 #
 # generic closed curve type
@@ -100,27 +95,25 @@ reverse(C::Curve) = Curve(t->C.point(1-t),C.arclength)
 """
 struct ClosedCurve <: AbstractClosedCurve 
 	point 
-	arclength 
 	function ClosedCurve(f,arclen=missing;tol=DEFAULT[:tol])
 		@assert isapprox(f(0),f(1);rtol=tol,atol=tol) "Curve does not close"
-		new(f,arclen)
+		new(f)
 	end
 end
 """
 	ClosedCurve(f,arclen=missing;tol=DEFAULT[:tol])
 	ClosedCurve(f,a,b,arclen=missing;tol=DEFAULT[:tol])
 
-Construct a `ClosedCurve` object from the complex-valued function `point` accepting an argument in the interval [0,1]. If given, `arclen` should be the arclength of the curve. The constructor checks whether `f(0)≈f(1)` to tolerance `tol`. 
+Construct a `ClosedCurve` object from the complex-valued function `point` accepting an argument in the interval [0,1]. The constructor checks whether `f(0)≈f(1)` to tolerance `tol`. 
 
 If `a` and `b` are given, they are the limits of the parameter in the call to the supplied `f`. However, the resulting object will be defined on [0,1], which is internally scaled to [a,b].
 """
-ClosedCurve(f,a::Real,b::Real,arclen=missing;kw...) = ClosedCurve(t -> f(scaleto(a,b,t)),arclen;kw...)
+ClosedCurve(f,a::Real,b::Real;kw...) = ClosedCurve(t -> f(scaleto(a,b,t));kw...)
 
 point(C::ClosedCurve,t::Real) = C.point(t)
 (C::ClosedCurve)(t::Real) = point(C,t)
-arclength(C::ClosedCurve) = C.arclength 
-conj(C::ClosedCurve) = ClosedCurve(t->conj(C.point(t)),C.arclength)
-reverse(C::ClosedCurve) = ClosedCurve(t->C.point(1-t),C.arclength)
+conj(C::ClosedCurve) = ClosedCurve(t->conj(C.point(t)))
+reverse(C::ClosedCurve) = ClosedCurve(t->C.point(1-t))
 
 include("lines.jl")
 include("rays.jl")
