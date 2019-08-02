@@ -158,7 +158,7 @@ Reflect the value `z` across the circle `C`. (For reflection of a circle through
 """
 function reflect(z::Number,C::Circle)
 	ζ = z-C.center
-	ζ==0 ? convert(typeof(z),Inf) : C.center + ζ/abs2(ζ)
+	ζ==0 ? convert(typeof(float(z)),Inf) : C.center + C.radius^2/conj(ζ)
 end
 
 function show(io::IO,C::Circle)
