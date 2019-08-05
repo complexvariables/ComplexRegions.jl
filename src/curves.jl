@@ -17,12 +17,12 @@ point(c::AbstractCurve,t::Real) = @error "No point() method defined for type $(t
 Vectorize the `point` function for curve `C`.
 """
 point(c::AbstractCurve,t::AbstractArray{T}) where T<:Real = [point(c,t) for t in t]
-"""
-	arclength(C::AbstractCurve)
+# """
+# 	arclength(C::AbstractCurve)
 
-Fetch or compute the arc length of curve `C`.
-"""
-arclength(c::AbstractCurve) = @error "No arclength() method defined for type $(typeof(c))"
+# Fetch or compute the arc length of curve `C`.
+# """
+# arclength(c::AbstractCurve) = @error "No arclength() method defined for type $(typeof(c))"
 """
 	tangent(C::AbstractCurve,t::Real)
 
@@ -41,12 +41,12 @@ normal(c::AbstractCurve,t::Real) = 1im*tangent(c,t)
 Compute `n` points along the curve `C` suitable to make a plot of it.
 """
 plotdata(C::AbstractCurve,n=501) = point(C,LinRange(0,1,n))
-"""
-	conj(C::AbstractCurve) 
+# """
+# 	conj(C::AbstractCurve) 
 
-Construct the curve conjugate to `C`. (For a closed curve, the result reverses the orientation with respect to its interior.)
-"""
-conj(C::AbstractCurve) = @error "No conj() method defined for type $(typeof(C))"
+# Construct the curve conjugate to `C`. (For a closed curve, the result reverses the orientation with respect to its interior.)
+# """
+# conj(C::AbstractCurve) = @error "No conj() method defined for type $(typeof(C))"
 """
 	reverse(C::AbstractCurve)
 
@@ -77,7 +77,6 @@ end
 
 Construct a `Curve` object from the complex-valued function `f` accepting an argument in the interval [0,1]. If `a` and `b` are given, they are the limits of the parameter in the call to the supplied `f`. However, the resulting object will be defined on [0,1], which is internally scaled to [a,b].
 """
-Curve(f) = Curve(f)
 Curve(f,a::Real,b::Real) = Curve(t -> f(scaleto(a,b,t)))
 
 # Required methods
