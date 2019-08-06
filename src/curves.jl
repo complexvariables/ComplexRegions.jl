@@ -40,7 +40,7 @@ normal(c::AbstractCurve,t::Real) = 1im*tangent(c,t)
 
 Compute `n` points along the curve `C` suitable to make a plot of it.
 """
-plotdata(C::AbstractCurve,n=501) = point(C,LinRange(0,1,n))
+plotdata(C::AbstractCurve) = adaptpoints(t->point(C,t),t->tangent(C,t),0,1)
 # """
 # 	conj(C::AbstractCurve) 
 

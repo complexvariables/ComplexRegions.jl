@@ -68,7 +68,9 @@ function arg(R::Ray,z::Number)
 	return R.reverse ? 1-t : t 
 end
 tangent(R::Ray,t::Real) = tangent(R::Ray)
-tangent(R::Ray) = R.reverse ? -exp(1im*R.angle) : exp(1im*R.angle)
+function tangent(R::Ray{T}) where T <: AnyComplex 
+	R.reverse ? T(-exp(1im*R.angle)) : T(exp(1im*R.angle))
+end
 
 # Other methods
 isfinite(::Ray) = false

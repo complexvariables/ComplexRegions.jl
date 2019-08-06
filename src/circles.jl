@@ -71,7 +71,9 @@ Find the parameter argument `t` such that `C(t)==z` is true.
 This gives undefined results if `z` is not actually on the circle. 
 """
 arg(C::Circle,z::Number) = mod(angle(z-C.center)/(2π),1)
-tangent(C::Circle,t::Real) = C.ccw ? 1im*exp(2im*pi*t) : -1im*exp(2im*pi*t)
+function tangent(C::Circle{T},t::Real) where T <: AnyComplex
+	C.ccw ? T(1im*exp(2im*pi*t)) : T(-1im*exp(2im*pi*t))
+end
 
 # Other methods
 isfinite(::Circle) = true 
