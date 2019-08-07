@@ -54,16 +54,47 @@ Compute the point along path `P` at parameter value `t`. Values of `t` in [k,k+1
 Vectorize the `point` method for path `P`. 
 """
 point(p::AbstractPath,t::AbstractArray{T}) where T<:Real = [point(p,t) for t in t]
-function point(p::AbstractPath,t::Real)
-	if (t < 0) || (t>length(p)) 
-		throw(BoundsError(p))
+function sideargs(p::AbstractPath,t) 
+	n = length(p)
+	if (t < 0) || (t > n) 
+		throw(BoundsError(p,t))
 	end
-	c = curve(p)
-	if t==length(c) 
-		point(c[end],1)
+	if t==n 
+		return n,1
 	else
-		point(c[1+floor(Int,t)],t%1)
+		return 1+floor(Int,t),t%1 
 	end
+end
+function point(p::AbstractPath,t::Real) 
+	k,s = sideargs(p,t)
+	point(curve(p,k),s)
+end
+
+"""
+	tangent(P::AbstractPath,t::Real)
+Compute the complex-valued tangent along path `P` at parameter value `t`. Values of `t` in [k,k+1] correspond to values in [0,1] along curve k of the path, for k = 1,2,...,length(P)-1. The result is not well-defined at an integer value of `t`. 
+"""
+function tangent(p::AbstractPath,t::Real)
+	k,s = sideargs(p,t)
+	tangent(curve(p,k),s)
+end
+
+"""
+	unittangent(P::AbstractPath,t::Real)
+Compute the complex-valued unit tangent along path `P` at parameter value `t`. Values of `t` in [k,k+1] correspond to values in [0,1] along curve k of the path, for k = 1,2,...,length(P)-1. The result is not well-defined at an integer value of `t`. 
+"""
+function unittangent(p::AbstractPath,t::Real)
+	k,s = sideargs(p,t)
+	unittangent(curve(p,k),s)
+end 
+
+"""
+	normal(P::AbstractPath,t::Real)
+Compute a complex-valued normal to path `P` at parameter value `t`. Values of `t` in [k,k+1] correspond to values in [0,1] along curve k of the path, for k = 1,2,...,length(P)-1. The result is not well-defined at an integer value of `t`. 
+"""
+function normal(p::AbstractPath,t::Real)
+	k,s = sideargs(p,t)
+	normal(curve(p,k),s)
 end
 
 """
@@ -143,6 +174,9 @@ function closest(z::Number,P::AbstractPath)
 	closest(z,side(P,k))
 end
 
+intersect(P::AbstractPath,C::AbstractCurve) = ∪( [intersect(s,C) for s in curve(P)]...  )
+intersect(P1::AbstractPath,P2::AbstractPath) = ∪( [intersect(P1,s) for s in curve(P2)]...  )
+
 function show(io::IO,P::AbstractPath)
 	print(IOContext(io,:compact=>true),typeof(P)," with ",length(P)," segments") 
 end
@@ -166,6 +200,11 @@ Return the `k`th vertex of the path `P`. The index is applied circularly; e.g, i
 """
 vertex(P::AbstractClosedPath,k::Integer) = point(curve(P,k),0)
 vertex(P::AbstractClosedPath) = [ vertex(P,k) for k = 1:length(P) ]
+
+function sideargs(p::AbstractClosedPath,t) 
+	n = length(p)
+	return 1+mod(floor(Int,t),n), t%1
+end
 
 #
 # Concrete implementations

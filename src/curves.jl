@@ -43,7 +43,7 @@ unittangent(C::AbstractCurve,t::Real) = sign(tangent(C,t))
 
 Find the unit complex number in the direction of the leftward-pointing normal to curve `C` at parameter value `t` in [0,1]. 
 """
-normal(c::AbstractCurve,t::Real) = 1im*tangent(c,t)
+normal(c::AbstractCurve,t::Real) = 1im*unittangent(c,t)
 
 """
 	plotdata(C::AbstractCurve,n=501)

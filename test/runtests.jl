@@ -191,6 +191,7 @@ end
 	s = Segment(2,2im) 
 	p = Polygon([s,1im*s,-s,-1im*s]) 
 	@test( arclength(p) ≈ 8*sqrt(2) ) 
+	@test( angle(normal(p,1.1+length(p))) ≈ -π/4 )
 	@test( winding(-0.4+0.5im,p) == 1 )
 	@test( winding(-0.4+0.5im,reverse(p)) == -1 )
 	@test( winding(-4-0.5im,p) == 0 )
@@ -198,6 +199,7 @@ end
 
 	p = Polygon([4,4+3im,3im,-2im,6-2im,6])
 	@test( arclength(p) ≈ (3+4+5+6+2+2) )
+	@test( tangent(p,2.3-length(p)) ≈ -5im )
 	@test( winding(5-im,p) == 1 )
 	@test( winding(-1,p) == 0 )
 	@test( sum(angle(p)) ≈ 4*pi )
