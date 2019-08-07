@@ -67,9 +67,13 @@ function arg(R::Ray,z::Number)
 	end
 	return R.reverse ? 1-t : t 
 end
-tangent(R::Ray,t::Real) = tangent(R::Ray)
-function tangent(R::Ray{T}) where T <: AnyComplex 
-	R.reverse ? T(-exp(1im*R.angle)) : T(exp(1im*R.angle))
+function unittangent(R::Ray{T},t::Real=0) where T <: AnyComplex 
+	τ = T( exp(complex(0,R.angle)) )
+	R.reverse ? -τ : τ
+end
+function tangent(R::Ray{T},t::Real) where T <: AnyComplex 
+	τ = exp(complex(0,R.angle))
+	R.reverse ? T(-τ/t^2) : T(τ/(1-t)^2)
 end
 
 # Other methods
@@ -164,7 +168,7 @@ function closest(z::Number,R::Ray)
 	R.base + max(real(ζ),0)*s
 end
 
-sign(R::Ray) = tangent(R)
+sign(R::Ray) = unittangent(R)
 
 # Display methods
 function show(io::IO,R::Ray{T}) where {T}

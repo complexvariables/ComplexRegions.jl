@@ -1,3 +1,8 @@
+@doc """
+	intersect(c1::AbstractCurve,c2::AbstractCurve; tol=<default>)
+Find the intersection(s) of two curves. The result could be a vector of zero or more values, or a curve. 
+""" intersect
+
 # utility, to be used in what follows
 function twolines_meet(z1,s1,z2,s2,tol) 
 	M = [ real(s1) -real(s2); imag(s1) -imag(s2) ]
@@ -90,7 +95,7 @@ end
 intersect(g::Segment,r::Ray;kw...) = intersect(r,g;kw...)
 function intersect(r::Ray,g::Segment;tol=DEFAULT[:tol])
 	z1,z2 = r.base,g.za
-	s1,s2 = exp(1im*r.base),g.zb-g.za
+	s1,s2 = exp(1im*r.angle),g.zb-g.za
 	t1,t2 = twolines_meet(z1,s1,z2,s2,tol)
 	if isnan(t1)   # parallel lines
 		# move ray to positive Re axis
@@ -175,43 +180,42 @@ function intersect(a::Arc,c::AbstractCurve;tol=DEFAULT[:tol])
 	return filter(v->dist(v,a)<tol,z)
 end
 
-@doc """
-	intersect(c1::AbstractCurve,c2::AbstractCurve; tol=<default>)
-Find the intersection(s) of two curves. The result could be a vector of zero or more values, or a curve. 
-""" intersect
-
 # Determine the (directional) crossings of a Ray(y*1im,0) with a given curve.
-function raycrossing(z,c::AbstractCurve)
-	# only count left endpoint intersections, not the right, for the sake of winding number
+# For intersection at an endpoint, give half the value, which gives the right winding number for a polygon.
+function raycrossing(z,c::Segment;tol=DEFAULT[:tol])
 	s = 0
-	if c isa Segment  # faster shortcut
-		y = imag(z) 
-		a,b = imag(c(0)),imag(c(1))
-		if y ≥ a
-			if y < b && isleft(z,c)
-				s += 1
-			end
-		else
-			if y ≥ b && !isleft(z,c) 
-				s -= 1
-			end
+	y = imag(z) 
+	a,b = imag(c(0)),imag(c(1))
+	atend = abs(a-y) < tol || abs(b-y) < tol
+	if y ≥ a
+		if y ≤ b && isleft(z,c)
+			s = atend ? s+0.5 : s+1
 		end
-	else   # general case 
-		for z in intersect(c,Ray(z,0)) 
-			t = arg(c,z) 
-			if t < 1.0-10*eps(1.0)
-				y = imag(tangent(c,t))
-				if abs(y) < 10*eps(1.0) 
-					# horiztonal tangent; check a perturbed location
-					ϵ = sqrt(eps(one(t)))
-					if t < 0.5 
-						y = imag(tangent(c,t+2ϵ))
-					else 
-						y = -imag(tangent(c,t-2ϵ))
-					end
+	else
+		if y ≥ b && !isleft(z,c) 
+			s = atend ? s-0.5 : s-1
+		end
+	end
+	return s
+end
+
+function raycrossing(z,c::AbstractCurve;tol=DEFAULT[:tol])
+	s = 0
+	for z in intersect(c,Ray(z,0)) 
+		t = arg(c,z) 
+		if -tol ≤ t ≤ 1+tol
+			y = imag(unittangent(c,t))
+			if abs(y) < tol 
+				# horiztonal tangent; check a perturbed location
+				ϵ = sqrt(tol)
+				if t < 0.5 
+					y = imag(unittangent(c,t+2ϵ))
+				else 
+					y = -imag(unittangent(c,t-2ϵ))
 				end
-				s += copysign(1,y)
 			end
+			d = tol < t < 1-tol ? copysign(1,y) : copysign(1,y)/2
+			s += d
 		end
 	end
 	return s

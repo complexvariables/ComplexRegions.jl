@@ -50,8 +50,8 @@ Find the parameter argument `t` such that `S(t)==z` is true.
 This gives undefined results if `z` is not actually on the segment. 
 """
 arg(S::Segment,z::Number) = (real(z) - real(S.za)) / (real(S.zb) - real(S.za))
-tangent(S::Segment,t::Real) = tangent(S)
-tangent(S::Segment) = sign(S.zb-S.za)
+tangent(S::Segment,t::Real) = S.zb - S.za
+unittangent(S::Segment,t::Real=0) = sign(S.zb-S.za)
 
 # Other methods
 isfinite(::Segment) = true
@@ -103,7 +103,7 @@ function /(z::Number,S::Segment)
 	Arc(w...)
 end
 inv(S::Segment) = 1/S
-sign(S::Segment) = tangent(S)
+sign(S::Segment) = unittangent(S)
 
 """
 	isapprox(S1::Segment,S2::Segment; tol=<default>) 

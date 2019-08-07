@@ -20,7 +20,7 @@ Compute the winding number of `P` about the point `z`. Each counterclockwise rot
 The result is unreliable for points on the boundary of `P` (for which the problem is ill-posed).
 """
 function winding(z::Number,p::AbstractCircularPolygon)
-	sum( raycrossing(z,s) for s in side(truncate(p)) )
+	Integer(sum( raycrossing(z,s) for s in side(truncate(p)) ))
 end
 
 """ 
@@ -192,7 +192,9 @@ function truncate(p::Polygon,c::Circle)
 				snew[k] = Segment(s[k].base,z_pre)
 			else
 				z_post = intersect(c,s[k])[1]
-				snew[k] = [Arc(z_pre,z_post,center=c.center),Segment(z_post,s[k].base)]
+				t0 = arg(c,z_pre)
+				delta = mod( angle( (z_post-c.center)/(z_pre-c.center) ) / (2π), 1)
+				snew[k] = [Arc(c,t0,delta),Segment(z_post,s[k].base)]
 				z_pre = NaN
 			end
 		end

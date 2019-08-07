@@ -25,7 +25,11 @@ Construct the arc starting at point `a`, passing through `b`, and ending at `c`.
 Construct the arc starting at point `a`, ending at `b`, and whose circular center is at `zc`. No check is performed to see if `b` actually lies on the circle. 
 """
 function Arc(C::Circle{T},start::Real,delta::Real) where T<:AnyComplex
-	Arc{T}(C,Float64(start),Float64(delta))
+	if delta < 0
+		Arc{T}(reverse(C),float(-start),float(-delta))
+	else
+		Arc{T}(C,float(start),float(delta))
+	end
 end
 
 # Construct from 3 points
@@ -39,25 +43,12 @@ function Arc(a::Number,m::Number,b::Number)
 		ti = mod(angle(α)/(2π),1)
 		delta = mod(angle(β/α)/(2π),1) # force into (0,1)
 		# which of the two circle pieces do we use? 
-		if mod(angle((m-C.center)/α)/(2π),1) > delta 
-			delta = delta-1
+		if !C.ccw 
+			ti = 1-ti
+			delta = 1-delta 
 		end	
-		Arc(C,ti,delta)
 	end
-end
-
-# Construct from 2 points and circle center 
-function Arc(a::Number,b::Number;center=0) 
-	a,b,zc = promote(complex(float(a)),b,center)
-	C = Circle(zc,abs(a-zc))
-	if isa(C,Line)  # collinear
-		Segment(a,b)
-	else
-		α = a-C.center
-		ti = mod(angle(α)/(2π),1)
-		delta = angle((b-C.center)/α)/(2π)
-		Arc(C,ti,delta)
-	end
+	Arc(C,ti,delta)
 end
 
 # Complex type converters
@@ -90,10 +81,14 @@ This gives undefined results if `z` is not actually on the arc.
 """
 function arg(A::Arc,z::Number)
 	tc = arg(A.circle,z)
-	t = mod(tc-A.start,1)
-	A.delta < 0 ? -mod(1-t,1)/A.delta : t/A.delta
+	t = mod(tc-A.start+DEFAULT[:tol],1)-DEFAULT[:tol]
+	t/A.delta
 end
-tangent(A::Arc,t::Real) = tangent(A.circle,A.start + t*A.delta)
+
+unittangent(A::Arc,t::Real) = unittangent(A.circle,A.start+t*A.delta)
+function tangent(A::Arc{T},t::Real) where T <: AnyComplex
+	T( tangent(A.circle,A.start+t*A.delta)*A.delta )
+end
 
 # Other methods
 isfinite(::Arc) = true
@@ -131,7 +126,7 @@ Multiply the arc `A` by real or complex number `z`; i.e., scale and rotate it ab
 """
 function *(A::Arc,z::Number)
 	phi = angle(z)/(2*pi)
-	ti = mod(A.start+phi,1)
+	ti = A.circle.ccw ? mod(A.start+phi,1) : mod(A.start-phi,1)
 	Arc(z*A.circle,ti,A.delta)
 end
 *(z::Number,A::Arc) = A*z
@@ -170,18 +165,13 @@ end
 Compute the distance from number `z` to the arc `A`. 
 """
 function dist(z::Number,A::Arc) 
-	if A.delta > 0
-		ti,del = A.start,A.delta
+	C = A.circle
+	# result depends on whether the radius to z intersects the arc
+	ti,del = A.start,A.delta
+	if mod(arg(C,z)-ti,1) ≤ del 
+		return dist(z,C)
 	else
-		ti = mod(A.start+A.delta,1)
-		del = -A.delta 
-	end
-	ζ = z - A.circle.center
-	α = mod(angle(ζ)/(2π)-ti,1)
-	if 0 ≤ α ≤ del 
-		return abs(abs(ζ)-A.circle.radius)
-	else
-		return min(abs(z-point(A,0)), abs(z-point(A,1)) )
+		return min( abs(z-point(A,0)), abs(z-point(A,1)) )
 	end
 end
 """ 

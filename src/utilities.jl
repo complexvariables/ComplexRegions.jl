@@ -23,14 +23,28 @@ function isccw(a::Number,b::Number,c::Number)
 	det([v(a) v(b) v(c)]) > 0
 end
 
-function adaptpoints(point,tangent,a,b;depth=6,curvemax=0.05)
+function fdtangent(z,t::Real) 
+	ϵ = eps(typeof(float(t)))
+	ϵ3 = ϵ^(1/3)
+	# Use a finite difference approximation: 1st order at edges, 2nd otherwise
+	if t < ϵ3
+		t0, t1 = t, t+sqrt(ϵ)
+	elseif t > 1-ϵ3
+		t0, t1 = t-sqrt(ϵ), t
+	else
+		t0, t1 = t-ϵ3,t+ϵ3 
+	end
+	return (z(t1)-z(t0))/(t1-t0)
+end
+
+function adaptpoints(point,utangent,a,b;depth=6,curvemax=0.05)
 	function refine(tl,tr,zl,zr,τl,τr,maxdz,d=depth)
 		# approximately the stepsize over radius of curvature
 		dzkap = dist(τr,τl)
 
 		tm = (tl+tr)/2
 		zm = point(tm)
-		τm = tangent(tm) 
+		τm = utangent(tm) 
 
 		if d > 0 && (dzkap > curvemax || dist(zr,zl) > maxdz )
 			zl = refine(tl,tm,zl,zm,τl,τm,maxdz,d-1)
@@ -46,7 +60,7 @@ function adaptpoints(point,tangent,a,b;depth=6,curvemax=0.05)
 	tt = d*[0,0.196,0.41,0.592,0.806] 
 	t = [a .+ tt; a + d .+ tt; a + 2d .+ tt; a + 3d .+ tt; b]
 	z = point.(t)
-	τ = tangent.(t)
+	τ = utangent.(t)
 
 	if z[1] isa Spherical
 		dist = (u,v) -> norm(S2coord(u)-S2coord(v))

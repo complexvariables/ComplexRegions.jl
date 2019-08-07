@@ -60,7 +60,9 @@ Convert to `Circle{$ctype}`. This is useful for plotting curves in a desired way
 end
 
 # Required methods
-point(C::Circle,t::Real) = C.center + C.radius*exp(2im*pi*t)
+function point(C::Circle,t::Real)
+	C.ccw ? C.center + C.radius*exp(2im*pi*t) : C.center + C.radius*exp(-2im*pi*t)
+end
 arclength(C::Circle) = 2π*C.radius
 (C::Circle)(t::Real) = point(C,t)
 """ 
@@ -70,9 +72,16 @@ Find the parameter argument `t` such that `C(t)==z` is true.
 
 This gives undefined results if `z` is not actually on the circle. 
 """
-arg(C::Circle,z::Number) = mod(angle(z-C.center)/(2π),1)
+function arg(C::Circle,z::Number)
+	α = angle(z-C.center)/(2π)
+	C.ccw ? mod(α,1) : mod(-α,1)
+end
+
+function unittangent(C::Circle{T},t::Real) where T <: AnyComplex
+	C.ccw ? T( 1im*exp(2im*pi*t) ) : T( -1im*exp(-2im*pi*t) )
+end
 function tangent(C::Circle{T},t::Real) where T <: AnyComplex
-	C.ccw ? T(1im*exp(2im*pi*t)) : T(-1im*exp(2im*pi*t))
+	T( 2π*C.radius*unittangent(C,t) )
 end
 
 # Other methods
@@ -94,8 +103,8 @@ Translate the circle `C` by a number `-z`.
 	z - C 
 Negate a circle `C` (reflect through the origin), and optionally translate by a number `z`.
 """
--(C::Circle) = Circle(-C.center,C.radius,!C.ccw)
 -(C::Circle,z::Number) = Circle(C.center-z,C.radius,C.ccw)
+-(C::Circle) = Circle(-C.center,C.radius,C.ccw)
 -(z::Number,C::Circle) = z + (-C)
 """
 	z*C 

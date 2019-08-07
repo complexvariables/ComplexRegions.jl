@@ -67,8 +67,10 @@ function arg(L::Line,z::Number)
 	end
 	return []
 end
-tangent(L::Line) = L.direction
-tangent(L::Line,t::Real) = tangent(L)
+unittangent(L::Line,t::Real=0) = L.direction
+function tangent(L::Line{T},t::Real) where T <: AnyComplex
+	T( (1/t^2+1/(1-t)^2)*L.direction )
+end
 
 # Other methods
 isfinite(::Line) = false

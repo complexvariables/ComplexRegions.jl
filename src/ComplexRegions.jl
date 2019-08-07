@@ -25,7 +25,7 @@ import Base: +,-,*,/,!,∘,sign,inv,angle,real,imag,conj,show,iterate,eltype,len
 
 include("utilities.jl")
 
-export point,arclength,slope,isapprox,dist,closest,isleft,plotdata,isright,reflect,tangent,normal,arg
+export point,arclength,slope,isapprox,dist,closest,isleft,plotdata,isright,reflect,tangent,unittangent,normal,arg
 export Curve,ClosedCurve,Circle,Line,Arc,Segment,Ray
 include("curves.jl")
 

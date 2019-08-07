@@ -19,7 +19,7 @@ end
 	@test( point(ClosedCurve(f,0,2*pi),0.25) ≈ f(pi/2) )
 end
 
-@testset "Circles & Arcs" begin
+@testset "Circles" begin
 	c = Circle(Spherical(1-1im),sqrt(2))
 	@test( arclength(c) ≈ 2*sqrt(2)*pi )
 	@test( dist(-1+1im,c) ≈ sqrt(2) )
@@ -28,7 +28,8 @@ end
 	@test( isinf(reflect(c.center,c)) )
 	@test( reflect(reflect(-1+2im,c),c) ≈ -1+2im )
 	@test( all( abs(arg(c,c(t))-t) < 1e-11 for t in 0.1:0.1:1 ) )
-	@test( angle(tangent(c,0.125)) ≈ 0.75π )
+	@test( angle(unittangent(c,0.125)) ≈ 0.75π )
+	@test( abs(tangent(c,0.125)) ≈ 2π*sqrt(2) )
 
 	c = Circle(1-1im,sqrt(2))
 	@test( point(c,.25) ≈ complex(1,sqrt(2)-1) )
@@ -38,14 +39,18 @@ end
 	@test( all( abs(arg(c,c(t))-t) < 1e-11 for t in 0.1:0.1:1 ) )
 	zz = point(5im - c/3im,.23)
 	@test( abs(zz-(5im-c.center/3im)) ≈ c.radius/3 )
+	@test( tangent(c,0.7) ≈ CR.fdtangent(c,0.7) )
 	@test( Circle(1+3im,Polar(1-1im),1.0) isa Line )
+end
 
-	a = Arc(1.0,1im,center=0)
+@testset "Arcs" begin
+	a = Arc(exp.(1im*[pi/2,pi/5,0])...)
 	zz = 1/sqrt(2)*(1+1im)
-	@test( point(a,0.5) ≈ zz)
+	@test( point(a,0.5) ≈ zz )
 	@test( all( abs(arg(a,a(t))-t) < 1e-11 for t in 0:0.1:1 ) )
 	@test( dist(3im+.5*2im*exp(1im*pi/5),3im+2im*a) ≈ 2*0.5 )
-	@test( angle(tangent(a,0.5)) ≈ 0.75π )
+	@test( tangent(a,0.2) ≈ CR.fdtangent(a,0.2) )
+	@test( angle(unittangent(a,0.5)) ≈ -0.25π )
 	a = (a-2)/1im 
 	@test( all( abs(arg(a,a(t))-t) < 1e-11 for t in 0:0.1:1 ) )
 
@@ -62,7 +67,7 @@ end
 	@test( angle(tangent(b,2/3)) ≈ -0.5π )
 end 
 
-@testset "Lines & Segments" begin
+@testset "Lines" begin
 	@test( Line(1,5) isa Line )
 	l = Line(1im,direction=1+2im)
 	@test( isleft(2im,l) && !isleft(0,l) )
@@ -72,12 +77,15 @@ end
 	zz = point(5im - l/3im,.23)
 	z0 = 5im - l.base/3im
 	@test( angle(zz-z0) ≈ angle(tangent(l,0.5)/3im) )
+	@test( tangent(l,0.2) ≈ CR.fdtangent(l,0.2) )
 	z = l(0.3) + 1im*sign(l.direction)
 	@test( dist(z,l) ≈ 1 )
 	@test( closest(z,l) ≈ l(0.3) )
 	@test( reflect(z,l) ≈ l(0.3) - 1im*sign(l.direction))
 	@test( all( abs(arg(l,l(t))-t) < 1e-11 for t in 0:0.1:0.9 ) )
+end
 
+@testset "Segments" begin
 	s = Segment(1,3.0+5.0im)
 	@test( isleft(-1,s) && !isleft(2,s) )
 	zz = 2 + 2.5im
@@ -85,6 +93,7 @@ end
 	@test( closest(4+6im,s) ≈ 3+5im )
 	@test( dist(-1,s) ≈ 2 )
 	@test( angle(tangent(s,2/3)) ≈ angle(s(0.6)-s(0.1)) )
+	@test( tangent(s,0.75) ≈ CR.fdtangent(s,0.75) )
 	z = s(0.7) + 1im*sign(s(0.9)-s(0.7))
 	@test( closest(z,s) ≈ s(0.7) )
 	@test( reflect(z,s) ≈ s(0.7) - (z-s(0.7)) )
@@ -100,10 +109,12 @@ end
 	@test( closest(5im,s) ≈ 2+5im )
 	@test( all( abs(arg(s,s(t))-t) < 1e-11 for t in 0:0.1:1 ) )
 	@test( angle(tangent(s,.1))≈π/2 )
+	@test( tangent(s,0.1) ≈ CR.fdtangent(s,0.1) )
 	@test( angle(tangent(reverse(s),1))≈-π/2  )
 	s = Ray(Spherical(2im),pi,true)
 	@test( imag(s(0.5)) ≈ 2 )
 	@test( real(s(0.3)) < real(s(0.4)) )
+	@test( tangent(s,0.6) ≈ CR.fdtangent(s,0.6) )
 	@test( !isleft(4,s) && isleft(-1+3im,s) )
 	@test( closest(-4+1im,s) ≈ -4+2im )
 	@test( closest(6,s) ≈ 2im )
@@ -138,7 +149,8 @@ end
 	@test( isempty(z) )
 
 	z = intersect(Ray(0,pi/4),Segment(.5-1im,.5+2im))
-	@test( z[1]≈0.5 )
+	@test( z[1]≈0.5+0.5im )
+	@test( isempty(intersect(Ray(0,-3pi/4),Segment(.5-1im,.5+2im))) )
 	z = intersect(Ray(0,pi/4),Ray(2+2im,pi/4))
 	@test( z≈Ray(2+2im,pi/4) )
 	z = intersect(Ray(0,pi/6),Ray(-1,-pi/2))
@@ -205,19 +217,15 @@ end
 	a = angle(p)/pi
 	@test( abs(a[1]) < 1e-10 )
 	@test( sum(a.-1) ≈ -2 )
-	w = [winding(z,p) for z in [1+2im,5-1im,5.5+6im]]
-	@test( all(w.==1) )
-	w = [winding(z,p) for z in [-3im,3+5im,5.5-6im]]
-	@test( all(w.==0) )
+	@test( all(winding(z,p)==1 for z in [1+2im,5-1im,5.5+6im]) )
+	@test( all(winding(z,p)==0 for z in [-3im,3+5im,5.5-6im]) )
 
 	p = Polygon([(-pi/2,pi/2),7,4+3im,3im,-2im,6-2im])
 	a = angle(p)/pi
 	@test( a[1] ≈ -1 )
 	@test( sum(a.-1) ≈ -2 )
-	w = [winding(z,p) for z in [4,7-2im,9]]
-	@test( all(w.==1) )
-	w = [winding(z,p) for z in [4+4im,6+2im,4-3im]]
-	@test( all(w.==0) )
+	@test( all(winding(z,p)==1 for z in [4,7-2im,9]) )
+	@test( all(winding(z,p)==0 for z in [4+4im,6+2im,4-3im]) )
 
 	p = Polygon([4+3im,7,(0,0),6-2im,-2im,3im])
 	a = angle(p)/pi
