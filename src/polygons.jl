@@ -17,7 +17,7 @@ end
 	winding(z,P::AbstractCircularPolygon)
 Compute the winding number of `P` about the point `z`. Each counterclockwise rotation about `z` contributes +1, and each clockwise rotation about it counts -1. The winding number is zero for points not in the region enclosed by `P`. 
 
-The result is unreliable for points on the boundary of `P` (for which the problem is ill-posed).
+The result is unreliable for points on `P` (for which the problem is ill-posed).
 """
 function winding(z::Number,p::AbstractCircularPolygon)
 	Integer(sum( raycrossing(z,s) for s in side(truncate(p)) ))
@@ -154,15 +154,30 @@ Compute a vector of interior angles at the vertices of the polygon `P`. At a fin
 """
 function angle(p::Polygon)
 	# computes a turn angle in (-pi,pi]  (neg = left turn)
-	turn(s1,s2) = π - mod2pi(angle(s2/s1)+π)
-	s = sign.(p) 
+	turn(s1,s2) = π - mod(angle(s2/s1)+π,2π)
+	s = unittangent.(p) 
 	n = length(p) 
+	if n==2  # empty interior 
+		return zeros(2)
+	end
 	v = vertex(p)
 	θ = similar(real(s))
 	for k = 1:n 
-		θ[k] = π + turn(s[mod(k-2,n)+1],s[k])
+		kprev = mod(k-2,n)+1
+		θ[k] = π + turn(s[kprev],s[k])
 		if isinf(v[k]) 
 			θ[k] -= 2π
+			if θ[k]==0
+				# need a finite perturbation to distinguish 0,-2
+				R = maximum(abs.(filter(isfinite,v)))
+				C = Circle(0,100*R)
+				zprev = intersect(p[kprev],C)
+				znext = intersect(p[k],C) 
+				@show zprev,znext
+				if angle(znext[1]/zprev[1]) < 0 
+					θ[k] -= 2π
+				end
+			end
 		end
 	end
 	# correct for possible clockwise orientation
