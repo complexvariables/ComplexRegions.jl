@@ -63,8 +63,10 @@ end
 function point(C::Circle,t::Real)
 	C.ccw ? C.center + C.radius*exp(2im*pi*t) : C.center + C.radius*exp(-2im*pi*t)
 end
-arclength(C::Circle) = 2π*C.radius
 (C::Circle)(t::Real) = point(C,t)
+
+arclength(C::Circle) = 2π*C.radius
+
 """ 
 	arg(C::Circle,z) 
 
@@ -88,6 +90,7 @@ end
 isfinite(::Circle) = true 
 conj(C::Circle) = Circle(conj(C.center),C.radius,!C.ccw)
 reverse(C::Circle) = Circle(C.center,C.radius,!C.ccw)
+
 """
 	C + z
 	z + C 
@@ -95,6 +98,7 @@ Translate the circle `C` by a number `z`.
 """
 +(C::Circle,z::Number) = Circle(C.center+z,C.radius,C.ccw)
 +(z::Number,C::Circle) = Circle(C.center+z,C.radius,C.ccw)
+
 """
 	C - z
 Translate the circle `C` by a number `-z`.
@@ -106,6 +110,7 @@ Negate a circle `C` (reflect through the origin), and optionally translate by a 
 -(C::Circle,z::Number) = Circle(C.center-z,C.radius,C.ccw)
 -(C::Circle) = Circle(-C.center,C.radius,C.ccw)
 -(z::Number,C::Circle) = z + (-C)
+
 """
 	z*C 
 	C*z 
@@ -113,6 +118,7 @@ Multiply the circle `C` by real or complex number `z`; i.e., scale and rotate it
 """
 *(C::Circle,z::Number) = Circle(C.center*z,C.radius*abs(z),C.ccw)
 *(z::Number,C::Circle) = Circle(C.center*z,C.radius*abs(z),C.ccw)
+
 """
 	C/z 
 Multiply the circle `C` by the number `1/z`; i.e., scale and rotate it about the origin.
@@ -145,6 +151,7 @@ Determine whether the number `z` lies "to the left" of circle `C`. This means th
 Note that `isleft` and `isright` are *not* logical opposites; a point on the curve should give `false` in both cases.
 """
 isleft(z::Number,C::Circle) = !xor(C.ccw,abs(z-C.center) < C.radius) 
+
 """ 
 	isright(z,C::Circle) 
 Determine whether the number `z` lies "to the right" of circle `C`. This means that the point lies outside the circle if it is positively oriented, and inside the circle otherwise. 
@@ -158,11 +165,13 @@ isright(z::Number,C::Circle) = !xor(C.ccw,abs(z-C.center) < C.radius)
 Compute the distance from number `z` to the circle `C`. 
 """
 dist(z::Number,C::Circle) = abs( abs(z-C.center) - C.radius )
+
 """ 
 	closest(z,C::Circle) 
 Find the point on circle `C` that lies closest to `z`.
 """
 closest(z::Number,C::Circle) =	C.center + C.radius*sign(z - C.center)
+
 """ 
 	reflect(z,C::Circle) 
 Reflect the value `z` across the circle `C`. (For reflection of a circle through a point, use translation and negation.)

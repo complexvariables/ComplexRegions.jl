@@ -100,6 +100,7 @@ point(C::Curve,t::Real) = C.point(t)
 tangent(C::Curve,t::Real) = C.tangent(t)
 conj(C::Curve) = Curve(t->conj(C.point(t)))
 reverse(C::Curve) = Curve(t->C.point(1-t))
+isfinite(C::Curve) = true
 
 #
 # generic closed curve type
@@ -135,6 +136,7 @@ point(C::ClosedCurve,t::Real) = C.point(t)
 tangent(C::ClosedCurve,t::Real) = C.tangent(t)
 conj(C::ClosedCurve) = ClosedCurve(t->conj(C.point(t)))
 reverse(C::ClosedCurve) = ClosedCurve(t->C.point(1-t))
+isfinite(C::ClosedCurve) = true
 
 include("lines.jl")
 include("rays.jl")

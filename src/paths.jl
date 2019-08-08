@@ -33,6 +33,7 @@ end
 function vertex(P::AbstractPath) 
 	[ vertex(P,k) for k = 1:length(P)+1]
 end
+
 """ 
 	isfinite(P::AbstractPath) 
 Return `true` if the path is bounded in the complex plane (i.e., does not pass through infinity).
@@ -54,6 +55,8 @@ Compute the point along path `P` at parameter value `t`. Values of `t` in [k,k+1
 Vectorize the `point` method for path `P`. 
 """
 point(p::AbstractPath,t::AbstractArray{T}) where T<:Real = [point(p,t) for t in t]
+
+# This determines how to parse a parameter of a path. Overloaded later for the case of a closed path.
 function sideargs(p::AbstractPath,t) 
 	n = length(p)
 	if (t < 0) || (t > n) 
@@ -65,6 +68,7 @@ function sideargs(p::AbstractPath,t)
 		return 1+floor(Int,t),t%1 
 	end
 end
+
 function point(p::AbstractPath,t::Real) 
 	k,s = sideargs(p,t)
 	point(curve(p,k),s)
@@ -114,6 +118,7 @@ Translate the path `P` by a number `z`.
 """
 +(p::AbstractPath,z::Number) = typeof(p)([c+z for c in curve(p)])
 +(z::Number,p::AbstractPath) = typeof(p)([z+c for c in curve(p)])
+
 """
 	P - z
 Translate the path `P` by a number `-z`.
@@ -125,6 +130,7 @@ Negate a path `P` (reflect through the origin), and optionally translate by a nu
 -(p::AbstractPath) = typeof(p)([-c for c in curve(p)])
 -(p::AbstractPath,z::Number) = typeof(p)([c-z for c in curve(p)])
 -(z::Number,p::AbstractPath) = typeof(p)([z-c for c in curve(p)])
+
 """
 	z*P 
 	P*z 
@@ -132,6 +138,7 @@ Multiply the path `P` by real or complex number `z`; i.e., scale and rotate it a
 """
 *(p::AbstractPath,z::Number) = typeof(p)([c*z for c in curve(p)])
 *(z::Number,p::AbstractPath) = typeof(p)([z*c for c in curve(p)])
+
 """
 	P/z 
 Multiply the path `P` by the number `1/z`; i.e., scale and rotate it about the origin.

@@ -14,12 +14,12 @@ end
 
 # Untyped constructor
 """
-	Ray(a,z,reverse=false)
-Construct the ray starting at `a` and extending to infinity in the direction parallel to `z`. If `reverse` is true, the ray is considered to extend from infinity to `a` along `-z`.
+	Ray(a,θ,reverse=false)
+Construct the ray starting at `a` and extending to infinity at the angle `θ`. If `reverse` is true, the ray is considered to extend from infinity to `a` at angle `-θ`.
 """
-function Ray(a::Number,d::Number,rev=false) 
+function Ray(a::Number,θ::Real,rev=false) 
 	a = complex(float(a))
-	Ray{typeof(a)}(a,float(d),rev)
+	Ray{typeof(a)}(a,float(θ),rev)
 end
 
 # Complex type converters
@@ -52,6 +52,7 @@ function point(R::Ray{T},t::Real) where T
 	end	
 end
 (C::Ray)(t::Real) = point(C,t)
+
 """ 
 	arg(R::Ray,z) 
 Find the parameter argument `t` such that `R(t)==z` is true. 
@@ -67,10 +68,12 @@ function arg(R::Ray,z::Number)
 	end
 	return R.reverse ? 1-t : t 
 end
+
 function unittangent(R::Ray{T},t::Real=0) where T <: AnyComplex 
 	τ = T( exp(complex(0,R.angle)) )
 	R.reverse ? -τ : τ
 end
+
 function tangent(R::Ray{T},t::Real) where T <: AnyComplex 
 	τ = exp(complex(0,R.angle))
 	R.reverse ? T(-τ/t^2) : T(τ/(1-t)^2)
@@ -80,6 +83,7 @@ end
 isfinite(::Ray) = false
 conj(R::Ray) = Ray(conj(R.base),-R.angle,R.reverse)
 reverse(R::Ray) = Ray(R.base,R.angle,!R.reverse)
+
 """
 	R + z
 	z + R 
@@ -87,6 +91,7 @@ Translate the ray `R` by a number `z`.
 """
 +(R::Ray,z::Number) = Ray(R.base+z,R.angle,R.reverse)
 +(z::Number,R::Ray) = Ray(R.base+z,R.angle,R.reverse)
+
 """
 	R - z
 Translate the ray `R` by a number `-z`.
@@ -98,6 +103,7 @@ Negate a ray `R` (reflect through the origin), and optionally translate by a num
 -(R::Ray,z::Number) = Ray(R.base-z,R.angle,R.reverse)
 -(z::Number,R::Ray) = Ray(z-R.base,R.angle,R.reverse)
 -(R::Ray) = Ray(-R.base,mod2pi(R.angle+pi),R.reverse)
+
 # these need to recompute the final parameter values
 """
 	z*R 
@@ -106,6 +112,7 @@ Multiply the ray `R` by real or complex number `z`; i.e., scale and rotate it ab
 """
 *(R::Ray,z::Number) = Ray(z*R.base,mod2pi(R.angle+sign(z)),R.reverse)
 *(z::Number,R::Ray) = *(R,z)
+
 """
 	R/z 
 Multiply the ray `R` by the number `1/z`; i.e., scale and rotate it about the origin.
@@ -140,6 +147,7 @@ function isleft(z::Number,R::Ray)
 	a,b = point(R,[0.2,0.8])  # accounts for reversal
 	(real(b)-real(a)) * (imag(z)-imag(a)) > (real(z)-real(a)) * (imag(b)-imag(a))
 end
+
 """ 
 	isright(z,R::Ray) 
 Determine whether the number `z` lies "to the right" of ray `R`. This means that the angle it makes with `tangent(R)` is in the interval (-π,0).
@@ -156,6 +164,7 @@ end
 Compute the distance from number `z` to the ray `R`. 
 """
 dist(z::Number,R::Ray) = abs(z - closest(z,R))
+
 """ 
 	closest(z,R::Ray) 
 

@@ -12,17 +12,13 @@ end
 
 # Untyped constructors
 """
-	Arc(c,start,delta)
+	Arc(C,start,delta)
 
-Consruct an arc that is the part of the Circle `c` starting at parameter value `start` and ending at `start+delta`. The values are expressed in terms of fractions of a complete circle. The `start` value should be in [0,1), and `delta` should be in [-1,1].
+Consruct an arc that is the part of the Circle `C` starting at parameter value `start` and ending at `start+delta`. The values are expressed in terms of fractions of a complete circle. The `start` value should be in [0,1), and `delta` should be in [-1,1].
 
 	Arc(a,b,c)
 
 Construct the arc starting at point `a`, passing through `b`, and ending at `c`. If the three points are collinear, a `Segment` is returned instead.
-
-	Arc(a,b,center=zc)
-
-Construct the arc starting at point `a`, ending at `b`, and whose circular center is at `zc`. No check is performed to see if `b` actually lies on the circle. 
 """
 function Arc(C::Circle{T},start::Real,delta::Real) where T<:AnyComplex
 	if delta < 0
@@ -72,6 +68,7 @@ function point(A::Arc,t::Real)
 end
 arclength(A::Arc) = arclength(A.circle)*A.delta
 (C::Arc)(t::Real) = point(C,t)
+
 """ 
 	arg(A::Arc,z) 
 
@@ -94,6 +91,7 @@ end
 isfinite(::Arc) = true
 conj(A::Arc) = Arc(conj(A(0)),conj(A(0.5)),conj(A(1)))
 reverse(A::Arc) = Arc(A(1),A(0.5),A(0))
+
 """
 	A + z
 	z + A 
@@ -102,6 +100,7 @@ Translate the arc `A` by a number `z`.
 """
 +(A::Arc,z::Number) = Arc(A.circle+z,A.start,A.delta)
 +(z::Number,A::Arc) = Arc(z+A.circle,A.start,A.delta)
+
 """
 	A - z
 
@@ -118,6 +117,7 @@ function -(A::Arc)
 	Arc(-A.circle,ti,A.delta)
 end
 -(z::Number,A::Arc) = z + (-A)
+
 """
 	z*A 
 	A*z 
@@ -130,6 +130,7 @@ function *(A::Arc,z::Number)
 	Arc(z*A.circle,ti,A.delta)
 end
 *(z::Number,A::Arc) = A*z
+
 """
 	A/z 
 
@@ -174,6 +175,7 @@ function dist(z::Number,A::Arc)
 		return min( abs(z-point(A,0)), abs(z-point(A,1)) )
 	end
 end
+
 """ 
 	closest(z,A::Arc) 
 
