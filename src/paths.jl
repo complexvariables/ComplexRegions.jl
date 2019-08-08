@@ -103,14 +103,16 @@ end
 
 """
 	conj(P::AbstractPath) 
-Construct the complex conjugate of `P`. Note that this also reverses the orientation if the path is closed. 
+Construct the complex conjugate of `P`. Note that this also reverses the orientation of a closed path. 
 """
 conj(p::AbstractPath) = typeof(p)(conj.(curve(p)))
+
 """ 
 	reverse(P::AbstractPath) 
 Construct a path identical to `P` except with opposite direction of parameterization.
 """
 reverse(p::AbstractPath) = typeof(p)(reverse(reverse.(curve(p))))
+
 """
 	P + z
 	z + P 
@@ -145,7 +147,7 @@ Multiply the path `P` by the number `1/z`; i.e., scale and rotate it about the o
 
 	z/P 
 	inv(P) 
-Invert the path `P` through the origin (and optionally multiply by the number `1/z`). 
+Invert the path `P` through the origin (and optionally multiply by the number `z`). 
 """
 /(p::AbstractPath,z::Number) = typeof(p)([c/z for c in curve(p)])
 /(z::Number,p::AbstractPath) = typeof(p)([z/c for c in curve(p)])
@@ -172,6 +174,7 @@ isapprox(::AbstractPath,::AbstractCurve;kw...) = false
 Find the distance from the path `P` to the point `z`.
 """
 dist(z::Number,P::AbstractPath) = minimum(dist(z,C) for C in P)
+
 """ 
 	closest(z,P::AbstractPath) 
 Find the point on the path `P` that lies closest to `z`.

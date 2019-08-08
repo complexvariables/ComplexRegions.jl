@@ -72,56 +72,24 @@ function tangent(L::Line{T},t::Real) where T <: AnyComplex
 	T( (1/t^2+1/(1-t)^2)*L.direction )
 end
 
++(L::Line,z::Number) = Line(L.base+z,direction=L.direction)
+-(L::Line) = Line(-L.base,direction=-L.direction)
+*(L::Line,z::Number) = Line(L.base*z,direction=L.direction*sign(z))
+
+"""
+	inv(L) 
+Invert a line `L` through the origin. In general the inverse is a `Circle` through the inverse of any three points on the line.
+"""
+function inv(L::Line) 
+	w = 1 ./ point(L,[0.25,0.5,0.75])
+	Circle(w...)
+end
+
 # Other methods
 isfinite(::Line) = false
 slope(L::Line) = imag(L.direction)/real(L.direction)
 conj(L::Line) = Line(conj(L.base),direction=conj(L.direction))
 reverse(L::Line) = Line(L.base,direction=-L.direction)
-"""
-	L + z
-	z + L 
-
-Translate a line `L` by a number `z`. 
-"""
-+(L::Line,z::Number) = Line(L.base+z,direction=L.direction)
-+(z::Number,L::Line) = Line(L.base+z,direction=L.direction)
-"""
-	L - z
-
-Translate a line `L` by a number `-z`.
-
-	-L 
-	z - L 
-
-Negate a line `L` (reflect through the origin), and optionally translate by a number `z`.
-"""
--(L::Line) = Line(-L.base,direction=-L.direction)
--(L::Line,z::Number) = Line(L.base-z,direction=L.direction)
--(z::Number,L::Line) = Line(z-L.base,direction=-L.direction)
-"""
-	z*L 
-	L*z 
-
-Multiply a line `L` by real or complex number `z`; i.e., scale and rotate it about the origin.
-"""
-*(L::Line,z::Number) = Line(L.base*z,direction=L.direction*sign(z))
-*(z::Number,L::Line) = Line(L.base*z,direction=L.direction*sign(z))
-"""
-	L/z 
-
-Multiply a line `L` by the number `1/z`; i.e., scale and rotate it about the origin.
-
-	z/L 
-	inv(L) 
-
-Invert a line `L` through the origin (and optionally multiply by the number `1/z`). In general the inverse is a `Circle` through the inverse of any three points on the line.
-"""
-/(L::Line,z::Number) = Line(L.base/z,direction=L.direction/sign(z))
-function /(z::Number,L::Line) 
-	w = z./point(L,[0.25,0.5,0.75])
-	Circle(w...)
-end
-inv(L::Line) = 1/L 
 
 """
 	isapprox(L1::Line,L2::Line; tol=<default>) 

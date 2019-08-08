@@ -79,54 +79,23 @@ function tangent(R::Ray{T},t::Real) where T <: AnyComplex
 	R.reverse ? T(-τ/t^2) : T(τ/(1-t)^2)
 end
 
++(R::Ray,z::Number) = Ray(R.base+z,R.angle,R.reverse)
+-(R::Ray) = Ray(-R.base,mod2pi(R.angle+pi),R.reverse)
+*(R::Ray,z::Number) = Ray(z*R.base,mod2pi(R.angle+sign(z)),R.reverse)
+
+"""
+	inv(R) 
+Invert the ray `R` through the origin. In general the inverse is an `Arc`.
+"""
+function inv(R::Ray) 
+	w = 1 ./ point(R,[0,0.5,1])
+	Arc(w...)
+end
+
 # Other methods
 isfinite(::Ray) = false
 conj(R::Ray) = Ray(conj(R.base),-R.angle,R.reverse)
 reverse(R::Ray) = Ray(R.base,R.angle,!R.reverse)
-
-"""
-	R + z
-	z + R 
-Translate the ray `R` by a number `z`. 
-"""
-+(R::Ray,z::Number) = Ray(R.base+z,R.angle,R.reverse)
-+(z::Number,R::Ray) = Ray(R.base+z,R.angle,R.reverse)
-
-"""
-	R - z
-Translate the ray `R` by a number `-z`.
-
-	-R 
-	z - R 
-Negate a ray `R` (reflect through the origin), and optionally translate by a number `z`.
-"""
--(R::Ray,z::Number) = Ray(R.base-z,R.angle,R.reverse)
--(z::Number,R::Ray) = Ray(z-R.base,R.angle,R.reverse)
--(R::Ray) = Ray(-R.base,mod2pi(R.angle+pi),R.reverse)
-
-# these need to recompute the final parameter values
-"""
-	z*R 
-	R*z 
-Multiply the ray `R` by real or complex number `z`; i.e., scale and rotate it about the origin.
-"""
-*(R::Ray,z::Number) = Ray(z*R.base,mod2pi(R.angle+sign(z)),R.reverse)
-*(z::Number,R::Ray) = *(R,z)
-
-"""
-	R/z 
-Multiply the ray `R` by the number `1/z`; i.e., scale and rotate it about the origin.
-
-	z/R 
-	inv(R) 
-Invert the ray `R` through the origin (and optionally multiply by the number `1/z`). In general the inverse is an `Arc`.
-"""
-/(R::Ray,z::Number) = *(R,1/z)
-function /(z::Number,R::Ray) 
-	w = z./point(R,[0,0.5,1])
-	Arc(w...)
-end
-inv(R::Ray) = 1/R
 
 """
 	isapprox(R1::Ray,R2::Ray; tol=<default>) 

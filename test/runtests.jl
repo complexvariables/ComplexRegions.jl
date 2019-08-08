@@ -36,6 +36,7 @@ end
 	@test( 2/c isa Line )
 	c = Circle(1f0,-1im,0)
 	@test( c.radius ≈ 1/sqrt(2f0) )
+	c = Circle(1,-1im,false)
 	@test( all( abs(arg(c,c(t))-t) < 1e-11 for t in 0.1:0.1:1 ) )
 	zz = point(5im - c/3im,.23)
 	@test( abs(zz-(5im-c.center/3im)) ≈ c.radius/3 )

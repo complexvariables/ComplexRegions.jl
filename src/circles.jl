@@ -61,7 +61,8 @@ end
 
 # Required methods
 function point(C::Circle,t::Real)
-	C.ccw ? C.center + C.radius*exp(2im*pi*t) : C.center + C.radius*exp(-2im*pi*t)
+	z = C.ccw ? exp(2im*pi*t) : exp(-2im*pi*t)
+	C.center + typeof(C.center)(z*C.radius)
 end
 (C::Circle)(t::Real) = point(C,t)
 
@@ -86,53 +87,23 @@ function tangent(C::Circle{T},t::Real) where T <: AnyComplex
 	T( 2π*C.radius*unittangent(C,t) )
 end
 
++(C::Circle,z::Number) = Circle(C.center+z,C.radius,C.ccw)
+-(C::Circle) = Circle(-C.center,C.radius,C.ccw)
+*(C::Circle,z::Number) = Circle(C.center*z,C.radius*abs(z),C.ccw)
+
+"""
+	inv(C) 
+Invert the circle `C` through the origin. In general the inverse is a `Circle`, though the result is a `Line` if `C` passes through the origin.
+"""
+function inv(C::Circle) 
+	w = 1 ./ point(C,[0,0.25,0.5])
+	Circle(w...)
+end
+
 # Other methods
 isfinite(::Circle) = true 
 conj(C::Circle) = Circle(conj(C.center),C.radius,!C.ccw)
 reverse(C::Circle) = Circle(C.center,C.radius,!C.ccw)
-
-"""
-	C + z
-	z + C 
-Translate the circle `C` by a number `z`. 
-"""
-+(C::Circle,z::Number) = Circle(C.center+z,C.radius,C.ccw)
-+(z::Number,C::Circle) = Circle(C.center+z,C.radius,C.ccw)
-
-"""
-	C - z
-Translate the circle `C` by a number `-z`.
-
-	-C 
-	z - C 
-Negate a circle `C` (reflect through the origin), and optionally translate by a number `z`.
-"""
--(C::Circle,z::Number) = Circle(C.center-z,C.radius,C.ccw)
--(C::Circle) = Circle(-C.center,C.radius,C.ccw)
--(z::Number,C::Circle) = z + (-C)
-
-"""
-	z*C 
-	C*z 
-Multiply the circle `C` by real or complex number `z`; i.e., scale and rotate it about the origin.
-"""
-*(C::Circle,z::Number) = Circle(C.center*z,C.radius*abs(z),C.ccw)
-*(z::Number,C::Circle) = Circle(C.center*z,C.radius*abs(z),C.ccw)
-
-"""
-	C/z 
-Multiply the circle `C` by the number `1/z`; i.e., scale and rotate it about the origin.
-
-	z/C 
-	inv(C) 
-Invert the circle `C` through the origin (and optionally multiply by the number `1/z`). In general the inverse is a `Circle`, though the result is a `Line` if `C` passes through the origin.
-"""
-/(C::Circle,z::Number) = Circle(C.center/z,C.radius/abs(z),C.ccw)
-function /(z::Number,C::Circle) 
-	w = z./point(C,[0,0.25,0.5])
-	Circle(w...)
-end
-inv(C::Circle) = 1/C
 
 """
 	isapprox(C1::Circle,C2::Circle; tol=<default>) 

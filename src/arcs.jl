@@ -87,66 +87,32 @@ function tangent(A::Arc{T},t::Real) where T <: AnyComplex
 	T( tangent(A.circle,A.start+t*A.delta)*A.delta )
 end
 
-# Other methods
-isfinite(::Arc) = true
-conj(A::Arc) = Arc(conj(A(0)),conj(A(0.5)),conj(A(1)))
-reverse(A::Arc) = Arc(A(1),A(0.5),A(0))
-
-"""
-	A + z
-	z + A 
-
-Translate the arc `A` by a number `z`. 
-"""
 +(A::Arc,z::Number) = Arc(A.circle+z,A.start,A.delta)
-+(z::Number,A::Arc) = Arc(z+A.circle,A.start,A.delta)
-
-"""
-	A - z
-
-Translate the arc `A` by a number `-z`.
-
-	-A 
-	z - A 
-
-Negate a arc `A` (reflect through the origin), and optionally translate by a number `z`.
-"""
--(A::Arc,z::Number) = Arc(A.circle-z,A.start,A.delta)
 function -(A::Arc)
 	ti = mod(A.start+0.5,1)
 	Arc(-A.circle,ti,A.delta)
 end
--(z::Number,A::Arc) = z + (-A)
 
-"""
-	z*A 
-	A*z 
-
-Multiply the arc `A` by real or complex number `z`; i.e., scale and rotate it about the origin.
-"""
 function *(A::Arc,z::Number)
 	phi = angle(z)/(2*pi)
 	ti = A.circle.ccw ? mod(A.start+phi,1) : mod(A.start-phi,1)
 	Arc(z*A.circle,ti,A.delta)
 end
-*(z::Number,A::Arc) = A*z
 
 """
-	A/z 
-
-Multiply the arc `A` by the number `1/z`; i.e., scale and rotate it about the origin.
-
-	z/A 
 	inv(A) 
 
-Invert the arc `A` through the origin (and optionally multiply by the number `1/z`). In general the inverse is an `Arc`, though the result is a `Segment` if the arc's circle passes through the origin.
+Invert the arc `A` through the origin. In general the inverse is an `Arc`, though the result is a `Segment` if the arc's circle passes through the origin.
 """
-/(A::Arc,z::Number) = A*(1/z)
-function /(z::Number,A::Arc) 
-	w = z./point(A,[0,0.5,1])
+function inv(A::Arc) 
+	w = 1 ./ point(A,[0,0.5,1])
 	Arc(w...)
 end
-inv(A::Arc) = 1/A
+
+# Other methods
+isfinite(::Arc) = true
+conj(A::Arc) = Arc(conj(A(0)),conj(A(0.5)),conj(A(1)))
+reverse(A::Arc) = Arc(A(1),A(0.5),A(0))
 
 """
 	isapprox(A1::Arc,A2::Arc; tol=<default>) 

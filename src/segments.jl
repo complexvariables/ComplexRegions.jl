@@ -53,56 +53,24 @@ arg(S::Segment,z::Number) = (real(z) - real(S.za)) / (real(S.zb) - real(S.za))
 tangent(S::Segment,t::Real) = S.zb - S.za
 unittangent(S::Segment,t::Real=0) = sign(S.zb-S.za)
 
++(S::Segment,z::Number) = Segment(S.za+z,S.zb+z)
+-(S::Segment) = Segment(-S.za,-S.zb)
+*(S::Segment,z::Number) = Segment(S.za*z,S.zb*z)
+
+"""
+	inv(S) 
+Invert the segment `S` through the origin. In general the inverse is an `Arc`, though the result is a `Segment` if `S` would pass through the origin when extended.
+"""
+function inv(S::Segment) 
+	w = 1 ./ point(S,[0,0.5,1])
+	Arc(w...)
+end
+
 # Other methods
 isfinite(::Segment) = true
 conj(S::Segment) = Segment(conj(S.za),conj(S.zb))
 reverse(S::Segment) = Segment(S.zb,S.za)
-"""
-	S + z
-	z + S 
 
-Translate the segment `S` by a number `z`. 
-"""
-+(S::Segment,z::Number) = Segment(S.za+z,S.zb+z)
-+(z::Number,S::Segment) = Segment(S.za+z,S.zb+z)
-"""
-	S - z
-
-Translate the segment `S` by a number `-z`.
-
-	-S 
-	z - S 
-
-Negate a segment `S` (reflect through the origin), and optionally translate by a number `z`.
-"""
--(S::Segment,z::Number) = Segment(S.za-z,S.zb-z)
--(z::Number,S::Segment) = Segment(z-S.za,z-S.zb)
--(S::Segment) = Segment(-S.za,-S.zb)
-# these need to recompute the final parameter values
-"""
-	z*S 
-	S*z 
-
-Multiply the segment `S` by real or complex number `z`; i.e., scale and rotate it about the origin.
-"""
-*(S::Segment,z::Number) = Segment(S.za*z,S.zb*z)
-*(z::Number,S::Segment) = Segment(S.za*z,S.zb*z)
-"""
-	S/z 
-
-Multiply the segment `S` by the number `1/z`; i.e., scale and rotate it about the origin.
-
-	z/S 
-	inv(S) 
-
-Invert the segment `S` through the origin (and optionally multiply by the number `1/z`). In general the inverse is an `Arc`, though the result is a `Segment` if `S` would pass through the origin when extended.
-"""
-/(S::Segment,z::Number) = *(S,1/z)
-function /(z::Number,S::Segment) 
-	w = z./point(S,[0,0.5,1])
-	Arc(w...)
-end
-inv(S::Segment) = 1/S
 sign(S::Segment) = unittangent(S)
 
 """
