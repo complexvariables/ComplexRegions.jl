@@ -153,6 +153,11 @@ conj(C::Curve) = Curve(t->conj(C.point(t)))
 reverse(C::Curve) = Curve(t->C.point(1-t))
 isfinite(C::Curve) = true
 
++(C::Curve,z::Number) = Curve(t->C.point(t)+z,C.tangent)
+-(C::Curve) = Curve(t->-C.point(t),t->-C.tangent(t))
+*(C::Curve,z::Number) = Curve(t->C.point(t)*z,t->C.tangent(t)*z)
+inv(C::Curve) = Curve(t->1/C.point(t),t->-C.tangent(t)/C.point(t)^2)
+
 #
 # generic closed curve type
 # 
@@ -161,33 +166,34 @@ isfinite(C::Curve) = true
 (type) Smooth closed curve defined by an explicit function of a real paramerter in [0,1]. 
 """
 struct ClosedCurve <: AbstractClosedCurve 
-	point 
-	tangent
-	function ClosedCurve(f,df=t->fdtangent(f,t);tol=DEFAULT[:tol])
-		@assert isapprox(f(0),f(1);rtol=tol,atol=tol) "Curve does not close"
-		new(f,df)
+	curve::Curve
+	function ClosedCurve(c::Curve;tol=DEFAULT[:tol])
+		@assert isapprox(point(c,0),point(c,1);rtol=tol,atol=tol) "Curve does not close"
+		new(c)
 	end
 end
 
 """
 	ClosedCurve(f,arclen=missing;tol=DEFAULT[:tol])
 	ClosedCurve(f,a,b,arclen=missing;tol=DEFAULT[:tol])
-
 Construct a `ClosedCurve` object from the complex-valued function `point` accepting an argument in the interval [0,1]. The constructor checks whether `f(0)≈f(1)` to tolerance `tol`. 
 
 If `a` and `b` are given, they are the limits of the parameter in the call to the supplied `f`. However, the resulting object will be defined on [0,1], which is internally scaled to [a,b].
 """
-ClosedCurve(f,a::Real,b::Real;kw...) = ClosedCurve(t -> f(scaleto(a,b,t));kw...)
-function ClosedCurve(f,df,a::Real,b::Real;kw...)
-	ClosedCurve(t->f(scaleto(a,b,t)), t->df(scaleto(a,b,t)); kw...)
-end
+ClosedCurve(f,df=t->fdtangent(f,t);kw...) = ClosedCurve(Curve(f,df;kw...))
+ClosedCurve(f,a::Real,b::Real;kw...) = ClosedCurve(Curve(f,a,b;kw...))
+ClosedCurve(f,df,a::Real,b::Real;kw...) = ClosedCurve(Curve(f,df,a,b;kw...))
 
-point(C::ClosedCurve,t::Real) = C.point(t)
-(C::ClosedCurve)(t::Real) = point(C,t)
-tangent(C::ClosedCurve,t::Real) = C.tangent(t)
-conj(C::ClosedCurve) = ClosedCurve(t->conj(C.point(t)))
-reverse(C::ClosedCurve) = ClosedCurve(t->C.point(1-t))
-isfinite(C::ClosedCurve) = true
+point(C::ClosedCurve,t::Real) = point(C.curve,t)
+(C::ClosedCurve)(t::Real) = point(C.curve,t)
+tangent(C::ClosedCurve,t::Real) = tangent(C.curve,t)
+conj(C::ClosedCurve) = ClosedCurve(conj(C.curve))
+reverse(C::ClosedCurve) = ClosedCurve(reverse(C.curve))
+isfinite(C::ClosedCurve) = isfinite(C.curve) 
++(C::ClosedCurve,z::Number) = ClosedCurve(C.curve+z)
+-(C::ClosedCurve) = ClosedCurve(-C.curve)
+*(C::ClosedCurve,z::Number) = ClosedCurve(C.curve*z)
+inv(C::ClosedCurve) = ClosedCurve(inv(C.curve))
 
 include("lines.jl")
 include("rays.jl")

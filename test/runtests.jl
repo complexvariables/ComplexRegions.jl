@@ -15,8 +15,10 @@ end
 	f = t -> 2*cos(t) + 1im*sin(t)
 	@test( Curve(f,-1,1) isa Curve)
 	@test( point(Curve(f,-1,1),0.5) ≈ f(0) )
-	@test( ClosedCurve(t -> 2*cos(t) + 1im*sin(t),0,2π) isa ClosedCurve)
-	@test( point(ClosedCurve(f,0,2*pi),0.25) ≈ f(pi/2) )
+	f = t -> 2*cos(t) + 3im*sin(t)
+	c = ClosedCurve(f,0,2π)
+	@test( point(5-3im*c,0.125) ≈ 5-3im*f(pi/4) )
+	@test( angle(normal(c,0.75)) ≈ 0.5π )
 end
 
 @testset "Circles" begin
