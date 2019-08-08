@@ -25,16 +25,16 @@ end
 
 function fdtangent(z,t::Real) 
 	ϵ = eps(typeof(float(t)))
-	ϵ3 = ϵ^(1/3)
-	# Use a finite difference approximation: 1st order at edges, 2nd otherwise
+	ϵ3 = 0.5*ϵ^(1/3)
+	# Use 2nd order finite difference approximations
 	if t < ϵ3
-		t0, t1 = t, t+sqrt(ϵ)
+		τ = (-1.5*z(t) + 2*z(t+ϵ3) - 0.5*z(t+2ϵ3)) / ϵ3
 	elseif t > 1-ϵ3
-		t0, t1 = t-sqrt(ϵ), t
+		τ = (1.5*z(t) - 2*z(t-ϵ3) + 0.5*z(t-2ϵ3)) / ϵ3
 	else
-		t0, t1 = t-ϵ3,t+ϵ3 
+		τ = (z(t+ϵ3) - z(t-ϵ3)) / (2ϵ3)
 	end
-	return (z(t1)-z(t0))/(t1-t0)
+	return τ
 end
 
 function adaptpoints(point,utangent,a,b;depth=6,curvemax=0.05)
