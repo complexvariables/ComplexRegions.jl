@@ -1,6 +1,7 @@
 abstract type AbstractCircularPolygon <: AbstractClosedPath end
 abstract type AbstractPolygon <: AbstractCircularPolygon end
 
+sides(p::AbstractCircularPolygon) = curves(p)
 side(p::AbstractCircularPolygon,args...) = curve(p,args...)
 
 function show(io::IO,P::AbstractCircularPolygon)
@@ -20,7 +21,7 @@ Compute the winding number of `P` about the point `z`. Each counterclockwise rot
 The result is unreliable for points on `P` (for which the problem is ill-posed).
 """
 function winding(z::Number,p::AbstractCircularPolygon)
-	Integer(sum( raycrossing(z,s) for s in side(truncate(p)) ))
+	Integer(sum( raycrossing(z,s) for s in sides(truncate(p)) ))
 end
 
 """ 
@@ -45,7 +46,7 @@ struct CircularPolygon <: AbstractCircularPolygon
 	path
 	function CircularPolygon(p::AbstractClosedPath)
 		# Assumes continuity and closure have been checked previously
-		valid = isa.(curve(p),Union{Arc,Segment,Ray})
+		valid = isa.(curves(p),Union{Arc,Segment,Ray})
 		@assert all(valid) "All sides must be an Arc, Segment, or Ray"
 		new(p)
 	end
@@ -63,7 +64,7 @@ function CircularPolygon(p::AbstractVector{T};kw...) where T<:AbstractCurve
 end
 
 # Required methods
-curve(p::CircularPolygon) = curve(p.path) 
+curves(p::CircularPolygon) = curves(p.path) 
 curve(p::CircularPolygon,k::Integer) = curve(p.path,k) 
 arclength(p::CircularPolygon) = arclength(p.path)
 (p::CircularPolygon)(t) = point(p.path,t)
@@ -72,7 +73,7 @@ arclength(p::CircularPolygon) = arclength(p.path)
 function truncate(p::CircularPolygon) 
 	isfinite(p) && return p   # nothing to do
 	# try to find a circle clear of the polygon
-	v = filter(isfinite,vertex(p))
+	v = filter(isfinite,vertices(p))
 	@error "Truncation of CircularPolygon not yet implemented"
 end
 
@@ -89,7 +90,7 @@ struct Polygon <: AbstractPolygon
 	path
 	function Polygon(p::AbstractClosedPath) where T<:AbstractCurve
 		# Assumes continuity and closure have been checked previously
-		valid = isa.(curve(p),Union{Segment,Ray})
+		valid = isa.(curves(p),Union{Segment,Ray})
 		@assert all(valid) "All sides must be a Segment or Ray"
 		new(p)
 	end
@@ -134,14 +135,14 @@ function Polygon(v::AbstractVector)
 end
 
 # Required methods
-curve(p::Polygon) = curve(p.path)
+curves(p::Polygon) = curves(p.path)
 arclength(p::Polygon) = arclength(p.path)
 (p::Polygon)(t) = point(p.path,t)
 
 # Display methods 
 function show(io::IO,::MIME"text/plain",P::Polygon) 
 	print(io,"Polygon with ",length(P)," vertices:")
-	for (v,a) in zip(vertex(P),angle(P))
+	for (v,a) in zip(vertices(P),angles(P))
 		print(io,"\n   ")
 		show(io,MIME("text/plain"),v)
 		print(io,", interior angle ",a/pi,"⋅π")
@@ -150,10 +151,10 @@ end
 
 # Other methods
 """
-	angle(P::Polygon) 
+	angles(P::Polygon) 
 Compute a vector of interior angles at the vertices of the polygon `P`. At a finite vertex these lie in (0,2π]; at an infinite vertex, the angle is in [-2π,0]. 
 """
-function angle(p::Polygon)
+function angles(p::Polygon)
 	# computes a turn angle in (-pi,pi]  (neg = left turn)
 	turn(s1,s2) = π - mod(angle(s2/s1)+π,2π)
 	s = unittangent.(p) 
@@ -161,7 +162,7 @@ function angle(p::Polygon)
 	if n==2  # empty interior 
 		return zeros(2)
 	end
-	v = vertex(p)
+	v = vertices(p)
 	θ = similar(real(s))
 	for k = 1:n 
 		kprev = mod(k-2,n)+1
@@ -190,7 +191,7 @@ Compute a trucated form of the polygon by replacing each pair of rays incident a
 """
 function truncate(p::Polygon,c::Circle) 
 	n = length(p)
-	s,v = side(p),vertex(p)
+	s,v = sides(p),vertices(p)
 	snew = Vector{Any}(undef,n)
 	z_pre = NaN
 	if isa(s[1],Ray) && isa(s[n],Ray)
@@ -224,7 +225,7 @@ Apply `truncate` to `P` using a circle that is centered at the centroid of its f
 function truncate(p::Polygon) 
 	isfinite(p) && return p   # nothing to do
 	# try to find a circle clear of the polygon
-	v = filter(isfinite,vertex(p))
+	v = filter(isfinite,vertices(p))
 	zc = sum(v)/length(v) 
 	R = maximum(@. abs(v - zc))
 	return truncate(p,Circle(zc,2*R))

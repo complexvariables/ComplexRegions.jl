@@ -22,7 +22,7 @@ end
             markercolor --> :black
             markershape --> :circle 
             seriestype := :scatter
-            vertex(P) 
+            vertices(P) 
         end
     end
 end

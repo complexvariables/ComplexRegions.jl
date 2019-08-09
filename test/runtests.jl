@@ -198,14 +198,14 @@ end
 	@test( winding(-0.4+0.5im,p) == 1 )
 	@test( winding(-0.4+0.5im,reverse(p)) == -1 )
 	@test( winding(-4-0.5im,p) == 0 )
-	@test( all( angle(p) .≈ 0.5*pi ) )
+	@test( all( angles(p) .≈ 0.5*pi ) )
 
 	p = Polygon([4,4+3im,3im,-2im,6-2im,6])
 	@test( arclength(p) ≈ (3+4+5+6+2+2) )
 	@test( tangent(p,2.3-length(p)) ≈ -5im )
 	@test( winding(5-im,p) == 1 )
 	@test( winding(-1,p) == 0 )
-	@test( sum(angle(p)) ≈ 4*pi )
+	@test( sum(angles(p)) ≈ 4*pi )
 
 	p = CircularPolygon([Arc(1,2+1im,1im),Segment(1im,-1),Arc(-1,-0.5im,-1im),Segment(-1im,1)])
 	@test( all(winding(z,p)==1 for z in [1+0.5im,1.7+1im,0,-1+0.05*exp(1im*pi/5),-1im+0.05*exp(1im*0.3*pi)]) )
@@ -214,26 +214,26 @@ end
 
 @testset "Unbounded polygons" begin
 	p = Polygon([5,4+3im,3im,-2im,6-2im,(-pi/2,0)])
-	a = angle(p)/pi
+	a = angles(p)/pi
 	@test( a[6] ≈ -0.5  )
 	@test( sum(a.-1) ≈ -2 )
 
 	p = Polygon([(pi/2,pi/2),5,4+3im,3im,-2im,6-2im])
-	a = angle(p)/pi
+	a = angles(p)/pi
 	@test( abs(a[1]) < 1e-10 )
 	@test( sum(a.-1) ≈ -2 )
 	@test( all(winding(z,p)==1 for z in [1+2im,5-1im,5.5+6im]) )
 	@test( all(winding(z,p)==0 for z in [-3im,3+5im,5.5-6im]) )
 
 	p = Polygon([(-pi/2,pi/2),7,4+3im,3im,-2im,6-2im])
-	a = angle(p)/pi
+	a = angles(p)/pi
 	@test( a[1] ≈ -1 )
 	@test( sum(a.-1) ≈ -2 )
 	@test( all(winding(z,p)==1 for z in [4,7-2im,9]) )
 	@test( all(winding(z,p)==0 for z in [4+4im,6+2im,4-3im]) )
 
 	p = Polygon([4+3im,7,(0,0),6-2im,-2im,3im])
-	a = angle(p)/pi
+	a = angles(p)/pi
 	@test( a[3] ≈ -2 )
 	@test( sum(a.-1) ≈ -2 )
 end
