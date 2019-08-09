@@ -153,8 +153,10 @@ function reflect(z::Number,C::Circle)
 end
 
 function show(io::IO,C::Circle)
-	print(IOContext(io,:compact=>true),"Circle(",C.center,",",C.radius,")")
+	orient = C.ccw ? "ccw" : "cw"
+	print(IOContext(io,:compact=>true),"Circle(",C.center,",",C.radius,",",orient,")")
 end
 function show(io::IO,::MIME"text/plain",C::Circle{T}) where {T}
-	print(io,"Circle{$T} in the complex plane:\n   centered at (",C.center,") with radius ",C.radius)
+	orient = C.ccw ? "positively" : "negatively"
+	print(io,"Circle{$T} in the complex plane:\n   centered at (",C.center,") with radius $(C.radius), $(orient) oriented")
 end

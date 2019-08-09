@@ -155,9 +155,9 @@ end
 
 function show(io::IO,::MIME"text/plain",R::Ray{T}) where {T}
 	if R.reverse 
-		print(io,"Ray to ",R.base," at angle ",R.angle)
+		print(io,"Ray from ∞ to ",R.base," at angle ",R.angle)
 	else
-		print(io,"Ray from ",R.base," at angle ",R.angle)
+		print(io,"Ray from ",R.base," to ∞ at angle ",R.angle)
 	end
 end
 

@@ -10,7 +10,7 @@ Return the `k`th curve in the path `P`.
 """
 curve(p::AbstractPath) = @error "No curve() method defined for type $(typeof(p))"
 
-# Methods in common
+# Default implementations
 curve(p::AbstractPath,k::Integer) = curve(p)[k]
 """
 	vertex(P::AbstractPath)
@@ -188,10 +188,10 @@ intersect(P::AbstractPath,C::AbstractCurve) = ∪( [intersect(s,C) for s in curv
 intersect(P1::AbstractPath,P2::AbstractPath) = ∪( [intersect(P1,s) for s in curve(P2)]...  )
 
 function show(io::IO,P::AbstractPath)
-	print(IOContext(io,:compact=>true),typeof(P)," with ",length(P)," segments") 
+	print(IOContext(io,:compact=>true),typeof(P)," with ",length(P)," curves") 
 end
 function show(io::IO,::MIME"text/plain",P::AbstractPath) 
-	print(io,typeof(P)," with ",length(P)," segments")
+	print(io,typeof(P)," with ",length(P)," curves")
 end
 
 abstract type AbstractClosedPath <: AbstractPath end
@@ -227,14 +227,12 @@ Generic implementation of an `AbstractPath`.
 """
 struct Path <: AbstractPath 
 	curve
-	function Path(p::AbstractVector;tol::Real=DEFAULT[:tol])
-		n = length(p)
+	function Path(c::AbstractVector{T};tol::Real=DEFAULT[:tol]) where T<:AbstractCurve
+		n = length(c)
 		for k = 1:n-1
-			@assert p[k] isa AbstractCurve
-			@assert isapprox(point(p[k],1.0),point(p[k+1],0.0),rtol=tol,atol=tol) "Curve endpoints do not match for pieces $(k) and $(k+1)"
+				@assert isapprox(point(c[k],1.0),point(c[k+1],0.0),rtol=tol,atol=tol) "Curve endpoints do not match for pieces $(k) and $(k+1)"
 		end
-		@assert p[end] isa AbstractCurve
-		new(p)
+		new(c)
 	end
 end
 """
@@ -258,7 +256,7 @@ Generic implementation of an `AbstractClosedPath`.
 """
 struct ClosedPath <: AbstractClosedPath 
 	curve
-	function ClosedPath(p::AbstractVector;tol::Real=1e-13)
+	function ClosedPath(p::AbstractVector{T};tol=DEFAULT[:tol]) where T<:AbstractCurve
 		q = Path(p)
 		@assert isapprox(point(q,length(q)),point(q,0),rtol=tol,atol=tol) "Path endpoints do not match"
 		new(p)
@@ -299,9 +297,19 @@ function rectangle(xlim::AbstractVector,ylim::AbstractVector)
 	y = [ylim[1],ylim[1],ylim[2],ylim[2],ylim[1]]
 	Polygon( [Segment(complex(x[k],y[k]),complex(x[k+1],y[k+1])) for k in 1:4] )
 end
+
 """ 
 	rectangle(z1,z2) 
 Construct the rectangle whose opposing corners are the given complex values. 
 """
 rectangle(z1::AnyComplex,z2::AnyComplex) = rectangle([real(z1),real(z2)],[imag(z1),imag(z2)])
 rectangle(z1::Number,z2::Number) = rectangle(promote(float(z1),float(z2))...)
+
+"""
+	n_gon(n)
+Construct a regular n-gon with vertices on the unit circle.
+"""
+function n_gon(n::Integer) 
+	@assert n > 2 "Must have at least three vertices"
+	Polygon( exp.(2im*pi*(0:n-1)/n) ) 
+end

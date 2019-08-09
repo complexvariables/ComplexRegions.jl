@@ -141,9 +141,10 @@ arclength(p::Polygon) = arclength(p.path)
 # Display methods 
 function show(io::IO,::MIME"text/plain",P::Polygon) 
 	print(io,"Polygon with ",length(P)," vertices:")
-	for v in vertex(P)
-		print("\n   ")
+	for (v,a) in zip(vertex(P),angle(P))
+		print(io,"\n   ")
 		show(io,MIME("text/plain"),v)
+		print(io,", interior angle ",a/pi,"⋅π")
 	end
 end
 
@@ -173,7 +174,6 @@ function angle(p::Polygon)
 				C = Circle(0,100*R)
 				zprev = intersect(p[kprev],C)
 				znext = intersect(p[k],C) 
-				@show zprev,znext
 				if angle(znext[1]/zprev[1]) < 0 
 					θ[k] -= 2π
 				end
