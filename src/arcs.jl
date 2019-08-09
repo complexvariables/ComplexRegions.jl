@@ -43,8 +43,8 @@ function Arc(a::Number,m::Number,b::Number)
 			ti = 1-ti
 			delta = 1-delta 
 		end	
+		Arc(C,ti,delta)
 	end
-	Arc(C,ti,delta)
 end
 
 # Complex type converters
