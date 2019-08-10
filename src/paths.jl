@@ -288,29 +288,3 @@ end
 
 # 
 include("polygons.jl")
-
-"""
-	rectangle(xlim,ylim) 
-Construct the rectangle defined by `xlim[1]`` < x < `xlim[2]`, `ylim[1]`` < y < `ylim[2]`, where z=complex(x,y).
-"""
-function rectangle(xlim::AbstractVector,ylim::AbstractVector)  
-	x = [xlim[1],xlim[2],xlim[2],xlim[1],xlim[1]]
-	y = [ylim[1],ylim[1],ylim[2],ylim[2],ylim[1]]
-	Polygon( [Segment(complex(x[k],y[k]),complex(x[k+1],y[k+1])) for k in 1:4] )
-end
-
-""" 
-	rectangle(z1,z2) 
-Construct the rectangle whose opposing corners are the given complex values. 
-"""
-rectangle(z1::AnyComplex,z2::AnyComplex) = rectangle([real(z1),real(z2)],[imag(z1),imag(z2)])
-rectangle(z1::Number,z2::Number) = rectangle(promote(float(z1),float(z2))...)
-
-"""
-	n_gon(n)
-Construct a regular n-gon with vertices on the unit circle.
-"""
-function n_gon(n::Integer) 
-	@assert n > 2 "Must have at least three vertices"
-	Polygon( exp.(2im*pi*(0:n-1)/n) ) 
-end

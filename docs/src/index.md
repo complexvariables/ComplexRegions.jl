@@ -1,8 +1,8 @@
-# ComplexValues
+# ComplexRegions
 
-This package provides types and methods that are useful for working with curves and regions in the (extended) complex plane. 
+This package provides types and methods that are useful for working with curves and regions in the (extended) complex plane.
 
-# Examples
+# [Examples](@id examples_home)
 
 ```@repl 1
 using ComplexRegions

@@ -186,7 +186,7 @@ function angles(p::Polygon)
 end
 
 """
-	trunctate(P::Polygon,C::Circle) 
+	truncate(P::Polygon,C::Circle) 
 Compute a trucated form of the polygon by replacing each pair of rays incident at infinity with two segments connected by an arc along the given circle. This is *not* a true clipping of the polygon, as finite sides are not altered. The result is either a CircularPolygon or the original `P`. 
 """
 function truncate(p::Polygon,c::Circle) 
@@ -219,7 +219,7 @@ function truncate(p::Polygon,c::Circle)
 end
 
 """
-	trunctate(P::Polygon) 
+	truncate(P::Polygon) 
 Apply `truncate` to `P` using a circle that is centered at the centroid of its finite vertices, and a radius twice the maximum from the centroid to the finite vertices. 
 """
 function truncate(p::Polygon) 
@@ -229,4 +229,32 @@ function truncate(p::Polygon)
 	zc = sum(v)/length(v) 
 	R = maximum(@. abs(v - zc))
 	return truncate(p,Circle(zc,2*R))
+end
+
+# Special polygon constructors
+
+"""
+	rectangle(xlim,ylim) 
+Construct the rectangle defined by `xlim[1]`` < x < `xlim[2]`, `ylim[1]`` < y < `ylim[2]`, where z=complex(x,y).
+"""
+function rectangle(xlim::AbstractVector,ylim::AbstractVector)  
+	x = [xlim[1],xlim[2],xlim[2],xlim[1],xlim[1]]
+	y = [ylim[1],ylim[1],ylim[2],ylim[2],ylim[1]]
+	Polygon( [Segment(complex(x[k],y[k]),complex(x[k+1],y[k+1])) for k in 1:4] )
+end
+
+""" 
+	rectangle(z1,z2) 
+Construct the rectangle whose opposing corners are the given complex values. 
+"""
+rectangle(z1::AnyComplex,z2::AnyComplex) = rectangle([real(z1),real(z2)],[imag(z1),imag(z2)])
+rectangle(z1::Number,z2::Number) = rectangle(promote(complex(float(z1)),complex(float(z2)))...)
+
+"""
+	n_gon(n)
+Construct a regular n-gon with vertices on the unit circle.
+"""
+function n_gon(n::Integer) 
+	@assert n > 2 "Must have at least three vertices"
+	Polygon( exp.(2im*pi*(0:n-1)/n) ) 
 end

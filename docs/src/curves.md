@@ -1,24 +1,118 @@
 # Curves
 
-A **curve** is meant to be a smooth, non-self-intersecting curve in the extended complex plane. There is a generic [`Curve`](@ref) type that requires you to specify an explicit parameterization; it is *not* checked for smoothness or even continuity.
+A **curve** is meant to be a smooth, non-self-intersecting curve in the extended complex plane. There is a generic [Curve](@ref) type that requires you to specify an explicit parameterization; it is *not* checked for smoothness or even continuity.
 
-## Abstract interface
+## [Abstract interface](@id interface_curves)
+
+Every `AbstractCurve` type is expected to provide the following methods. (Here `C` represents a value of type `AbstractCurve` and `z` is a number.)
+
+`point(C,t::Real)`\
+Return a complex value from a parameterization of the curve over the interval [0,1].
+
+`tangent(C,t::Real)`\
+Return a unit complex value with the same argument as the tangent to `C` at `t`.
+
+`reverse(C)`\
+Construct the curve identical to `C` except with the traversal direction reversed.
+
+`isfinite(C)`\
+True if the curve does not pass through infinity.
+
+`conj(C)`\
+Construct the complex conjugate of the curve.
+
+`C+z`\
+Translate the curve by `z`.
+
+`-C`\
+Negate the curve.
+
+`C*z`\
+Multiply the curve `C` by complex number `z`; i.e., scale and rotate it about the origin.
+
+`inv(C)`\
+Invert the curve pointwise.
+
+There are also default implementations of the following methods:
+
+`point(C,t::AbstractArray{T}) where T<:Real`\
+Vectorization of the `point` method. 
+
+`z+C,C-z,z-C,z*C,C/z,z/C`
+Like the above but with operands in different orders.
+
+`unittangent(C,t::Real)`\
+Return a unit complex value with the same argument as the tangent to `C` at `t`.
+
+`normal(C,t::Real)`\
+Return a unit complex value with the same argument as the (leftward) normal to `C` at `t`.
+
+`plotdata(C)`\
+Return a vector of complex values that should be suitable for making a plot.
+
+There is also an `AbstractClosedCurve` subtype that is used to distinguish curves that close. It has no special definitions of its own.
 
 ## Generic types
 
 ### Curve
 
+A `Curve` represents an implementation of `AbstractCurve` that requires only an explicit parameterization of the curve. Given the (bounded) complex-valued function $f$ defined on $[0,1]$, then `C=Curve(f)` represents the curve $z=f(t)$. If $f$ is defined on $[a,b]$ instead, then `C=Curve(f,a,b)` is appropriate, but all future work with `C` uses the standard interval $[0,1]$ for the parameter. All `Curve` values are expected to be finite; i.e., `isfinite(C)` will always be true.
+
+By default a tangent to `C` is computed when needed using a simple finite difference, resulting in less precision than the representation of the points on `C` (particularly near the endpoints). If an accurate function `df` is available for the complex-valued tangent $z'(t)$, it can be used via `Curve(f,df)` or `Curve(f,df,a,b)`.
+
 ### ClosedCurve
+
+A `ClosedCurve` implements `AbstractClosedCurve` and is similar to a `Curve`, but the parameterization is checked against $f(0)\approx f(1)$ (or $f(b)\approx f(a)$), up to a tolerance that is the global default if not specified.
 
 ## Specific subtypes
 
+The following important particular types of curves are provided, together with appropriate particular methods. All of them provide the syntax `C(t)` as equivalent to `point(C,t)`.
+
+Each type below is parameterized; e.g., `Line{T}`, where `T` is either a native `Complex` type, or a `Polar` or `Spherical` type from `ComplexValues`. Points on the curve have the type `T`, which mainly affects how they are plotted. You can convert the value type, so for example, `Spherical(C)` will be plotted on the Riemann sphere.
+
+In addition to the minimal methods set by the `AbstractCurve` definition above, each of these types provides the following methods:
+
+`arclength`\
+Arc length of the curve (which may be infinite).
+
+`arg`\
+Find the argument (parameter value) of a point on the curve.
+
+`isapprox`\
+Compares two values of the same type to see if they represent the same actual curve, up to orientation, within a tolerance. Can also be invoked as `≈`, which is "\approx" followed by a TAB.
+
+`isleft`, `isright`\
+Determine whether a point lies "to the left" or "to the right" of the curve in its given orientation. (Not defined for an `Arc`.)
+
+`dist`, `closest`\
+Respectively, find the distance from a point to the curve, or find the point on the curve nearest to a given number.
+
 ### Line
+
+Use `L=Line(a,b)` to create a line through the values $a$ and $b$. Given a point `p` on the line and a complex `s` whose complex sign gives the direction of the line, another syntax is `Line(p,direction=s)`. Finally, with a point `p` on the line and the angle `θ` of the line, use `Line(p,angle=θ)`.
+
+Like other curves, a line is parameterized over $[0,1]$, with `L(0)` and `L(1)` both being infinity. Use `reflect(z,L)` to find the reflection of a point `z` across line `L`.
 
 ### Ray
 
+Use `Ray(z,θ)` to construct a ray starting at `z` and extending to infinity at the angle `θ`. Use `Ray(z,θ,true)` to reverse the ray, so it extends from infinity to `z`.
+
 ### Segment
+
+`Segment(a,b)` constructs the line segment from `a` to `b`.
 
 ### Circle
 
+`Circle(z,r)` constructs a circle centered at `z` with radius `r`, oriented counterclockwise (positively). Use`Circle(z,r,false)` to make the circle with clockwise orientation.
+
+`Circle(a,b,c)` constructs the circle through the points `a`, `b`, and `c`. The ordering of the points determines the orientation of the circle. If the points are collinear, a `Line` is returned instead.
+
+Use `reflect(z,C)` to reflect a point `z` through the circle `C`.
+
 ### Arc
 
+`Arc(a,b,c)` constructs the circular arc through the given three points. If the points are collinear, a `Segment` is returned.
+
+Given a Circle `C`, the syntax `Arc(C,start,delta)` constructs an arc from `C` starting at the given `start` value and extending an amount `delta`. These latter values are expressed as fractions of a full rotation starting from the real axis. If `delta` is negative, it effectively reverses the orientation of `C`.
+
+## [Examples](@id examples_curves)

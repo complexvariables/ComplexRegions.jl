@@ -9,7 +9,10 @@ makedocs(sitename="ComplexRegions.jl",
         "Home" => "index.md",
         "Introduction" => "introduction.md",
         "Curves" => "curves.md",
-        "Paths" => "paths.md"
+        "Paths" => "paths.md",
+        "Intersections" => "intersections.md",
+        "Regions" => "regions.md",
+        "API Reference" => "api.md"
 		],
 	modules = [ComplexRegions],
     doctest = true
