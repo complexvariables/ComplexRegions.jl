@@ -13,10 +13,8 @@ curves(p::AbstractPath) = @error "No curves() method defined for type $(typeof(p
 Return the `k`th curve in the path `P`. 
 """
 curve(p::AbstractPath,k::Integer) = curves(p)[k]
-"""
-	vertices(P::AbstractPath)
-Return an array of the vertices (endpoints of the curves) of the path `P`. The length is one greater than the number of curves in `P`.
 
+"""
 	vertex(P::AbstractPath,k::Integer) 
 Return the `k`th vertex of the path `P`.
 """
@@ -31,6 +29,11 @@ function vertex(P::AbstractPath,k::Integer)
 		throw(BoundsError(P,k))
 	end
 end
+
+"""
+	vertices(P::AbstractPath)
+Return an array of the vertices (endpoints of the curves) of the path `P`. The length is one greater than the number of curves in `P`.
+"""
 function vertices(P::AbstractPath) 
 	[ vertex(P,k) for k = 1:length(P)+1]
 end
@@ -202,14 +205,17 @@ abstract type AbstractClosedPath <: AbstractPath end
 Return the `k`th curve in the path `P`. The index is applied circularly; e.g, if the closed path has n curves, then ...,1-n,1,1+n,... all refer to the first curve. 
 """
 curve(p::AbstractClosedPath,k::Integer) = curves(p)[mod(k-1,length(p))+1]
-"""
-	vertices(P::AbstractClosedPath)
-Return an array of the unique vertices (endpoints of the curves) of the closed path `P`. The length is equal the number of curves in `P`, i.e., the first/last vertex is not duplicated.
 
+"""
 	vertex(P::AbstractPath,k::Integer) 
 Return the `k`th vertex of the path `P`. The index is applied circularly; e.g, if the closed path has n curves, then ...,1-n,1,1+n,... all refer to the first vertex. 
 """
 vertex(P::AbstractClosedPath,k::Integer) = point(curve(P,k),0)
+
+"""
+	vertices(P::AbstractClosedPath)
+Return an array of the unique vertices (endpoints of the curves) of the closed path `P`. The length is equal the number of curves in `P`, i.e., the first/last vertex is not duplicated.
+"""
 vertices(P::AbstractClosedPath) = [ vertex(P,k) for k = 1:length(P) ]
 
 function sideargs(p::AbstractClosedPath,t) 
@@ -231,7 +237,7 @@ struct Path <: AbstractPath
 	function Path(c::AbstractVector{T};tol::Real=DEFAULT[:tol]) where T<:AbstractCurve
 		n = length(c)
 		for k = 1:n-1
-				@assert isapprox(point(c[k],1.0),point(c[k+1],0.0),rtol=tol,atol=tol) "Curve endpoints do not match for pieces $(k) and $(k+1)"
+			@assert isapprox(point(c[k],1.0),point(c[k+1],0.0),rtol=tol,atol=tol) "Curve endpoints do not match for pieces $(k) and $(k+1)"
 		end
 		new(c)
 	end
@@ -286,5 +292,13 @@ function isleft(z::Number,P::AbstractClosedPath)
 	isleft(z,Polygon(P.(t)))
 end
 
-# 
+# Find a circle that fully encloses all the finite vertices of a path.
+function enclosing_circle(p::AbstractPath,expansion=2)
+	v = filter(isfinite,vertices(p))
+	isempty(v) && error("No finite vertices found.")
+	zc = sum(v)/length(v) 
+	R = maximum(@. abs(v - zc))
+	return Circle(zc,expansion*R)
+end
+
 include("polygons.jl")

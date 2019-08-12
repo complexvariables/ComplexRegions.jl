@@ -22,8 +22,22 @@ end
             markercolor --> :black
             markershape --> :circle 
             seriestype := :scatter
-            vertices(P) 
+            ComplexRegions.vertices(P) 
         end
+    end
+end
+
+@recipe function f(p::AbstractCircularPolygon;vertices=false)
+    if isfinite(p)
+        p.path 
+    else
+        C = ComplexRegions.enclosing_circle(p,8)
+        q = truncate(p,C)
+        z,R = C.center,C.radius/4
+        xlims --> (real(z)-R,real(z)+R)
+        ylims --> (imag(z)-R,imag(z)+R)
+        vertices := vertices
+        q.path
     end
 end
 

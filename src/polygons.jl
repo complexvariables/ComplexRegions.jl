@@ -194,7 +194,7 @@ function truncate(p::Polygon,c::Circle)
 	s,v = sides(p),vertices(p)
 	snew = Vector{Any}(undef,n)
 	z_pre = NaN
-	if isa(s[1],Ray) && isa(s[n],Ray)
+	if isa(s[1],Ray) && isinf(point(s[1],0))
 		# recognize that first side is actually the return from an infinite vertex 
 		z_pre = intersect(c,s[n])[1]
 	end
@@ -224,11 +224,7 @@ Apply `truncate` to `P` using a circle that is centered at the centroid of its f
 """
 function truncate(p::Polygon) 
 	isfinite(p) && return p   # nothing to do
-	# try to find a circle clear of the polygon
-	v = filter(isfinite,vertices(p))
-	zc = sum(v)/length(v) 
-	R = maximum(@. abs(v - zc))
-	return truncate(p,Circle(zc,2*R))
+	return truncate(p,enclosing_circle(p))
 end
 
 # Special polygon constructors
