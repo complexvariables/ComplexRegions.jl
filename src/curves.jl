@@ -126,6 +126,22 @@ plotdata(C::AbstractCurve) = adaptpoints(t->point(C,t),t->unittangent(C,t),0,1)
 show(io::IO,C::AbstractCurve) = print(io,"Complex-valued $(typeof(C))")
 show(io::IO,::MIME"text/plain",C::AbstractCurve) = print(io,"Complex-valued $(typeof(C))")
 
+# Generic documentation
+# (so that each subtype doesn't have to repeat them)
+
+@doc """
+	Complex(::AbstractCurve) 
+Interpret a curve as having points of type Complex.
+""" Complex(::AbstractCurve) 
+@doc """
+	Polar(::AbstractCurve) 
+Interpret a curve as having points of type Polar.
+""" Polar(::AbstractCurve) 
+@doc """
+	Spherical(::AbstractCurve) 
+Interpret a curve as having points of type Spherical.
+""" Spherical(::AbstractCurve) 
+
 #
 # generic curve type 
 #

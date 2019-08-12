@@ -2,11 +2,26 @@ AbstractJordan = Union{AbstractClosedCurve,AbstractClosedPath}
 abstract type AbstractRegion end
 abstract type AbstractConnectedRegion{N} <: AbstractRegion end
 
+# Required methods
+"""
+	boundary(R::AbstractRegion)
+Return the boundary of a region. Depending on the type of region, this might be a vector.
+"""
+boundary(R::AbstractRegion) = @error "No boundary() method defined for type $(typeof(R))"
+
+"""
+	in(z::Number,R::AbstractRegion;tol=<default>)
+	z ∈ R   (type "\\in" followed by tab)
+True if `z` is in the region `R`. 
+"""
+in(z::Number,R::AbstractRegion;tol=DEFAULT[:tol]) = @error "No in() method defined for type $(typeof(R))"
+	
+# Default implementations
 """ 
 	isfinite(R::AbstractRegion) 
 Return `true` if the region is bounded in the complex plane.
 """
-isfinite(r::AbstractRegion) = @error "No isfinite() method defined for type $(typeof(r))"
+isfinite(R::AbstractRegion) = all(isfinite.(boundary(R))) && !in(Inf,R)
 
 """
 	(type) RegionIntersection 
@@ -34,6 +49,7 @@ in(z::Number,R::RegionUnion) = in(z,R.one) || in(z,R.two)
 Create the region that is the intersection of `R1` and `R2`. 
 """
 intersect(R1::AbstractRegion,R2::AbstractRegion) = RegionIntersection(R1,R2)
+
 """
 	union(R1::AbstractRegion,R2::AbstractRegion)
 	R1 ∪ R2    (type "\\cup" followed by tab key)
@@ -57,26 +73,16 @@ struct SimplyConnectedRegion{T<:AbstractJordan} <: AbstractConnectedRegion{1}
 	boundary::T 
 end
 
-"""
-	boundary(R::SimplyConnectedRegion)
-Return the boundary of a simply connected region.
-"""
 boundary(R::SimplyConnectedRegion) = R.boundary
-isfinite(R::SimplyConnectedRegion) = isfinite(boundary(R)) && winding(Inf,boundary(R))==0
+in(z::Number,R::SimplyConnectedRegion) = isleft(z,R.boundary)
 
 function show(io::IO,R::SimplyConnectedRegion)
 	print(IOContext(io,:compact=>true),"Region to the left of ",R.boundary)
 end
+
 function show(io::IO,::MIME"text/plain",R::SimplyConnectedRegion)
 	print(io,"Region to the left of:\n   ",R.boundary)
 end
-
-"""
-	in(z,R::SimplyConnectedRegion)
-	z ∈ R    (type "\\in" followed by tab key)
-Determine whether the given value `z` is in the region `R`.
-"""
-in(z::Number,R::SimplyConnectedRegion) = isleft(z,R.boundary)
 
 """
 	!(R::SimplyConnectedRegion)
@@ -146,21 +152,42 @@ boundary(R::ConnectedRegion) = R.outer,R.inner
 #
 
 region(C::AbstractJordan,left=true) = SimplyConnectedRegion{typeof(C)}(C)
+
 """
 	interior(C)
-Construct the region interior to (to the left of) the closed curve or path `C`. 
+Construct the region interior to the closed curve or path `C`. If `C` is bounded, the bounded enclosure is chosen regardless of the orientation of `C`; otherwise, the region "to the left" is the interior. 
 """
-interior(C::AbstractJordan) = region(C)
+function interior(C::AbstractJordan) 
+	if isfinite(C) && isleft(Inf,C)
+		C = reverse(C)
+	end
+	region(C)
+end
+
 """
 	exterior(C)
-Construct the region exterior to (to the right of) the closed curve or path `C`. 
+Construct the region exterior to  the closed curve or path `C`. If `C` is bounded, the bounded enclosure is chosen regardless of the orientation of `C`; otherwise, the region "to the right" is the exterior. 
 """
-exterior(C::AbstractJordan) = region(reverse(C))
+function exterior(C::AbstractJordan) 
+	if isfinite(C) && !isleft(Inf,C)
+		C = reverse(C)
+	end
+	region(reverse(C))
+end
+
 """
 	between(outer,inner)
 Construct the region interior to the closed curve or path `outer` and interior to `inner`. 
 """
-between(outer::AbstractJordan,inner::AbstractJordan) = ConnectedRegion{2}(outer,inner)
+function between(outer::AbstractJordan,inner::AbstractJordan)
+	if isfinite(outer) && isleft(Inf,outer)
+		outer = reverse(outer)
+	end
+	if isfinite(inner) && !isleft(Inf,inner)
+		inner = reverse(inner)
+	end
+	ConnectedRegion{2}(outer,inner)
+end
 
 # disks
 AbstractDisk = SimplyConnectedRegion{T} where T<:Circle
@@ -214,6 +241,16 @@ Representation of the region between two circles.
 struct Annulus{S,T} <: AbstractConnectedRegion{2} 
 	outer::Circle{S} 
 	inner::Circle{T} 
+	function Annulus{S,T}(outer,inner) where {S,T<:AnyComplex}
+		@assert(outer.center ≈ inner.center)
+		if isleft(Inf,outer)
+			outer = reverse(outer)
+		end
+		if !isleft(Inf,inner)
+			inner = reverse(inner)
+		end
+		new(outer,inner)
+	end
 end
 """
 	Annulus(radouter,radinner)
@@ -225,10 +262,10 @@ function Annulus(outerrad::Real,innerrad::Real,center::Number=0)
 	Annulus(Circle(center,outerrad,true),Circle(center,innerrad,false))
 end
 
-in(z::Number,A::Annulus) = isleft(z,A.outer) && !isleft(z,A.inner)
 boundary(A::Annulus) = A.outer,A.inner 
-isfinite(A::Annulus) = isfinite(A.outer) 
+isfinite(::Annulus) = true
 
 function show(io::IO,::MIME"text/plain",R::Annulus)
-	print(io,"Annulus interior to:\n   ",R.outer,"\nand exterior to:\n   ",R.inner)
+	print(io,"Annulus in the complex plane:\n")
+	print(io,"   centered at ",R.outer.center," with distances from ",R.inner.radius," to ",R.outer.radius)
 end

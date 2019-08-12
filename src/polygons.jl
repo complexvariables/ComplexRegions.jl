@@ -247,7 +247,7 @@ end
 	rectangle(z1,z2) 
 Construct the rectangle whose opposing corners are the given complex values. 
 """
-rectangle(z1::AnyComplex,z2::AnyComplex) = rectangle([real(z1),real(z2)],[imag(z1),imag(z2)])
+rectangle(z1::AnyComplex,z2::AnyComplex) = rectangle(sort(real([z1,z2])),sort(imag([z1,z2])))
 rectangle(z1::Number,z2::Number) = rectangle(promote(complex(float(z1)),complex(float(z2)))...)
 
 """

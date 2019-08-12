@@ -52,7 +52,7 @@ Return a vector of complex values that should be suitable for making a plot.
 
 There is also an `AbstractClosedCurve` subtype that is used to distinguish curves that close. It has no special definitions of its own.
 
-## Generic types
+## [Generic types](@id generic_curves)
 
 ### Curve
 
@@ -62,9 +62,9 @@ By default a tangent to `C` is computed when needed using a simple finite differ
 
 ### ClosedCurve
 
-A `ClosedCurve` implements `AbstractClosedCurve` and is similar to a `Curve`, but the parameterization is checked against $f(0)\approx f(1)$ (or $f(b)\approx f(a)$), up to a tolerance that is the global default if not specified.
+A `ClosedCurve` implements `AbstractClosedCurve` and is similar to a `Curve`, but the parameterization is checked against $f(0)\approx f(1)$ (or $f(b)\approx f(a)$), up to a tolerance that is the [global default](@ref global_defaults) if not specified.
 
-## Specific subtypes
+## [Specific subtypes](@id subtypes_curves)
 
 The following important particular types of curves are provided, together with appropriate particular methods. All of them provide the syntax `C(t)` as equivalent to `point(C,t)`.
 

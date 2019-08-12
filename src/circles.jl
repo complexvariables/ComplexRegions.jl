@@ -47,12 +47,7 @@ end
 
 # Complex type converters
 for ctype in [:Spherical,:Polar,:Complex]
-	docstr = """
-	$ctype(::Circle)
-Convert to `Circle{$ctype}`. This is useful for plotting curves in a desired way.
-"""
 	@eval begin
-		@doc $docstr -> 
 		function $ctype(C::Circle{T}) where T<:AnyComplex 
 			Circle($ctype(C.center),C.radius,C.ccw)
 		end	

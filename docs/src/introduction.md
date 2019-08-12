@@ -1,4 +1,6 @@
-# Introduction
+# ComplexRegions
+
+This package provides types and methods that are useful for working with curves and regions in the (extended) complex plane.
 
 Most functionality is provided through Julia types (roughly equivalent to classes in an object-oriented language). Per Julia conventions, these are all capitalized. You use these capitalized names to create values of the type; e.g., [Segment](@ref) and [Circle](@ref).
 
@@ -24,9 +26,9 @@ A **region** is the open region in the extended plane bounded by a closed curve 
 
 ## Tolerance
 
-Boundaries and endpoints are not well-posed ideas in floating-point, since an arbitrarily small perturbation to a value can move a point on or off of them. Thus many concepts in the package such as intersection or continuity are checked only up to a small tolerance. This value can be set on a per-call basis, or by using [Global defaults](@ref). 
+Boundaries and endpoints are not well-posed ideas in floating-point, since an arbitrarily small perturbation to a value can move a point on or off of them. Thus many concepts in the package such as intersection or continuity are checked only up to a small tolerance. This value can be set on a per-call basis, or by using [global defaults](@ref global_defaults).
 
-## Global defaults
+## [Global defaults](@id global_defaults)
 
 For work at the REPL, it's convenient to be able to set an influential parameter just once rather than in multiple calls. This mechanism is provided via [`ComplexRegions.default`](@ref). You can see all the default parameters and values as follows:
 

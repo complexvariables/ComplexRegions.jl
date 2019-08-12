@@ -24,12 +24,7 @@ end
 
 # Complex type converters
 for ctype in [:Spherical,:Polar,:Complex]
-	docstr = """
-	$ctype(::Ray)
-Convert to `Ray{$ctype}`. This is useful for plotting curves in a desired way.
-"""
 	@eval begin 
-		@doc $docstr ->
 		function $ctype(R::Ray{T}) where T<:AnyComplex 
 			Ray($ctype(R.base),R.angle,R.reverse)
 		end

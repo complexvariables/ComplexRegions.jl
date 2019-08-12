@@ -49,12 +49,7 @@ end
 
 # Complex type converters
 for ctype in [:Spherical,:Polar,:Complex]
-	docstr = """
-	$ctype(::Arc)
-Convert to `Arc{$ctype}`. This is useful for plotting curves in a desired way.
-"""
 	@eval begin
-		@doc $docstr -> 
 		function $ctype(A::Arc{T}) where T<:AnyComplex 
 			Arc($ctype(A.circle),A.start,A.delta)
 		end	

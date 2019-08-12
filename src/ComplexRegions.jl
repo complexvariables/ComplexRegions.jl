@@ -1,6 +1,13 @@
 module ComplexRegions
 
 DEFAULT = Dict(:tol=>1e-12)
+"""
+	ComplexRegions.default()
+Return a dictionary of global default settings for the ComplexRegions package.
+
+	ComplexRegions.default(key=value)
+Change a global default setting in the running instance of the ComplexRegions package.
+"""
 function default(;kw...) 
 	if isempty(kw) 
 		return DEFAULT
@@ -22,10 +29,11 @@ using ComplexValues,LinearAlgebra,StaticArrays
 AnyComplex = Union{Complex{S},Polar{S},Spherical{S}} where {S<:AbstractFloat}
 
 import Base: +,-,*,/,!,∘,sign,inv,angle,real,imag,conj,show,iterate,eltype,length,getindex,isapprox,isfinite,intersect,union,truncate,reverse,in
+export +,-,*,/,!,∘,sign,inv,angle,real,imag,conj,show,iterate,eltype,length,getindex,isapprox,isfinite,intersect,union,truncate,reverse,in
 
 include("utilities.jl")
 
-export point,arclength,slope,isapprox,dist,closest,isleft,plotdata,isright,reflect,tangent,unittangent,normal,arg
+export point,arclength,slope,dist,closest,isleft,plotdata,isright,reflect,tangent,unittangent,normal,arg
 export Curve,ClosedCurve,Circle,Line,Arc,Segment,Ray
 include("curves.jl")
 

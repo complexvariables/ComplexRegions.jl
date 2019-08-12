@@ -1,12 +1,9 @@
-push!(LOAD_PATH,"../src")
-import Pkg; Pkg.activate("..")
-using Documenter, ComplexRegions
+using Documenter, ComplexRegions, Plots
 
 makedocs(sitename="ComplexRegions.jl",
     format = Documenter.HTML(),
     authors = "Toby Driscoll",
     pages = [
-        "Home" => "index.md",
         "Introduction" => "introduction.md",
         "Curves" => "curves.md",
         "Paths" => "paths.md",

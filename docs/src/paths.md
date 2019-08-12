@@ -104,7 +104,15 @@ An alternative construction is to provide a vector of vertices. In place of an i
 In addition to the methods for the [Abstract interface](@ref interface_paths) and [CircularPolygon](@ref), the `Polygon` type offers:
 
 `angles(P)`\
-Compute a vector of the interior angles of the polygon. Angles at a finite vertex are in the interval $(0,2\pi]$, while angles at an infinite vertex are in $[-2\pi,0]$, representing the angle at the pole of the Riemann sphere. 
+Compute a vector of the interior angles of the polygon. Angles at a finite vertex are in the interval $(0,2\pi]$, while angles at an infinite vertex are in $[-2\pi,0]$, representing the angle at the pole of the Riemann sphere.
+
+Two additional special polygon constructors are defined:
+
+`rectangle(xlim,ylim)` or `rectangle(z1,z2)`\
+Construct an axes-aligned rectangle given vectors of the real and imaginary limits, or two opposing complex corners.
+
+`n_gon(n)`\
+Construct a regular n-gon with vertices on the unit circle.
 
 ## [Examples](@id examples_paths)
 
