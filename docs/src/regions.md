@@ -1,26 +1,23 @@
 # Regions
 
-A **region** is the open set enclosed by a closed curve or closed path.
+A **region** is the open set on one side of a closed curve or closed path.
 
 ## [Abstract interface](@id interface_regions)
 
 An `AbstractRegion` is expected to provide the following methods. Here `R` is an `AbstractRegion` and `z` is a number.
 
-`boundary(R)`\
+- `boundary(R)`\
 Return the boundary of a region. The number and type of outputs depend on the implementation of the concrete type.
-
-`in(z,R)`\
+- `in(z,R)`\
 True if `z` is in the region `R`.
 
 There are default implementations of the following methods.
 
-`isfinite(R)`\
+- `isfinite(R)`\
 True if the region is bounded in the complex plane.
-
-`intersect(R1,R2)` or `R1 ∩ R2`\
+- `intersect(R1,R2)` or `R1 ∩ R2`\
 Construct the intersection of two regions, returning a value of subtype `RegionIntersection`. (Currently a stub for further development.)
-
-`union(R1,R2)` or `R1 ∪ R2`\
+- `union(R1,R2)` or `R1 ∪ R2`\
 Construct the union of two regions, returning a value of subtype `RegionUnion`. (Currently a stub for further development.)
 
 There is also a parametric subtype `AbstractConnectedRegion{N}`, meant to represent a region of connectivity `N`. It has no associated method definitions.
@@ -33,10 +30,9 @@ A `SimplyConnectedRegion` is a subtype of `AbstractConnectedRegion{1}`. The pref
 
 In addition to the methods of the [Abstract interface](@ref interface_regions), the type provides the following methods. (Here `R` is a `SimplyConnectedRegion`.)
 
-`!(R)`\
+- `!(R)`\
 Construct the region complementary to `R`. This is not a set complementation, as the boundary is not part of either region.
-
-`isapprox(R1,R2)`\
+- `isapprox(R1,R2)`\
 Determine whether `R1` and `R2` represent the same region, regardless of boundary parameterization. This is done to within a tolerance that may be given to override the [global default](@ref global_defaults).
 
 The `SimplyConnectedRegion` type is parameterized by the type of curve bounding it, to facilitate dispatch. Notably, there are definitions

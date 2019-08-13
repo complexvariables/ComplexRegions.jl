@@ -6,48 +6,36 @@ A **curve** is meant to be a smooth, non-self-intersecting curve in the extended
 
 Every `AbstractCurve` type is expected to provide the following methods. (Here `C` represents a value of type `AbstractCurve` and `z` is a number.)
 
-`point(C,t::Real)`\
+- `point(C,t::Real)`\
 Return a complex value from a parameterization of the curve over the interval [0,1].
-
-`tangent(C,t::Real)`\
+- `tangent(C,t::Real)`\
 Return a unit complex value with the same argument as the tangent to `C` at `t`.
-
-`reverse(C)`\
+- `reverse(C)`\
 Construct the curve identical to `C` except with the traversal direction reversed.
-
-`isfinite(C)`\
+- `isfinite(C)`\
 True if the curve does not pass through infinity.
-
-`conj(C)`\
+- `conj(C)`\
 Construct the complex conjugate of the curve.
-
-`C+z`\
+- `C+z`\
 Translate the curve by `z`.
-
-`-C`\
+- `-C`\
 Negate the curve.
-
-`C*z`\
+- `C*z`\
 Multiply the curve `C` by complex number `z`; i.e., scale and rotate it about the origin.
-
-`inv(C)`\
+- `inv(C)`\
 Invert the curve pointwise.
 
 There are also default implementations of the following methods:
 
-`point(C,t::AbstractArray{T}) where T<:Real`\
+- `point(C,t::AbstractArray{T}) where T<:Real`\
 Vectorization of the `point` method. 
-
-`z+C,C-z,z-C,z*C,C/z,z/C`
+- `z+C,C-z,z-C,z*C,C/z,z/C`
 Like the above but with operands in different orders.
-
-`unittangent(C,t::Real)`\
+- `unittangent(C,t::Real)`\
 Return a unit complex value with the same argument as the tangent to `C` at `t`.
-
-`normal(C,t::Real)`\
+- `normal(C,t::Real)`\
 Return a unit complex value with the same argument as the (leftward) normal to `C` at `t`.
-
-`plotdata(C)`\
+- `plotdata(C)`\
 Return a vector of complex values that should be suitable for making a plot.
 
 There is also an `AbstractClosedCurve` subtype that is used to distinguish curves that close. It has no special definitions of its own.
@@ -72,19 +60,15 @@ Each type below is parameterized; e.g., `Line{T}`, where `T` is either a native 
 
 In addition to the minimal methods set by the `AbstractCurve` definition above, each of these types provides the following methods:
 
-`arclength`\
+- `arclength`\
 Arc length of the curve (which may be infinite).
-
-`arg`\
+- `arg`\
 Find the argument (parameter value) of a point on the curve.
-
-`isapprox`\
+- `isapprox`\
 Compares two values of the same type to see if they represent the same actual curve, up to orientation, within a tolerance. Can also be invoked as `≈`, which is "\approx" followed by a TAB.
-
-`isleft`, `isright`\
+- `isleft`, `isright`\
 Determine whether a point lies "to the left" or "to the right" of the curve in its given orientation. (Not defined for an `Arc`.)
-
-`dist`, `closest`\
+- `dist`, `closest`\
 Respectively, find the distance from a point to the curve, or find the point on the curve nearest to a given number.
 
 ### Line

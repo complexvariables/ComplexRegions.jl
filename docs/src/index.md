@@ -1,5 +1,9 @@
 # ComplexRegions
 
+```@setup examples
+using ComplexRegions,Plots
+```
+
 This package provides types and methods that are useful for working with curves and regions in the (extended) complex plane.
 
 Most functionality is provided through Julia types (roughly equivalent to classes in an object-oriented language). Per Julia conventions, these are all capitalized. You use these capitalized names to create values of the type; e.g., [Segment](@ref) and [Circle](@ref).
@@ -23,6 +27,56 @@ A **path** is a piecewise-continuous complex-valued path. In practice a [Path](@
 Both curves and paths have **closed** variants. These are additionally checked that the initial and final points are the same.
 
 A **region** is the open region in the extended plane bounded by a closed curve or path.
+
+Some examples:
+
+```@repl examples
+ℓ = Line(1/2,1/2+1im)  # line through 0.5 and 0.5+1i
+c = 1 / ℓ          # a circle
+plot(ℓ);
+plot!(c);
+savefig("line_circle.svg"); nothing # hide
+```
+
+![](line_circle.svg)
+
+```@repl examples
+plot(Spherical(ℓ));
+plot!(Spherical(c));
+savefig("line_circle_sphere.svg"); nothing # hide
+```
+
+![](line_circle_sphere.svg)
+
+```@repl examples
+reflect(-1,c)       # reflection of a point through the circle
+intersect(ℓ,c)      # intersection of curves
+plot(interior(ℓ));   # plot a half-plane
+savefig("halfplane.svg"); nothing # hide
+```
+
+![](halfplane.svg)
+
+```@repl examples
+h = n_gon(7) 
+plot(h);
+for k in 1:7 
+	z = exp(k*2im*π/20)
+	plot!(z*h - 0.25k - 0.1im*k^2)
+end
+savefig("heptagons.svg"); nothing # hide
+```
+
+![](heptagons.svg)
+
+
+```@repl examples
+p = Polygon([0,-1im,(0,0),1im,(pi,pi)])      # channel with a step
+plot(interior(p));
+savefig("channel.svg"); nothing # hide
+```
+
+![](channel.svg)
 
 ## Tolerance
 
