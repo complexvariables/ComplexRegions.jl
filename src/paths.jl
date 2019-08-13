@@ -265,7 +265,8 @@ struct ClosedPath <: AbstractClosedPath
 	curve
 	function ClosedPath(p::AbstractVector{T};tol=DEFAULT[:tol]) where T<:AbstractCurve
 		q = Path(p)
-		@assert isapprox(point(q,length(q)),point(q,0),rtol=tol,atol=tol) "Path endpoints do not match"
+		zi,zf = point(q,0),point(q,length(q))
+		@assert isapprox(zi,zf,rtol=tol,atol=tol) || (isinf(zi) && isinf(zf)) "Path endpoints do not match"
 		new(p)
 	end
 end
