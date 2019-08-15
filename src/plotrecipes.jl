@@ -19,6 +19,7 @@ end
 
     if vertices 
         @series begin 
+            group := 2
             markercolor --> :black
             markershape --> :circle 
             seriestype := :scatter
@@ -42,7 +43,18 @@ end
 end
 
 @recipe function f(R::SimplyConnectedRegion)
-    fill --> true
-    C = R.boundary
-    C isa AbstractClosedCurve ? ClosedPath(C) : C
+#    axis = plotattributes[:subplot][isvertical(plotattributes) ? :xaxis : :yaxis]
+#    println(axis)
+    seriestype := :shape
+#    println(plotattributes[:plot_object])
+    C = R.boundary  # could be curve or path
+    if C isa Line 
+        # need to fake with a polygon 
+        θ = angle(C) 
+        Polygon([C(0.5),(θ,θ+π)])
+    elseif C isa AbstractCurve 
+        ClosedPath(C) 
+    else
+        C 
+    end
 end

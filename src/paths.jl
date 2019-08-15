@@ -297,8 +297,8 @@ end
 function enclosing_circle(p::AbstractPath,expansion=2)
 	v = filter(isfinite,vertices(p))
 	isempty(v) && error("No finite vertices found.")
-	zc = sum(v)/length(v) 
-	R = maximum(@. abs(v - zc))
+	zc = sum(v)/length(v)
+	R = length(v) > 1 ? maximum(@. abs(v - zc)) : max(1,abs(zc))
 	return Circle(zc,expansion*R)
 end
 

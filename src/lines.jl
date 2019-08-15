@@ -83,6 +83,7 @@ end
 # Other methods
 isfinite(::Line) = false
 slope(L::Line) = imag(L.direction)/real(L.direction)
+angle(L::Line) = angle(L.direction)
 conj(L::Line) = Line(conj(L.base),direction=conj(L.direction))
 reverse(L::Line) = Line(L.base,direction=-L.direction)
 
@@ -149,4 +150,4 @@ function show(io::IO,::MIME"text/plain",L::Line{T}) where {T}
 end
 
 # In the plane (but not on the sphere), two points are enough to draw a line, and we want to avoid infinity. 
-plotdata(L::Line{T}) where T<:Union{Complex,Polar} = point(L,[0.1,0.9])
+plotdata(L::Line{T}) where T<:Union{Complex,Polar} = point(L,[0.2,0.8])
