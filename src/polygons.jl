@@ -12,8 +12,6 @@ function show(io::IO,::MIME"text/plain",P::AbstractCircularPolygon)
 end
 
 # Other methods
-# TODO: unreliable results for points on the boundary
-# Ref Dan Sunday, http://geomalgorithms.com/a03-_inclusion.html
 """
 	winding(z,P::AbstractCircularPolygon)
 Compute the winding number of `P` about the point `z`. Each counterclockwise rotation about `z` contributes +1, and each clockwise rotation about it counts -1. The winding number is zero for points not in the region enclosed by `P`. 
@@ -21,7 +19,28 @@ Compute the winding number of `P` about the point `z`. Each counterclockwise rot
 The result is unreliable for points on `P` (for which the problem is ill-posed).
 """
 function winding(z::Number,p::AbstractCircularPolygon)
-	Integer(sum( raycrossing(z,s) for s in sides(truncate(p)) ))
+	!isfinite(p) && return winding(z,truncate(p))
+	w = 0
+	v = vertex(p,1)
+	for s in p 
+		vnew = point(s,1)
+		if s isa Segment 		
+			w += angle((vnew-z)/(v-z))
+		else  #if s isa Arc
+			# move the branch cut to avoid the arc
+			if abs(z-s.circle.center) ≤ s.circle.radius 
+				# can use ray from the center to a point not on s
+				u = point(s.circle,s.start-(1-s.delta)/2) # not on s 
+				w += angle((vnew-z)/(z-u)) - angle((v-z)/(z-u))
+			else
+				# can put center on the positive real axis 
+				u = s.circle.center 
+				w += angle((vnew-z)/(u-z)) - angle((v-z)/(u-z))
+			end
+		end
+		v = vnew
+	end
+	return round(Int,w/(2π))
 end
 
 """ 
@@ -29,6 +48,7 @@ end
 Determine whether the number `z` lies "to the left" of the polygon `P`. This means that the point lies inside the bounded region if the path is positively oriented, and outside otherwise. 
 """
 isleft(z::Number,p::AbstractCircularPolygon) = winding(z,p) > 0
+
 """ 
 	isright(z,P::AbstractCircularPolygon) 
 Determine whether the number `z` lies "to the right" of the polygon `P`. This means that the point lies outside the bounded region if the path is positively oriented, and inside otherwise. 
@@ -45,7 +65,7 @@ Type for closed paths consisting entirely of arcs, segments, and rays.
 struct CircularPolygon <: AbstractCircularPolygon
 	path
 	function CircularPolygon(p::AbstractClosedPath)
-		# Assumes continuity and closure have been checked previously
+		# Continuity and closure have been checked to make a closed path
 		valid = isa.(curves(p),Union{Arc,Segment,Ray})
 		@assert all(valid) "All sides must be an Arc, Segment, or Ray"
 		new(p)
@@ -68,6 +88,8 @@ curves(p::CircularPolygon) = curves(p.path)
 curve(p::CircularPolygon,k::Integer) = curve(p.path,k) 
 arclength(p::CircularPolygon) = arclength(p.path)
 (p::CircularPolygon)(t) = point(p.path,t)
+
+inv(p::CircularPolygon) = CircularPolygon([inv(c) for c in curves(p)])
 
 # TODO truncate circular polygons
 function truncate(p::CircularPolygon) 
@@ -139,6 +161,8 @@ curves(p::Polygon) = curves(p.path)
 arclength(p::Polygon) = arclength(p.path)
 (p::Polygon)(t) = point(p.path,t)
 
+inv(p::Polygon) = CircularPolygon([inv(c) for c in curves(p)])
+
 # Display methods 
 function show(io::IO,::MIME"text/plain",P::Polygon) 
 	print(io,"Polygon with ",length(P)," vertices:")
@@ -181,8 +205,9 @@ function angles(p::Polygon)
 			end
 		end
 	end
-	# correct for possible clockwise orientation
-	sum(θ) > 0 ? θ : -θ
+	# # correct for possible clockwise orientation
+	# sum(θ) > 0 ? θ : -θ
+	return θ
 end
 
 """

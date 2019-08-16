@@ -154,7 +154,7 @@ Multiply the path `P` by the number `1/z`; i.e., scale and rotate it about the o
 Invert the path `P` through the origin (and optionally multiply by the number `z`). 
 """
 /(p::AbstractPath,z::Number) = typeof(p)([c/z for c in curves(p)])
-/(z::Number,p::AbstractPath) = typeof(p)([z/c for c in curves(p)])
+/(z::Number,p::AbstractPath) = z*inv(p)
 inv(p::AbstractPath) = typeof(p)([inv(c) for c in curves(p)])
 
 """
