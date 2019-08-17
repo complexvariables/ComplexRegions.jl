@@ -1,9 +1,6 @@
 abstract type AbstractCircularPolygon <: AbstractClosedPath end
 abstract type AbstractPolygon <: AbstractCircularPolygon end
 
-sides(p::AbstractCircularPolygon) = curves(p)
-side(p::AbstractCircularPolygon,args...) = curve(p,args...)
-
 function show(io::IO,P::AbstractCircularPolygon)
 	print(IOContext(io,:compact=>true),typeof(P)," with ",length(P)," sides") 
 end
@@ -12,6 +9,14 @@ function show(io::IO,::MIME"text/plain",P::AbstractCircularPolygon)
 end
 
 # Other methods
+sides(p::AbstractCircularPolygon) = curves(p)
+side(p::AbstractCircularPolygon,args...) = curve(p,args...)
+
+function reverse(p::AbstractCircularPolygon)
+	@assert sum(isinf.(vertices(p))) < 2 "Reversal is not a propoer polygon"
+	typeof(p)(reverse(reverse.(sides(p))))
+end
+
 """
 	winding(z,P::AbstractCircularPolygon)
 Compute the winding number of `P` about the point `z`. Each counterclockwise rotation about `z` contributes +1, and each clockwise rotation about it counts -1. The winding number is zero for points not in the region enclosed by `P`. 
@@ -19,7 +24,13 @@ Compute the winding number of `P` about the point `z`. Each counterclockwise rot
 The result is unreliable for points on `P` (for which the problem is ill-posed).
 """
 function winding(z::Number,p::AbstractCircularPolygon)
-	!isfinite(p) && return winding(z,truncate(p))
+	if !isfinite(p)
+		C = enclosing_circle(p)
+		while !isleft(z,C)
+			C = Circle(C.center,2*C.radius)
+		end
+		return winding(z,truncate(p,C))
+	end
 	w = 0
 	v = vertex(p,1)
 	for s in p 
@@ -91,13 +102,12 @@ arclength(p::CircularPolygon) = arclength(p.path)
 
 inv(p::CircularPolygon) = CircularPolygon([inv(c) for c in curves(p)])
 
-# TODO truncate circular polygons
-function truncate(p::CircularPolygon) 
-	isfinite(p) && return p   # nothing to do
-	# try to find a circle clear of the polygon
-	v = filter(isfinite,vertices(p))
-	@error "Truncation of CircularPolygon not yet implemented"
-end
+# Other methods
+"""
+	ispositive(p::CircularPolygon)
+Determine whether the circular polygon is positively oriented (i.e., circulates counterclockwise around the points it encloses).
+"""
+ispositive(p::CircularPolygon) = winding(0,1/p) < 0
 
 # 
 # Polygon 
@@ -128,6 +138,7 @@ Polygon(p::AbstractPath;kw...) = Polygon(ClosedPath(p;kw...))
 function Polygon(p::AbstractVector{T};kw...) where T<:AbstractCurve 
 	Polygon(ClosedPath(p;kw...))
 end
+
 """
 	Polygon(v::AbstractVector)
 Construct a polygon from a vector of its vertices. Each element of `v` should be either a finite vertex, or a tuple of two angles that indicate the angles of two rays incident to an infinite vertex: one "to" infinity, and a second "from" infinity.  
@@ -175,46 +186,19 @@ end
 
 # Other methods
 """
-	angles(P::Polygon) 
-Compute a vector of interior angles at the vertices of the polygon `P`. At a finite vertex these lie in (0,2π]; at an infinite vertex, the angle is in [-2π,0]. 
+	truncate(P::Union{CircularPolygon,Polygon}) 
+Apply `truncate` to `P` using a circle that is centered at the centroid of its finite vertices, and a radius twice the maximum from the centroid to the finite vertices. 
 """
-function angles(p::Polygon)
-	# computes a turn angle in (-pi,pi]  (neg = left turn)
-	turn(s1,s2) = π - mod(angle(s2/s1)+π,2π)
-	s = unittangent.(p) 
-	n = length(p) 
-	if n==2  # empty interior 
-		return zeros(2)
-	end
-	v = vertices(p)
-	θ = similar(real(s))
-	for k = 1:n 
-		kprev = mod(k-2,n)+1
-		θ[k] = π + turn(s[kprev],s[k])
-		if isinf(v[k]) 
-			θ[k] -= 2π
-			if θ[k]==0
-				# need a finite perturbation to distinguish 0,-2
-				R = maximum(abs.(filter(isfinite,v)))
-				C = Circle(0,100*R)
-				zprev = intersect(p[kprev],C)
-				znext = intersect(p[k],C) 
-				if angle(znext[1]/zprev[1]) < 0 
-					θ[k] -= 2π
-				end
-			end
-		end
-	end
-	# # correct for possible clockwise orientation
-	# sum(θ) > 0 ? θ : -θ
-	return θ
+function truncate(p::Union{CircularPolygon,Polygon}) 
+	isfinite(p) && return p   # nothing to do
+	return truncate(p,enclosing_circle(p,4))
 end
 
 """
-	truncate(P::Polygon,C::Circle) 
+	truncate(P::Union{CircularPolygon,Polygon},C::Circle) 
 Compute a trucated form of the polygon by replacing each pair of rays incident at infinity with two segments connected by an arc along the given circle. This is *not* a true clipping of the polygon, as finite sides are not altered. The result is either a CircularPolygon or the original `P`. 
 """
-function truncate(p::Polygon,c::Circle) 
+function truncate(p::Union{CircularPolygon,Polygon},c::Circle) 
 	n = length(p)
 	s,v = sides(p),vertices(p)
 	snew = Vector{Any}(undef,n)
@@ -244,13 +228,43 @@ function truncate(p::Polygon,c::Circle)
 end
 
 """
-	truncate(P::Polygon) 
-Apply `truncate` to `P` using a circle that is centered at the centroid of its finite vertices, and a radius twice the maximum from the centroid to the finite vertices. 
+	angles(P::Polygon) 
+Compute a vector of interior angles at the vertices of the polygon `P`. At a finite vertex these lie in (0,2π]; at an infinite vertex, the angle is in [-2π,0]. 
 """
-function truncate(p::Polygon) 
-	isfinite(p) && return p   # nothing to do
-	return truncate(p,enclosing_circle(p))
+function angles(p::Polygon)
+	# computes a turn angle in (-pi,pi]  (neg = left turn)
+	turn(s1,s2) = π - mod(angle(s2/s1)+π,2π)
+	s = unittangent.(p) 
+	n = length(p) 
+	v = vertices(p)
+	θ = similar(real(s))
+	for k = 1:n 
+		kprev = mod(k-2,n)+1
+		θ[k] = π + turn(s[kprev],s[k])
+		if isinf(v[k]) 
+			θ[k] -= 2π
+			if θ[k]==0
+				# need a finite perturbation to distinguish 0,-2
+				R = maximum(abs.(filter(isfinite,v)))
+				C = Circle(0,100*R)
+				zprev = intersect(p[kprev],C)
+				znext = intersect(p[k],C) 
+				if angle(znext[1]/zprev[1]) < 0 
+					θ[k] -= 2π
+				end
+			end
+		end
+	end
+	# # correct for possible clockwise orientation
+	# sum(θ) > 0 ? θ : -θ
+	return θ
 end
+
+"""
+	ispositive(p::Polygon)
+Determine whether the polygon is positively oriented (i.e., circulates counterclockwise around the points it encloses).
+"""
+ispositive(p::Polygon) = sum(angles(p)/pi .- 1) < 0
 
 # Special polygon constructors
 
