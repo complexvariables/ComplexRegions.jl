@@ -24,6 +24,12 @@ Compute the winding number of `P` about the point `z`. Each counterclockwise rot
 The result is unreliable for points on `P` (for which the problem is ill-posed).
 """
 function winding(p::AbstractCircularPolygon,z::Number)
+	if isinf(z) 
+		!isfinite(p) && @warn "Winding number is ill-defined for a boundary point"
+		return 0 
+	end
+	
+	# truncate an unbounded path
 	if !isfinite(p)
 		C = enclosing_circle(p)
 		while !isinside(z,C)
@@ -31,6 +37,7 @@ function winding(p::AbstractCircularPolygon,z::Number)
 		end
 		return winding(truncate(p,C),z)
 	end
+
 	w = 0
 	v = vertex(p,1)
 	for s in p 
