@@ -109,8 +109,8 @@ function exterior(C::AbstractJordan)
 end
 
 boundary(R::SimplyConnectedRegion) = R.boundary
-in(z::Number,R::InteriorSimplyConnectedRegion) = winding(boundary(R),z) > 0
-in(z::Number,R::ExteriorSimplyConnectedRegion) = winding(boundary(R),z) == 0
+in(z::Number,R::InteriorSimplyConnectedRegion) = isinside(z,boundary(R))
+in(z::Number,R::ExteriorSimplyConnectedRegion) = isoutside(z,boundary(R))
 isfinite(R::InteriorSimplyConnectedRegion) = isfinite(boundary(R))
 isfinite(R::ExteriorSimplyConnectedRegion) = false
 
@@ -130,15 +130,38 @@ end
 	!(R::SimplyConnectedRegion)
 Compute the region complementary to `R`. This is not quite set complementation, as neither region includes its boundary. The complement is always simply connected in the extended plane. 
 """
-!(R::InteriorSimplyConnectedRegion) = exterior(reverse(R.boundary))
-!(R::ExteriorSimplyConnectedRegion) = interior(reverse(R.boundary))
+!(R::InteriorSimplyConnectedRegion) = exterior(reverse(boundary(R)))
+!(R::ExteriorSimplyConnectedRegion) = interior(reverse(boundary(R)))
 
 """
 	isapprox(R1::SimplyConnectedRegion,R2::SimplyConnectedRegion; tol=<default>)
 Determine whether `R1` and `R2` represent the same region, up to tolerance `tol`. Equivalently, determine whether their boundaries are the same.
 """
-isapprox(R1::InteriorSimplyConnectedRegion,R2::InteriorSimplyConnectedRegion;tol=DEFAULT[:tol]) = isapprox(R1.boundary,R2.boundary,tol=tol)
-isapprox(R1::ExteriorSimplyConnectedRegion,R2::ExteriorSimplyConnectedRegion;tol=DEFAULT[:tol]) = isapprox(R1.boundary,R2.boundary,tol=tol)
+isapprox(R1::S,R2::T;tol=DEFAULT[:tol]) where {S,T<:SimplyConnectedRegion} = isapprox(boundary(R1),boundary(R2),tol=tol)
+
+#
+# ExteriorRegion
+#
+struct ExteriorRegion{N} <: AbstractConnectedRegion{N}
+	inner::AbstractVector 
+	function ExteriorRegion{N}(inner) where N
+		@assert N == length(inner) "Incorrect connectivity"
+		@assert all(c isa AbstractJordan for c in inner) "Boundary components must be closed curves or paths"
+		@assert all(isfinite.(inner)) "Inner boundaries must be finite"
+		# correct orientations of inner components
+		b = copy(inner)
+		for c in b 
+			if isoutside(Inf,c)
+				 c = reverse(c)
+			end
+		end
+		new(b)
+	end
+end  
+
+ExteriorRegion(inner) = ExteriorRegion{length(inner)}(inner)
+in(z::Number,R::ExteriorRegion) = all( isoutside(z,c) for c in R.inner )
+boundary(R::ExteriorRegion) = R.inner 
 
 #
 # ConnectedRegion 
@@ -156,8 +179,7 @@ struct ConnectedRegion{N} <: AbstractConnectedRegion{N}
 		@assert N == n "Incorrect connectivity"
 		if !isnothing(outer)
 			# correct orientation of outer component 
-			R = interior(outer)
-			isin = [point(c(0)) ∈ R for c in inner ]
+			isin = [isinside(point(c,0),outer) for c in inner ]
 			if all(.!isin)
 				outer = reverse(outer) 
 			else
@@ -180,13 +202,16 @@ end
 Construct an open connected region by specifying its boundary components. The `outer` boundary could be `nothing` or a closed curve or path. The `inner` boundary should be a vector of one or more nonintersecting closed curves or paths. The defined region is interior to the outer boundary and exterior to all the components of the inner boundary, regardless of the orientations of the given curves. 
 """
 function ConnectedRegion(outer,inner) 
-	n = length(inner) + !isnothing(outer)
-	ConnectedRegion{n}(outer,inner)
+	n = length(inner)
+	if isnothing(outer) || isempty(outer) 
+		ExteriorRegion{n}(inner)
+	else
+		ConnectedRegion{n+1}(outer,inner)
+	end
 end
 
 function in(z::Number,R::ConnectedRegion) 
-	val = all( isoutside(z,c) for c in R.inner )
-	isnothing(R.outer) ? val : (val && isinside(z,R.outer))
+	all( isoutside(z,c) for c in R.inner ) && isinside(z,R.outer)
 end
 
 boundary(R::ConnectedRegion) = R.outer,R.inner 
@@ -206,7 +231,7 @@ function between(outer::AbstractJordan,inner::AbstractJordan)
 	if isfinite(inner) && isoutside(Inf,inner)
 		inner = reverse(inner)
 	end
-	ConnectedRegion{2}(outer,inner)
+	ConnectedRegion{2}(outer,[inner])
 end
 
 # disks
@@ -258,10 +283,10 @@ PolygonalRegion = SimplyConnectedRegion{Polygon}
 	(type) Annulus 
 Representation of the region between two circles.
 """
-struct Annulus{S,T} <: AbstractConnectedRegion{2} 
-	outer::Circle{S} 
-	inner::Circle{T} 
-	function Annulus{S,T}(outer,inner) where {S,T<:AnyComplex}
+struct Annulus <: AbstractConnectedRegion{2} 
+	outer::Circle
+	inner::Circle
+	function Annulus(outer::Circle,inner::Circle) 
 		@assert(outer.center ≈ inner.center)
 		if isinside(Inf,outer)
 			outer = reverse(outer)
@@ -283,6 +308,7 @@ function Annulus(outerrad::Real,innerrad::Real,center::Number=0)
 end
 
 boundary(A::Annulus) = A.outer,A.inner 
+in(z::Number,A::Annulus) = isinside(z,A.outer) && isoutside(z,A.inner)
 isfinite(::Annulus) = true
 
 function show(io::IO,::MIME"text/plain",R::Annulus)
