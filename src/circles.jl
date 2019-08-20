@@ -61,6 +61,8 @@ function point(C::Circle,t::Real)
 end
 (C::Circle)(t::Real) = point(C,t)
 
+ispositive(C::Circle) = C.ccw
+
 arclength(C::Circle) = 2π*C.radius
 
 """ 
@@ -110,21 +112,10 @@ function isapprox(C1::Circle,C2::Circle;tol=DEFAULT[:tol])
 	isapprox(C1.radius,C2.radius,rtol=tol,atol=tol)
 end
 
-""" 
-	isleft(z,C::Circle) 
-Determine whether the number `z` lies "to the left" of circle `C`. This means that the point lies inside the circle if it is positively oriented, and outside the circle otherwise. 
-
-Note that `isleft` and `isright` are *not* logical opposites; a point on the curve should give `false` in both cases.
-"""
-isleft(z::Number,C::Circle) = !xor(C.ccw,abs(z-C.center) < C.radius) 
-
-""" 
-	isright(z,C::Circle) 
-Determine whether the number `z` lies "to the right" of circle `C`. This means that the point lies outside the circle if it is positively oriented, and inside the circle otherwise. 
-
-Note that `isleft` and `isright` are *not* logical opposites; a point on the curve should give `false` in both cases.
-"""
-isright(z::Number,C::Circle) = !xor(C.ccw,abs(z-C.center) < C.radius)
+function winding(C::Circle,z::Number)
+	w =  abs(z-C.center) < C.radius ? 1 : 0
+	C.ccw ? w : -w
+end
 
 """ 
 	dist(z,C::Circle) 

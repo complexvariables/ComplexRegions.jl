@@ -40,6 +40,9 @@ end
 arclength(::Line) = Inf
 point(L::Line,t::Real) = L.base + (2t-1)/(t-t^2)*L.direction
 (C::Line)(t::Real) = point(C,t)
+
+ispositive(C::Line) = true  # this seems arbitrary...
+
 """ 
 	arg(L::Line,z) 
 
@@ -107,7 +110,8 @@ Determine whether the number `z` lies "to the left" of line `L`. This means that
 
 Note that `isleft` and `isright` are *not* logical opposites; a point on the curve should give `false` in both cases.
 """
-isleft(z::Number,L::Line) = π >	angle((z-L.base)/L.direction) > 0 
+isleft(z::Number,L::Line) = π > angle((z-L.base)/L.direction) > 0 
+
 """ 
 	isright(z,L::Line) 
 
@@ -116,6 +120,8 @@ Determine whether the number `z` lies "to the right" of line `L`. This means tha
 Note that `isleft` and `isright` are *not* logical opposites; a point on the curve should give `false` in both cases.
 """
 isright(z::Number,L::Line) = -π < angle((z-L.base)/L.direction) < 0 
+
+winding(L::Line,z::Number) = isleft(z,L) ? 1 : 0
 
 """ 
 	dist(z,L::Line) 

@@ -9,6 +9,11 @@ using Test
 	 @test( all(@. abs(3x^2 + 16x + 1)<1e-12 ) )
 	 z = 2im .+ 3*exp.(2im*pi*[0.8,0.1,0.25])
 	 @test( CR.isccw(z...) )
+	 @test( CR.intadapt(exp,0,4,1e-13) ≈ (exp(4)-1)  )
+	 z = t -> exp(1im*t)
+	 @test( CR.fdtangent(z,0) ≈ 1im )
+	 @test( CR.fdtangent(z,1) ≈ 1im*exp(1im) )
+	 @test( CR.fdtangent(z,0.2) ≈ 1im*exp(0.2im) )
 end
 
 @testset "Curves" begin
@@ -26,7 +31,7 @@ end
 	@test( arclength(c) ≈ 2*sqrt(2)*pi )
 	@test( dist(-1+1im,c) ≈ sqrt(2) )
 	@test( closest(1+4im,c) ≈ 1+1im*(sqrt(2)-1) )
-	@test( isleft(1.5-1im,c) && isleft(1.5+1im,reverse(c)) )
+	@test( isinside(1.5-1im,c) && isoutside(1.5+1im,reverse(c)) )
 	@test( isinf(reflect(c.center,c)) )
 	@test( reflect(reflect(-1+2im,c),c) ≈ -1+2im )
 	@test( all( abs(arg(c,c(t))-t) < 1e-11 for t in 0.1:0.1:1 ) )
@@ -195,9 +200,9 @@ end
 	p = Polygon([s,1im*s,-s,-1im*s]) 
 	@test( arclength(p) ≈ 8*sqrt(2) ) 
 	@test( angle(normal(p,1.1+length(p))) ≈ -π/4 )
-	@test( winding(-0.4+0.5im,p) == 1 )
-	@test( winding(-0.4+0.5im,reverse(p)) == -1 )
-	@test( winding(-4-0.5im,p) == 0 )
+	@test( winding(p,-0.4+0.5im) == 1 )
+	@test( winding(reverse(p),-0.4+0.5im) == -1 )
+	@test( winding(p,-4-0.5im) == 0 )
 	@test( all( angles(p) .≈ 0.5*pi ) )
 	@test( ispositive(p) )
 	@test( !ispositive(reverse(p)) )
@@ -205,14 +210,13 @@ end
 	p = Polygon([4,4+3im,3im,-2im,6-2im,6])
 	@test( arclength(p) ≈ (3+4+5+6+2+2) )
 	@test( tangent(p,2.3-length(p)) ≈ -5im )
-	@test( winding(5-im,p) == 1 )
-	@test( winding(-1,p) == 0 )
+	@test( winding(p,5-im) == 1 )
+	@test( winding(p,-1) == 0 )
 	@test( sum(angles(p)) ≈ 4*pi )
 
 	p = CircularPolygon([Arc(1,2+1im,1im),Segment(1im,-1),Arc(-1,-0.5im,-1im),Segment(-1im,1)])
-	@test(ispositive(p))
-	@test( all(winding(z,p)==1 for z in [1+0.5im,1.7+1im,0,-1+0.05*exp(1im*pi/5),-1im+0.05*exp(1im*0.3*pi)]) )
-	@test( all(winding(z,p)==0 for z in [-.999im,0.001-1im,-.999,-1.001,1.001,1.999im]) )
+	@test( all(winding(p,z)==1 for z in [1+0.5im,1.7+1im,0,-1+0.05*exp(1im*pi/5),-1im+0.05*exp(1im*0.3*pi)]) )
+	@test( all(winding(p,z)==0 for z in [-.999im,0.001-1im,-.999,-1.001,1.001,1.999im]) )
 end
 
 @testset "Unbounded polygons" begin
@@ -220,26 +224,20 @@ end
 	a = angles(p)/pi
 	@test( a[6] ≈ -0.5  )
 	@test( sum(a.-1) ≈ -2 )
-	@test( ispositive(p) )
-	@test( ispositive(reverse(p)) )
 
 	p = Polygon([(pi/2,pi/2),5,4+3im,3im,-2im,6-2im])
 	a = angles(p)/pi
 	@test( abs(a[1]) < 1e-10 )
 	@test( sum(a.-1) ≈ -2 )
-	@test( all(winding(z,p)==1 for z in [1+2im,5-1im,5.5+6im]) )
-	@test( all(winding(z,p)==0 for z in [-3im,3+5im,5.5-6im]) )
-	@test( ispositive(p) )
-	@test( ispositive(reverse(p)) )
+	@test( all(winding(p,z)==1 for z in [1+2im,5-1im,5.5+6im]) )
+	@test( all(winding(p,z)==0 for z in [-3im,3+5im,5.5-6im]) )
 	
 	p = Polygon([(-pi/2,pi/2),7,4+3im,3im,-2im,6-2im])
 	a = angles(p)/pi
 	@test( a[1] ≈ -1 )
 	@test( sum(a.-1) ≈ -2 )
-	@test( all(winding(z,p)==1 for z in [4,7-2im,9]) )
-	@test( all(winding(z,p)==0 for z in [4+4im,6+2im,4-3im]) )
-	@test( ispositive(p) )
-	@test( ispositive(reverse(p)) )
+	@test( all(winding(p,z)==1 for z in [4,7-2im,9]) )
+	@test( all(winding(p,z)==0 for z in [4+4im,6+2im,4-3im]) )
 	
 	p = Polygon([4+3im,7,(0,0),6-2im,-2im,3im])
 	a = angles(p)/pi

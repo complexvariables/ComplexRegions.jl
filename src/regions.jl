@@ -21,7 +21,7 @@ in(z::Number,R::AbstractRegion;tol=DEFAULT[:tol]) = @error "No in() method defin
 	isfinite(R::AbstractRegion) 
 Return `true` if the region is bounded in the complex plane.
 """
-isfinite(R::AbstractRegion) = all(isfinite.(boundary(R))) && !in(Inf,R)
+isfinite(R::AbstractRegion) = @error "No isfinite() method defined for type $(typeof(R))"
 
 """
 	(type) RegionIntersection 
@@ -69,32 +69,76 @@ Representation of a simply connected region in the extended complex plane.
 	SimplyConnectedRegion(p::Union{AbstractClosedCurve,AbstractClosedPath})
 Construct an open simply connected region by specifying its boundary. The region is "to the left" of the orientation of the boundary.
 """
-struct SimplyConnectedRegion{T<:AbstractJordan} <: AbstractConnectedRegion{1}
+struct InteriorSimplyConnectedRegion{T<:AbstractJordan} <: AbstractConnectedRegion{1}
 	boundary::T 
 end
 
-boundary(R::SimplyConnectedRegion) = R.boundary
-in(z::Number,R::SimplyConnectedRegion) = isleft(z,R.boundary)
+struct ExteriorSimplyConnectedRegion{T<:AbstractJordan} <: AbstractConnectedRegion{1}
+	boundary::T 
+end
 
-function show(io::IO,R::SimplyConnectedRegion)
-	print(IOContext(io,:compact=>true),"Region to the left of ",R.boundary)
+SimplyConnectedRegion = Union{InteriorSimplyConnectedRegion{T},ExteriorSimplyConnectedRegion{T}} where T<:AbstractJordan
+
+"""
+	interior(C)
+Construct the region interior to the closed curve or path `C`. If `C` is bounded, the bounded enclosure is chosen regardless of the orientation of `C`; otherwise, the region "to the left" is the interior. 
+"""
+function interior(C::AbstractJordan) 
+	if isfinite(C) && winding(1/C,0) > 0
+		C = reverse(C)
+	end
+	InteriorSimplyConnectedRegion(C)
+end
+
+"""
+	exterior(C)
+Construct the region exterior to  the closed curve or path `C`. If `C` is bounded, the bounded enclosure is chosen regardless of the orientation of `C`; otherwise, the region "to the right" is the exterior. 
+"""
+function exterior(C::AbstractJordan) 
+	if isfinite(C) 
+		if winding(1/C,0) < 0
+			C = reverse(C)
+		end
+	else
+		if C isa AbstractClosedPath && (length(filter(isinf,vertices(C))) > 1)
+			@error "Disconnected exterior"
+		end
+		C = reverse(C)
+	end
+	ExteriorSimplyConnectedRegion(C)
+end
+
+boundary(R::SimplyConnectedRegion) = R.boundary
+in(z::Number,R::InteriorSimplyConnectedRegion) = winding(boundary(R),z) > 0
+in(z::Number,R::ExteriorSimplyConnectedRegion) = winding(boundary(R),z) == 0
+isfinite(R::InteriorSimplyConnectedRegion) = isfinite(boundary(R))
+isfinite(R::ExteriorSimplyConnectedRegion) = false
+
+function show(io::IO,R::InteriorSimplyConnectedRegion)
+	print(IOContext(io,:compact=>true),"Region interior to ",R.boundary)
+end
+
+function show(io::IO,R::ExteriorSimplyConnectedRegion)
+	print(IOContext(io,:compact=>true),"Region exterior to ",R.boundary)
 end
 
 function show(io::IO,::MIME"text/plain",R::SimplyConnectedRegion)
-	print(io,"Region to the left of:\n   ",R.boundary)
+	show(io,R)
 end
 
 """
 	!(R::SimplyConnectedRegion)
 Compute the region complementary to `R`. This is not quite set complementation, as neither region includes its boundary. The complement is always simply connected in the extended plane. 
 """
-!(R::SimplyConnectedRegion) = SimplyConnectedRegion(reverse(R.boundary))
+!(R::InteriorSimplyConnectedRegion) = exterior(reverse(R.boundary))
+!(R::ExteriorSimplyConnectedRegion) = interior(reverse(R.boundary))
 
 """
 	isapprox(R1::SimplyConnectedRegion,R2::SimplyConnectedRegion; tol=<default>)
 Determine whether `R1` and `R2` represent the same region, up to tolerance `tol`. Equivalently, determine whether their boundaries are the same.
 """
-isapprox(R1::SimplyConnectedRegion,R2::SimplyConnectedRegion;tol=DEFAULT[:tol]) = isapprox(R1.boundary,R2.boundary,tol=tol)
+isapprox(R1::InteriorSimplyConnectedRegion,R2::InteriorSimplyConnectedRegion;tol=DEFAULT[:tol]) = isapprox(R1.boundary,R2.boundary,tol=tol)
+isapprox(R1::ExteriorSimplyConnectedRegion,R2::ExteriorSimplyConnectedRegion;tol=DEFAULT[:tol]) = isapprox(R1.boundary,R2.boundary,tol=tol)
 
 #
 # ConnectedRegion 
@@ -141,8 +185,8 @@ function ConnectedRegion(outer,inner)
 end
 
 function in(z::Number,R::ConnectedRegion) 
-	val = all( !isleft(z,c) for c in R.inner )
-	isnothing(R.outer) ? val : (val && isleft(z,R.outer))
+	val = all( isoutside(z,c) for c in R.inner )
+	isnothing(R.outer) ? val : (val && isinside(z,R.outer))
 end
 
 boundary(R::ConnectedRegion) = R.outer,R.inner 
@@ -151,39 +195,15 @@ boundary(R::ConnectedRegion) = R.outer,R.inner
 # special cases
 #
 
-region(C::AbstractJordan,left=true) = SimplyConnectedRegion{typeof(C)}(C)
-
-"""
-	interior(C)
-Construct the region interior to the closed curve or path `C`. If `C` is bounded, the bounded enclosure is chosen regardless of the orientation of `C`; otherwise, the region "to the left" is the interior. 
-"""
-function interior(C::AbstractJordan) 
-	if isfinite(C) && isleft(Inf,C)
-		C = reverse(C)
-	end
-	region(C)
-end
-
-"""
-	exterior(C)
-Construct the region exterior to  the closed curve or path `C`. If `C` is bounded, the bounded enclosure is chosen regardless of the orientation of `C`; otherwise, the region "to the right" is the exterior. 
-"""
-function exterior(C::AbstractJordan) 
-	if isfinite(C) && !isleft(Inf,C)
-		C = reverse(C)
-	end
-	region(reverse(C))
-end
-
 """
 	between(outer,inner)
 Construct the region interior to the closed curve or path `outer` and interior to `inner`. 
 """
 function between(outer::AbstractJordan,inner::AbstractJordan)
-	if isfinite(outer) && isleft(Inf,outer)
+	if isfinite(outer) && isinside(Inf,outer)
 		outer = reverse(outer)
 	end
-	if isfinite(inner) && !isleft(Inf,inner)
+	if isfinite(inner) && isoutside(Inf,inner)
 		inner = reverse(inner)
 	end
 	ConnectedRegion{2}(outer,inner)
@@ -243,10 +263,10 @@ struct Annulus{S,T} <: AbstractConnectedRegion{2}
 	inner::Circle{T} 
 	function Annulus{S,T}(outer,inner) where {S,T<:AnyComplex}
 		@assert(outer.center ≈ inner.center)
-		if isleft(Inf,outer)
+		if isinside(Inf,outer)
 			outer = reverse(outer)
 		end
-		if !isleft(Inf,inner)
+		if isoutside(Inf,inner)
 			inner = reverse(inner)
 		end
 		new(outer,inner)

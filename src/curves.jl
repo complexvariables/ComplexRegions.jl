@@ -126,6 +126,16 @@ plotdata(C::AbstractCurve) = adaptpoints(t->point(C,t),t->unittangent(C,t),0,1)
 show(io::IO,C::AbstractCurve) = print(io,"Complex-valued $(typeof(C))")
 show(io::IO,::MIME"text/plain",C::AbstractCurve) = print(io,"Complex-valued $(typeof(C))")
 
+function winding(C::AbstractClosedCurve,z::Number)
+	# Integrate around the curve
+	f = t -> imag(tangent(C,t)/(point(C,t)-z))
+	w = intadapt(f,0,1,1e-4)
+	return round(Int,w/(2π))
+end
+
+isinside(z::Number,C::AbstractClosedCurve) = winding(C,z) != 0
+isoutside(z::Number,C::AbstractClosedCurve) = winding(C,z) == 0
+
 # Generic documentation
 # (so that each subtype doesn't have to repeat them)
 

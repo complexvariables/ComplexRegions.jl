@@ -33,7 +33,7 @@ export +,-,*,/,!,∘,sign,inv,angle,real,imag,conj,show,iterate,eltype,length,ge
 
 include("utilities.jl")
 
-export point,arclength,slope,dist,closest,isleft,plotdata,isright,reflect,tangent,unittangent,normal,arg
+export point,arclength,slope,dist,closest,isleft,plotdata,isright,reflect,tangent,unittangent,normal,arg,isinside,isoutside
 export Curve,ClosedCurve,Circle,Line,Arc,Segment,Ray
 include("curves.jl")
 

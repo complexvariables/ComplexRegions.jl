@@ -162,7 +162,7 @@ inv(p::AbstractPath) = typeof(p)([inv(c) for c in curves(p)])
 	P1 ≈ P2       (type "\\approx" followed by tab key)
 Determine whether `P1` and `P2` represent the same path, up to tolerance `tol`, irrespective of the parameterization of its curves.
 """
-function isapprox(P1,P2;tol=DEFAULT[:tol]) 
+function isapprox(P1::AbstractPath,P2::AbstractPath;tol=DEFAULT[:tol]) 
 	if length(P1) != length(P2) 
 		return false
 	else
@@ -223,6 +223,19 @@ function sideargs(p::AbstractClosedPath,t)
 	return 1+mod(floor(Int,t),n), t%1
 end
 
+function winding(P::AbstractClosedPath,z::Number)
+	# Integrate around the boundary
+	w = 0
+	for s in P
+		f = t -> imag(tangent(s,t)/(point(s,t)-z))
+		w += intadapt(f,0,1,1e-4)
+	end
+	return round(Int,w/(2π))
+end
+
+isinside(z::Number,P::AbstractClosedPath) = winding(P,z) != 0 
+isoutside(z::Number,P::AbstractClosedPath) = winding(P,z) == 0 
+
 #
 # Concrete implementations
 #
@@ -276,22 +289,12 @@ end
 Given a vector `c` of curves, or an existing path, construct a closed path. The path is checked for continuity (to tolerance `tol`) at all of the vertices. 
 """
 ClosedPath(c::AbstractCurve) = ClosedPath([c])
+ClosedPath(c::AbstractClosedPath) = c
 ClosedPath(p::Path;kw...) = ClosedPath(p.curve;kw...)
 
 curves(p::ClosedPath) = p.curve 
 arclength(p::ClosedPath) = sum(arclength(c) for c in p)
 (p::ClosedPath)(t) = point(p,t)
-
-# Still experimental; don't document.
-function isleft(z::Number,P::AbstractClosedPath)
-	# TODO: this isn't foolproof
-	d = dist(z,P) 
-	t = 0:d/10:1 
-	if t[end]==1
-		t = t[1:end-1]
-	end
-	isleft(z,Polygon(P.(t)))
-end
 
 # Find a circle that fully encloses all the finite vertices of a path.
 function enclosing_circle(p::AbstractPath,expansion=2)
