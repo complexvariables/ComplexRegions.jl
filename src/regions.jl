@@ -1,6 +1,5 @@
 AbstractJordan = Union{AbstractClosedCurve,AbstractClosedPath}
 abstract type AbstractRegion end
-abstract type AbstractConnectedRegion{N} <: AbstractRegion end
 
 # Required methods
 """
@@ -57,6 +56,17 @@ Create the region that is the union of `R1` and `R2`.
 """
 union(R1::AbstractRegion,R2::AbstractRegion) = RegionUnion(R1,R2)
 
+# 
+# AbstractConnectedRegion
+#
+
+abstract type AbstractConnectedRegion{N} <: AbstractRegion end
+
+# Required methods
+innerboundary(R::AbstractConnectedRegion) = @error "No innerboundary() method defined for type $(typeof(R))"
+outerboundary(R::AbstractConnectedRegion) = @error "No outerboundary() method defined for type $(typeof(R))"
+boundary(R::AbstractConnectedRegion) = outerboundary(R),innerboundary(R)
+
 #
 # SimplyConnectedRegion 
 #
@@ -109,9 +119,13 @@ function exterior(C::AbstractJordan)
 end
 
 boundary(R::SimplyConnectedRegion) = R.boundary
-in(z::Number,R::InteriorSimplyConnectedRegion) = isinside(z,boundary(R))
-in(z::Number,R::ExteriorSimplyConnectedRegion) = isoutside(z,boundary(R))
-isfinite(R::InteriorSimplyConnectedRegion) = isfinite(boundary(R))
+innerboundary(R::InteriorSimplyConnectedRegion) = nothing
+innerboundary(R::ExteriorSimplyConnectedRegion) = R.boundary
+outerboundary(R::InteriorSimplyConnectedRegion) = R.boundary
+outerboundary(R::ExteriorSimplyConnectedRegion) = nothing
+in(z::Number,R::InteriorSimplyConnectedRegion) = isinside(z,outerboundary(R))
+in(z::Number,R::ExteriorSimplyConnectedRegion) = isoutside(z,innerboundary(R))
+isfinite(R::InteriorSimplyConnectedRegion) = isfinite(outerboundary(R))
 isfinite(R::ExteriorSimplyConnectedRegion) = false
 
 function show(io::IO,R::InteriorSimplyConnectedRegion)
@@ -161,7 +175,8 @@ end
 
 ExteriorRegion(inner) = ExteriorRegion{length(inner)}(inner)
 in(z::Number,R::ExteriorRegion) = all( isoutside(z,c) for c in R.inner )
-boundary(R::ExteriorRegion) = R.inner 
+innerboundary(R::ExteriorRegion) = R.inner 
+outerboundary(R::ExteriorRegion) = nothing 
 
 #
 # ConnectedRegion 
@@ -183,7 +198,7 @@ struct ConnectedRegion{N} <: AbstractConnectedRegion{N}
 			if all(.!isin)
 				outer = reverse(outer) 
 			else
-				@assert !all(isin) "Inner components appear to be crossing the outer boundary"
+				@assert all(isin) "Inner components appear to be crossing the outer boundary"
 			end 
 		end
 		# correct orientations of inner components
@@ -214,7 +229,9 @@ function in(z::Number,R::ConnectedRegion)
 	all( isoutside(z,c) for c in R.inner ) && isinside(z,R.outer)
 end
 
-boundary(R::ConnectedRegion) = R.outer,R.inner 
+outerboundary(R::ConnectedRegion) = R.outer
+innerboundary(R::ConnectedRegion) = R.inner 
+innerboundary(R::ConnectedRegion{2}) = R.inner[1] 
 
 #
 # special cases
@@ -307,7 +324,8 @@ function Annulus(outerrad::Real,innerrad::Real,center::Number=0)
 	Annulus(Circle(center,outerrad,true),Circle(center,innerrad,false))
 end
 
-boundary(A::Annulus) = A.outer,A.inner 
+innerboundary(A::Annulus) = A.inner 
+outerboundary(A::Annulus) = A.outer
 in(z::Number,A::Annulus) = isinside(z,A.outer) && isoutside(z,A.inner)
 isfinite(::Annulus) = true
 
