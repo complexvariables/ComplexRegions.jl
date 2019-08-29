@@ -2,16 +2,14 @@ using RecipesBase,Colors
 
 RecipesBase.debug(false)
 
-@recipe function f(C::AbstractCurve,n=600)
+@recipe function f(::Type{T},C::T) where T <: AbstractCurve
     aspect_ratio --> 1.0
-    label --> ""
     plotdata(C)
 end
 
 @recipe function f(P::AbstractPath;vertices=false)
     delete!(plotattributes,:vertices) 
     aspect_ratio --> 1.0  
-    label --> ""
  
     @series begin
         vcat( [plotdata(c) for c in P]... )
@@ -19,7 +17,7 @@ end
 
     if vertices 
         @series begin 
-            group := 2
+            label := ""
             markercolor --> :black
             markershape --> :circle 
             seriestype := :scatter
@@ -28,7 +26,29 @@ end
     end
 end
 
-@recipe function f(p::AbstractCircularPolygon;vertices=false)
+@recipe function f(R::AbstractConnectedRegion{2})
+    p0 = outerboundary(R) 
+    p1 = innerboundary(R)
+    z0 = plotdata(p0)
+    z1 = plotdata(p1)
+    i1 = argmin( abs.(z1.-z0[1]) )
+    @series begin
+        aspectratio --> 1
+        seriestype := :shape
+        linealpha := 0
+       [ z0[1];z1[i1:-1:1];z1[end:-1:i1];z0 ]
+    end
+    @series begin
+        linecolor --> :black 
+        p0 
+    end
+    @series begin
+        linecolor --> :black 
+        p1 
+    end    
+end
+
+@recipe function f(p::AbstractCircularPolygon)
     if isfinite(p)
         p.path 
     else
@@ -37,24 +57,35 @@ end
         z,R = C.center,C.radius/4
         xlims --> (real(z)-R,real(z)+R)
         ylims --> (imag(z)-R,imag(z)+R)
-        vertices := vertices
         q.path
     end
 end
 
-@recipe function f(R::SimplyConnectedRegion)
-#    axis = plotattributes[:subplot][isvertical(plotattributes) ? :xaxis : :yaxis]
-#    println(axis)
-    seriestype := :shape
-#    println(plotattributes[:plot_object])
+@recipe function f(::Type{T},R::T) where T<:SimplyConnectedRegion
+   if R isa ExteriorSimplyConnectedRegion 
+        seriestype := :shapecomplement 
+    else
+        seriestype := :shape
+    end
+
     C = R.boundary  # could be curve or path
     if C isa Line 
         # need to fake with a polygon 
         θ = angle(C) 
         Polygon([C(0.5),(θ,θ+π)])
-    elseif C isa AbstractCurve 
-        ClosedPath(C) 
+#    elseif C isa AbstractCurve 
+ #       ClosedPath(C) 
     else
         C 
     end
+end
+
+@recipe function f(R::ExteriorSimplyConnectedRegion)
+    P = innerboundary(R)
+    C = enclosing_circle(ClosedPath(P),8)
+    zc = C.center
+    r = 0.2*C.radius 
+    xlims --> [real(zc)-r,real(zc)+r]
+    ylims --> [imag(zc)-r,imag(zc)+r]
+    between(C,P)
 end

@@ -299,7 +299,8 @@ arclength(p::ClosedPath) = sum(arclength(c) for c in p)
 # Find a circle that fully encloses all the finite vertices of a path.
 function enclosing_circle(p::AbstractPath,expansion=2)
 	v = filter(isfinite,vertices(p))
-	isempty(v) && error("No finite vertices found.")
+	v = [v;point(p,0:1/50:1)]
+	#isempty(v) && error("No finite vertices found.")
 	zc = sum(v)/length(v)
 	R = length(v) > 1 ? maximum(@. abs(v - zc)) : max(1,abs(zc))
 	return Circle(zc,expansion*R)
