@@ -116,3 +116,17 @@ function intadapt(f,a,b,tol)
     Q = do_integral(a,f(a),b,f(b),m,f(m),tol,50)
     return Q
 end
+
+function enclosing_circle(z::AbstractVector,expansion=2)
+	zc = sum(z)/length(z)
+	R = length(z) > 1 ? maximum(@. abs(z - zc)) : max(1,abs(zc))
+	return zc,expansion*R
+end
+
+function enclosing_box(z::AbstractVector,expansion=2)
+	zc = sum(z)/length(z)
+	dz = z .- zc
+	rx = length(z) > 1 ? maximum(@. abs(real(dz))) : max(1,abs(real(zc)))
+	ry = length(z) > 1 ? maximum(@. abs(imag(dz))) : max(1,abs(imag(zc)))
+	return real(zc).+expansion*[-rx,rx],imag(zc).+expansion*[-ry,ry] 
+end

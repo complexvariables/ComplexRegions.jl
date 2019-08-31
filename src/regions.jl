@@ -67,91 +67,49 @@ innerboundary(R::AbstractConnectedRegion) = @error "No innerboundary() method de
 outerboundary(R::AbstractConnectedRegion) = @error "No outerboundary() method defined for type $(typeof(R))"
 boundary(R::AbstractConnectedRegion) = outerboundary(R),innerboundary(R)
 
+"""
+	P + z
+	z + P 
+Translate the path `P` by a number `z`. 
+"""
++(R::AbstractConnectedRegion,z::Number) = typeof(R)(outerboundary(R)+z,innerboundary(R).+z)
++(z::Number,R::AbstractConnectedRegion) = +(R,z)
+
+"""
+	P - z
+Translate the path `P` by a number `-z`.
+
+	-P 
+	z - P 
+Negate a path `P` (reflect through the origin), and optionally translate by a number `z`.
+"""
+-(R::AbstractConnectedRegion) = typeof(R)(-outerboundary(R),-innerboundary(R))
+-(R::AbstractConnectedRegion,z::Number) = +(R,-z)
+-(z::Number,R::AbstractConnectedRegion) = +(z,-R)
+
+"""
+	z*P 
+	P*z 
+Multiply the path `P` by real or complex number `z`; i.e., scale and rotate it about the origin.
+"""
+*(R::AbstractConnectedRegion,z::Number) = typeof(R)(outerboundary(R)*z,innerboundary(R)*z)
+*(z::Number,R::AbstractConnectedRegion) = R*z
+
+"""
+	P/z 
+Multiply the path `P` by the number `1/z`; i.e., scale and rotate it about the origin.
+
+	z/P 
+	inv(R) 
+Invert the path `P` through the origin (and optionally multiply by the number `z`). 
+"""
+/(R::AbstractConnectedRegion,z::Number) = *(R,1/z)
+/(z::Number,R::AbstractConnectedRegion) = z*inv(R)
+#inv(p::AbstractConnectedRegion) = typeof(R)([inv(c) for c in curves(p)])
+
 #
-# SimplyConnectedRegion 
+# concrete implementations
 #
-
-AbstractSimplyConnectedRegion = AbstractConnectedRegion{1}
-
-"""
-	(type) SimplyConnectedRegion 
-Representation of a simply connected region in the extended complex plane. 
-	SimplyConnectedRegion(p::Union{AbstractClosedCurve,AbstractClosedPath})
-Construct an open simply connected region by specifying its boundary. The region is "to the left" of the orientation of the boundary.
-"""
-struct InteriorSimplyConnectedRegion{T<:AbstractJordan} <: AbstractConnectedRegion{1}
-	boundary::T 
-end
-
-struct ExteriorSimplyConnectedRegion{T<:AbstractJordan} <: AbstractConnectedRegion{1}
-	boundary::T 
-end
-
-SimplyConnectedRegion = Union{InteriorSimplyConnectedRegion{T},ExteriorSimplyConnectedRegion{T}} where T<:AbstractJordan
-
-"""
-	interior(C)
-Construct the region interior to the closed curve or path `C`. If `C` is bounded, the bounded enclosure is chosen regardless of the orientation of `C`; otherwise, the region "to the left" is the interior. 
-"""
-function interior(C::AbstractJordan) 
-	if isfinite(C) && winding(1/C,0) > 0
-		C = reverse(C)
-	end
-	InteriorSimplyConnectedRegion(C)
-end
-
-"""
-	exterior(C)
-Construct the region exterior to  the closed curve or path `C`. If `C` is bounded, the bounded enclosure is chosen regardless of the orientation of `C`; otherwise, the region "to the right" is the exterior. 
-"""
-function exterior(C::AbstractJordan) 
-	if isfinite(C) 
-		if winding(1/C,0) < 0
-			C = reverse(C)
-		end
-	else
-		if C isa AbstractClosedPath && (length(filter(isinf,vertices(C))) > 1)
-			@error "Disconnected exterior"
-		end
-		C = reverse(C)
-	end
-	ExteriorSimplyConnectedRegion(C)
-end
-
-boundary(R::SimplyConnectedRegion) = R.boundary
-innerboundary(R::InteriorSimplyConnectedRegion) = nothing
-innerboundary(R::ExteriorSimplyConnectedRegion) = R.boundary
-outerboundary(R::InteriorSimplyConnectedRegion) = R.boundary
-outerboundary(R::ExteriorSimplyConnectedRegion) = nothing
-in(z::Number,R::InteriorSimplyConnectedRegion) = isinside(z,outerboundary(R))
-in(z::Number,R::ExteriorSimplyConnectedRegion) = isoutside(z,innerboundary(R))
-isfinite(R::InteriorSimplyConnectedRegion) = isfinite(outerboundary(R))
-isfinite(R::ExteriorSimplyConnectedRegion) = false
-
-function show(io::IO,R::InteriorSimplyConnectedRegion)
-	print(IOContext(io,:compact=>true),"Region interior to ",R.boundary)
-end
-
-function show(io::IO,R::ExteriorSimplyConnectedRegion)
-	print(IOContext(io,:compact=>true),"Region exterior to ",R.boundary)
-end
-
-function show(io::IO,::MIME"text/plain",R::SimplyConnectedRegion)
-	show(io,R)
-end
-
-"""
-	!(R::SimplyConnectedRegion)
-Compute the region complementary to `R`. This is not quite set complementation, as neither region includes its boundary. The complement is always simply connected in the extended plane. 
-"""
-!(R::InteriorSimplyConnectedRegion) = exterior(reverse(boundary(R)))
-!(R::ExteriorSimplyConnectedRegion) = interior(reverse(boundary(R)))
-
-"""
-	isapprox(R1::SimplyConnectedRegion,R2::SimplyConnectedRegion; tol=<default>)
-Determine whether `R1` and `R2` represent the same region, up to tolerance `tol`. Equivalently, determine whether their boundaries are the same.
-"""
-isapprox(R1::S,R2::T;tol=DEFAULT[:tol]) where {S,T<:SimplyConnectedRegion} = isapprox(boundary(R1),boundary(R2),tol=tol)
 
 #
 # ExteriorRegion
@@ -193,7 +151,7 @@ struct ConnectedRegion{N} <: AbstractConnectedRegion{N}
 		n = length(inner) + !isnothing(outer)
 		@assert N == n "Incorrect connectivity"
 		if !isnothing(outer)
-			# correct orientation of outer component 
+			# correct orientation of outer component?
 			isin = [isinside(point(c,0),outer) for c in inner ]
 			if all(.!isin)
 				outer = reverse(outer) 
@@ -201,7 +159,7 @@ struct ConnectedRegion{N} <: AbstractConnectedRegion{N}
 				@assert all(isin) "Inner components appear to be crossing the outer boundary"
 			end 
 		end
-		# correct orientations of inner components
+		# correct orientations of inner components?
 		@assert all(isfinite.(inner)) "Inner boundaries must be finite"
 		for c in inner 
 			if !isfinite(interior(c))
@@ -251,51 +209,9 @@ function between(outer::AbstractJordan,inner::AbstractJordan)
 	ConnectedRegion{2}(outer,[inner])
 end
 
-# disks
-AbstractDisk = SimplyConnectedRegion{T} where T<:Circle
-"""
-	disk(C::Circle) 
-Construct the disk interior to `C`.
-"""
-disk(C::Circle) = interior(C) 
-"""
-	disk(center::Number,radius::Real) 
-Construct the disk with the given `center` and `radius`. 
-"""
-disk(center::Number,radius::Real) = interior(Circle(center,radius))
-unitdisk = disk(complex(0.0),1.0)
-function show(io::IO,::MIME"text/plain",R::AbstractDisk)
-	side = in(Inf,R) ? "exterior" : "interior"
-	print(io,"Disk $side to:\n   ",R.boundary)
-end
-
-# half-planes
-AbstractHalfplane = SimplyConnectedRegion{T} where T<:Line
-"""
-	halfplane(L::Line) 
-Construct the half-plane to the left of `L`.
-"""
-halfplane(L::Line) = interior(L)
-"""
-	halfplane(a,b) 
-Construct the half-plane to the left of the line from `a` to `b`.
-"""
-halfplane(a::Number,b::Number) = interior(Line(a,b))
-upperhalfplane = halfplane(Line(0.0,direction=1.0))
-lowerhalfplane = halfplane(Line(0.0,direction=-1.0))
-lefthalfplane = halfplane(Line(0.0,direction=1.0im))
-righthalfplane = halfplane(Line(0.0,direction=-1.0im))
-function show(io::IO,::MIME"text/plain",R::AbstractHalfplane)
-	print(io,"Half-plane to the left of:\n   ",R.boundary)
-end
-
-"""
-	(type) PolygonalRegion
-Representation of a simply connected region bounded by a plane.
-"""
-PolygonalRegion = SimplyConnectedRegion{Polygon} 
 
 # Annulus
+
 """
 	(type) Annulus 
 Representation of the region between two circles.

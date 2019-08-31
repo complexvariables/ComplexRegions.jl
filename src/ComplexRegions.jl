@@ -46,6 +46,7 @@ export halfplane,upperhalfplane,lowerhalfplane,lefthalfplane,righthalfplane
 export RegionIntersection,RegionUnion
 export region,interior,exterior,between,boundary,innerboundary,outerboundary
 include("regions.jl")
+include("simplyconnected.jl")
 
 export Möbius,Mobius
 include("mobius.jl")
