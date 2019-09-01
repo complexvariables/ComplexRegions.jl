@@ -26,28 +26,6 @@ end
     end
 end
 
-@recipe function f(R::AbstractConnectedRegion{2})
-    p0 = outerboundary(R) 
-    p1 = innerboundary(R)
-    z0 = plotdata(p0)
-    z1 = plotdata(p1)
-    i1 = argmin( abs.(z1.-z0[1]) )
-    @series begin
-        aspectratio --> 1
-        seriestype := :shape
-        linealpha := 0
-       [ z0[1];z1[i1:-1:1];z1[end:-1:i1];z0 ]
-    end
-    @series begin
-        linecolor --> :black 
-        p0 
-    end
-    @series begin
-        linecolor --> :black 
-        p1 
-    end    
-end
-
 @recipe function f(p::AbstractCircularPolygon)
     if isfinite(p)
         p.path 
@@ -88,4 +66,88 @@ end
     xlims --> [real(zc)-r,real(zc)+r]
     ylims --> [imag(zc)-r,imag(zc)+r]
     between(C,P)
+end
+
+@recipe function f(R::Union{ConnectedRegion,ExteriorRegion})
+    p0 = outerboundary(R) 
+    p1 = innerboundary(R)
+    z1 = [plotdata(p) for p in p1]
+    if isnothing(p0)
+        zc,R = enclosing_circle(vcat(z1...),8)
+        p0 = Circle(zc,R)
+        r = 0.2*R 
+        xlims --> [real(zc)-r,real(zc)+r]
+        ylims --> [imag(zc)-r,imag(zc)+r]    
+    end
+    z0 = plotdata(p0)
+    # This is not fast, but I don't see a shortcut...
+    # find pairwise distances between components
+    comp = [z1...,z0]
+    n = length(comp)
+    index = Array{Tuple}(undef,n,n)
+    dist = fill(Inf,n,n)
+    for i in 1:n 
+        for j in i+1:n
+            ka,kb = argclosest(comp[i],comp[j])
+            index[i,j] = (ka,kb)
+            index[j,i] = (kb,ka)
+            dist[i,j] = dist[j,i] = abs(comp[i][ka]-comp[j][kb])
+        end
+    end
+
+    # find the hops between components  
+    unused = trues(length(z1))
+    curr = n
+    path = []
+    while sum(unused) > 1
+        u = findall(unused)
+        k = argmin(dist[curr,u])
+        next = u[k]
+        push!(path,(curr,next))
+        unused[next] = false
+        curr = next 
+    end
+    push!(path,(curr,findfirst(unused)))
+
+    # accumulate into the last component 
+    p = path[1] 
+    idx = index[p...]
+    data_in = z0[idx[1]] 
+    data_out = [ z0[idx[1]:-1:1]; z0[end:-1:idx[1]] ]
+    for k = 1:length(path)-1
+        a = idx[2]
+        zc = comp[p[2]]
+        p = path[k+1]
+        idx = index[p...]
+        b = idx[1]
+        if a > b
+            data_in = [data_in;zc[a:-1:b]]
+            data_out = [data_out;zc[a:end];zc[1:b]]
+        else
+            data_in = [data_in;zc[a:-1:1];zc[end:-1:b]]
+            data_out = [data_out;zc[a:b]]
+        end
+    end
+    a = idx[2]
+    zc = comp[p[2]]
+    data = [ data_in; zc[a:-1:1]; zc[end:-1:a]; data_out[end:-1:1] ]
+ 
+    aspectratio --> 1
+    @series begin
+        seriestype := :shape
+        linealpha := 0
+       data
+    end
+
+    seriestype := :path
+    linecolor --> :black 
+    label := ""
+    @series begin 
+        z0
+    end
+    for z in z1
+        @series begin
+            z 
+        end 
+    end
 end
