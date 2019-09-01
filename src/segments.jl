@@ -2,7 +2,7 @@
 """
 	(type) Segment{T<:AnyComplex} in the complex plane 
 
-Each `Segment` type is parameterized according to the common type of its input arguments. 
+Each `Segment` type is parameterized according to the common type of its complex input arguments. 
 """
 struct Segment{T<:AnyComplex} <: AbstractCurve 
 	za::T 

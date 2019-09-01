@@ -2,6 +2,7 @@
 
 ```@setup examples
 using ComplexRegions,Plots
+default(linewidth=2,legend=:none)
 ```
 
 This package provides types and methods that are useful for working with curves and regions in the (extended) complex plane.
@@ -33,12 +34,12 @@ Some examples:
 ```@repl examples
 ℓ = Line(1/2,1/2+1im)  # line through 0.5 and 0.5+1i
 c = 1 / ℓ          # a circle
-plot(ℓ);
-plot!(c);
+intersect(ℓ,c)
+plot(ℓ);  plot!(c);
 savefig("line_circle.svg"); nothing # hide
 ```
 
-![](line_circle.svg)
+![line and circle](line_circle.svg)
 
 ```@repl examples
 plot(Spherical(ℓ));
@@ -46,29 +47,27 @@ plot!(Spherical(c));
 savefig("line_circle_sphere.svg"); nothing # hide
 ```
 
-![](line_circle_sphere.svg)
+![line and circle on Riemann sphere](line_circle_sphere.svg)
 
 ```@repl examples
 reflect(-1,c)       # reflection of a point through the circle
-intersect(ℓ,c)      # intersection of curves
 plot(interior(ℓ));   # plot a half-plane
 savefig("halfplane.svg"); nothing # hide
 ```
 
-![](halfplane.svg)
+![half-plan](halfplane.svg)
 
 ```@repl examples
-h = n_gon(7) 
+h = n_gon(7)
 plot(h);
-for k in 1:7 
+for k in 1:7
 	z = exp(k*2im*π/20)
-	plot!(z*h - 0.25k - 0.1im*k^2)
+	plot!(z*h - 0.5k - 0.1im*k^2)
 end
 savefig("heptagons.svg"); nothing # hide
 ```
 
-![](heptagons.svg)
-
+![heptagons](heptagons.svg)
 
 ```@repl examples
 p = Polygon([0,-1im,(0,0),1im,(pi,pi)])      # channel with a step
@@ -76,7 +75,7 @@ plot(interior(p));
 savefig("channel.svg"); nothing # hide
 ```
 
-![](channel.svg)
+![channel with step](channel.svg)
 
 ## Tolerance
 

@@ -17,12 +17,6 @@ function reverse(p::AbstractCircularPolygon)
 	typeof(p)(reverse(reverse.(sides(p))))
 end
 
-"""
-	winding(P::AbstractCircularPolygon,z)
-Compute the winding number of `P` about the point `z`. Each counterclockwise rotation about `z` contributes +1, and each clockwise rotation about it counts -1. The winding number is zero for points not in the region enclosed by `P`. 
-
-The result is unreliable for points on `P` (for which the problem is ill-posed).
-"""
 function winding(p::AbstractCircularPolygon,z::Number)
 	if isinf(z) 
 		!isfinite(p) && @warn "Winding number is ill-defined for a boundary point"

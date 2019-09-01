@@ -2,10 +2,6 @@ AbstractJordan = Union{AbstractClosedCurve,AbstractClosedPath}
 abstract type AbstractRegion end
 
 # Required methods
-"""
-	boundary(R::AbstractRegion)
-Return the boundary of a region. Depending on the type of region, this might be a vector.
-"""
 boundary(R::AbstractRegion) = @error "No boundary() method defined for type $(typeof(R))"
 
 """
@@ -67,42 +63,16 @@ innerboundary(R::AbstractConnectedRegion) = @error "No innerboundary() method de
 outerboundary(R::AbstractConnectedRegion) = @error "No outerboundary() method defined for type $(typeof(R))"
 boundary(R::AbstractConnectedRegion) = outerboundary(R),innerboundary(R)
 
-"""
-	P + z
-	z + P 
-Translate the path `P` by a number `z`. 
-"""
 +(R::AbstractConnectedRegion,z::Number) = typeof(R)(outerboundary(R)+z,innerboundary(R).+z)
 +(z::Number,R::AbstractConnectedRegion) = +(R,z)
 
-"""
-	P - z
-Translate the path `P` by a number `-z`.
-
-	-P 
-	z - P 
-Negate a path `P` (reflect through the origin), and optionally translate by a number `z`.
-"""
 -(R::AbstractConnectedRegion) = typeof(R)(-outerboundary(R),-innerboundary(R))
 -(R::AbstractConnectedRegion,z::Number) = +(R,-z)
 -(z::Number,R::AbstractConnectedRegion) = +(z,-R)
 
-"""
-	z*P 
-	P*z 
-Multiply the path `P` by real or complex number `z`; i.e., scale and rotate it about the origin.
-"""
 *(R::AbstractConnectedRegion,z::Number) = typeof(R)(outerboundary(R)*z,innerboundary(R)*z)
 *(z::Number,R::AbstractConnectedRegion) = R*z
 
-"""
-	P/z 
-Multiply the path `P` by the number `1/z`; i.e., scale and rotate it about the origin.
-
-	z/P 
-	inv(R) 
-Invert the path `P` through the origin (and optionally multiply by the number `z`). 
-"""
 /(R::AbstractConnectedRegion,z::Number) = *(R,1/z)
 /(z::Number,R::AbstractConnectedRegion) = z*inv(R)
 #inv(p::AbstractConnectedRegion) = typeof(R)([inv(c) for c in curves(p)])

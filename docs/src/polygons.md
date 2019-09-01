@@ -10,7 +10,7 @@ In addition to the usual methods for a `ClosedPath`, the following are implement
 
 - `side`\
 Alias for `curve`.
-- `winding(z,P)`\
+- `winding(P,z)`\
 Compute the winding number of `P` relative to `z`. Each counterclockwise rotation about `z` counts +1, and each clockwise rotation counts -1. The result is unreliable for points lying on `P`, for which the quantity is ill-posed.
 - `truncate(P)`\
 Replace pairs of rays that meet at infinity with two segments to new vertices along the rays, and an arc between the new vertices. This can be useful for plotting an unbounded path, or for some other computations. This is *not* a true clipping algorithm; in fact, any bounded polygon will be unchanged.

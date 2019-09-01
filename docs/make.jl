@@ -1,4 +1,4 @@
-import Pkg; Pkg.update()
+import Pkg; Pkg.update("ComplexRegions")
 using Documenter, ComplexRegions, Plots
 
 makedocs(sitename="ComplexRegions.jl",

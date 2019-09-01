@@ -1,5 +1,10 @@
 # Curves
 
+```@setup examples
+using ComplexRegions,Plots
+default(linewidth=2,legend=:none)
+```
+
 A **curve** is meant to be a smooth, non-self-intersecting curve in the extended complex plane. There is a generic [Curve](@ref) type that requires you to specify an explicit parameterization; it is *not* checked for smoothness or even continuity.
 
 ## [Abstract interface](@id interface_curves)
@@ -100,3 +105,46 @@ Use `reflect(z,C)` to reflect a point `z` through the circle `C`.
 Given a Circle `C`, the syntax `Arc(C,start,delta)` constructs an arc from `C` starting at the given `start` value and extending an amount `delta`. These latter values are expressed as fractions of a full rotation starting from the real axis. If `delta` is negative, it effectively reverses the orientation of `C`.
 
 ## [Examples](@id examples_curves)
+
+Here we set up a generic `ClosedCurve` for an ellipse, then plot it along with the so-called inverted ellipse. We add some normals to the inverted curve as well.
+
+```@repl examples
+el = ClosedCurve( t->cos(t)+2im*sin(t), 0,2π )
+invel = 1/el;
+plot(el);
+plot!(invel);
+t = 0:0.05:0.95;
+z = invel.(t);
+n = [normal(invel,ti) for ti in t]
+quiver!(real(z),imag(z),quiver=(real(n)/3,imag(n)/3))
+savefig("inv_ellipse.svg"); nothing # hide
+```
+
+![ellipse and inverse](inv_ellipse.svg)
+
+It's often convenient to create a "standard" shape that is then moved and scaled using arithmetic operations. 
+
+```@repl examples
+a = Arc(1,1+1im,1im)
+plot(a);
+for n = 1:3
+	plot!((1im)^n*a);
+end
+savefig("arcs.svg"); nothing # hide
+```
+
+![ellipse and inverse](arcs.svg)
+
+On the Riemann sphere, lines and circles are all simply circles. So are their inverses.
+
+```@repl examples
+c = Spherical(Circle(1,1))
+l = Spherical(Line(-1,1im))
+plot(c); plot!(l,sphere=false);
+1 / c
+1 / l
+plot!(1/c,sphere=false); plot!(1/l,sphere=false);
+savefig("circles_sphere.svg"); nothing # hide
+```
+
+![lines and circles on the Riemann sphere](circles_sphere.svg)

@@ -105,54 +105,20 @@ function normal(p::AbstractPath,t::Real)
 	normal(curve(p,k),s)
 end
 
-"""
-	conj(P::AbstractPath) 
-Construct the complex conjugate of `P`. Note that this also reverses the orientation of a closed path. 
-"""
 conj(p::AbstractPath) = typeof(p)(conj.(curves(p)))
 
-""" 
-	reverse(P::AbstractPath) 
-Construct a path identical to `P` except with opposite direction of parameterization.
-"""
 reverse(p::AbstractPath) = typeof(p)(reverse(reverse.(curves(p))))
 
-"""
-	P + z
-	z + P 
-Translate the path `P` by a number `z`. 
-"""
 +(p::AbstractPath,z::Number) = typeof(p)([c+z for c in curves(p)])
 +(z::Number,p::AbstractPath) = typeof(p)([z+c for c in curves(p)])
 
-"""
-	P - z
-Translate the path `P` by a number `-z`.
-
-	-P 
-	z - P 
-Negate a path `P` (reflect through the origin), and optionally translate by a number `z`.
-"""
 -(p::AbstractPath) = typeof(p)([-c for c in curves(p)])
 -(p::AbstractPath,z::Number) = typeof(p)([c-z for c in curves(p)])
 -(z::Number,p::AbstractPath) = typeof(p)([z-c for c in curves(p)])
 
-"""
-	z*P 
-	P*z 
-Multiply the path `P` by real or complex number `z`; i.e., scale and rotate it about the origin.
-"""
 *(p::AbstractPath,z::Number) = typeof(p)([c*z for c in curves(p)])
 *(z::Number,p::AbstractPath) = typeof(p)([z*c for c in curves(p)])
 
-"""
-	P/z 
-Multiply the path `P` by the number `1/z`; i.e., scale and rotate it about the origin.
-
-	z/P 
-	inv(P) 
-Invert the path `P` through the origin (and optionally multiply by the number `z`). 
-"""
 /(p::AbstractPath,z::Number) = typeof(p)([c/z for c in curves(p)])
 /(z::Number,p::AbstractPath) = z*inv(p)
 inv(p::AbstractPath) = typeof(p)([inv(c) for c in curves(p)])

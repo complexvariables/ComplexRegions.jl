@@ -24,10 +24,6 @@ Find the complex number representing the tangent to curve `C` at parameter value
 """
 tangent(C::AbstractCurve,t::Real) = @error "No tangent() method defined for type $(typeof(C))"
 
-"""
-	reverse(C::AbstractCurve)
-Construct a curve identical to `C` except for the direction of traversal. (Essentially, replace "t" by "1-t" in the parameterization.)
-"""
 reverse(C::AbstractCurve) = @error "No reverse() method defined for type $(typeof(C))"
 
 """ 
@@ -36,36 +32,14 @@ Return `true` if the curve is bounded in the complex plane (i.e., does not pass 
 """
 isfinite(C::AbstractCurve) = @error "No isfinite() method defined for type $(typeof(C))"
 
-"""
-	conj(C::AbstractCurve) 
-Construct the complex conjugate of `C`. Note that this also reverses the orientation of a closed curve. 
-"""
 conj(C::AbstractCurve) = @error "No conj() method defined for type $(typeof(C))"
 
-"""
-	C + z
-	z + C 
-Translate the curve `C` by a number `z`. 
-"""
 +(C::AbstractCurve,z::Number) = @error "No addition method defined for type $(typeof(C))"
 
-"""
-	-C 
-Negate a curve `C` (reflect through the origin).
-"""
 -(C::AbstractCurve) = @error "No negation method defined for type $(typeof(C))"
 
-"""
-	z*C 
-	C*z 
-Multiply the curve `C` by complex number `z`; i.e., scale and rotate it about the origin.
-"""
 *(C::AbstractCurve,z::Number) = @error "No multiplication method defined for type $(typeof(C))"
 
-"""
-	inv(C)
-Invert the curve pointwise.
-"""
 inv(C::AbstractCurve) = @error "No inversion method defined for type $(typeof(C))"
 
 # Default implementations
@@ -89,31 +63,10 @@ Find the unit complex number in the direction of the leftward-pointing normal to
 normal(c::AbstractCurve,t::Real) = 1im*unittangent(c,t)
 
 +(z::Number,C::AbstractCurve) = +(C,z)
-
-"""
-	C - z
-Translate the curve `C` by a number `-z`.
-"""
 -(C::AbstractCurve,z::Number) = C + (-z)
-
-"""
-	z - C 
-Negate a curve `C` (reflect through the origin) and translate by `z`.
-"""
 -(z::Number,C::AbstractCurve) = z + (-C)
-
 *(z::Number,C::AbstractCurve) = *(C,z)
-
-"""
-	C/z 
-Multiply the curve `C` by the number `1/z`; i.e., scale and rotate it about the origin.
-"""
 /(C::AbstractCurve,z::Number) = C*(1/z)
-
-"""
-	z/C 
-Invert the curve `C` pointwise and multiply by the number `z`.
-"""
 /(z::Number,C::AbstractCurve) = z*inv(C)
 
 """
@@ -138,19 +91,6 @@ isoutside(z::Number,C::AbstractClosedCurve) = winding(C,z) == 0
 
 # Generic documentation
 # (so that each subtype doesn't have to repeat them)
-
-@doc """
-	Complex(::AbstractCurve) 
-Interpret a curve as having points of type Complex.
-""" Complex(::AbstractCurve) 
-@doc """
-	Polar(::AbstractCurve) 
-Interpret a curve as having points of type Polar.
-""" Polar(::AbstractCurve) 
-@doc """
-	Spherical(::AbstractCurve) 
-Interpret a curve as having points of type Spherical.
-""" Spherical(::AbstractCurve) 
 
 #
 # generic curve type 
