@@ -198,6 +198,8 @@ function show(io::IO,::MIME"text/plain",P::AbstractPath)
 	print(io,typeof(P)," with ",length(P)," curves")
 end
 
+plotdata(P::AbstractPath) = vcat(plotdata.(P)...)
+
 abstract type AbstractClosedPath <: AbstractPath end
 
 """
