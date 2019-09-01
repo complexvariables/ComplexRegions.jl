@@ -51,6 +51,7 @@ include("simplyconnected.jl")
 export Möbius,Mobius
 include("mobius.jl")
 
+include("docs.jl")
 include("plotrecipes.jl")
 
 end # module
