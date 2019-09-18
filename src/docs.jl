@@ -76,3 +76,27 @@ AbstractCP = Union{AbstractCurve,AbstractPath}
 	reverse(X) 
 Construct a curve or path identical to `X` except with opposite direction of parameterization.
 """ reverse(::AbstractCP)
+
+@doc """ 
+	arclength(X) 
+Fetch or compute the arc length of the curve or path `X`.
+
+# Example
+```jldoctest
+julia> ellipse = ClosedCurve( t->cos(t)+2im*sin(t), 0,2π );
+julia> arclength(ellipse)  # good to about 10 digits
+9.688448219981513
+```
+""" arclength(::AbstractCP)
+
+AbstractCCP = Union{AbstractClosedCurve,AbstractClosedPath}
+
+@doc """
+	isinside(X,z)
+Detect whether `z` lies inside the closed curve or path `X`. For a bounded path, this always means the bounded region enclosed by the curve, regardless of orientation; for an unbounded path, it means the region "to the left" as one walks along the path.
+""" isinside(z::Number,C::AbstractCCP)
+
+@doc """
+	isoutside(X,z)
+Detect whether `z` lies outside the closed curve or path `X`. For a bounded path, this always means the unbounded region complementary to the enclosure of the curve, regardless of orientation; for an unbounded path, it means the region "to the right" as one walks along the path.
+""" isoutside(z::Number,C::AbstractCCP)

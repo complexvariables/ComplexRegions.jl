@@ -11,12 +11,13 @@ True if `z` is in the region `R`.
 """
 in(z::Number,R::AbstractRegion;tol=DEFAULT[:tol]) = @error "No in() method defined for type $(typeof(R))"
 	
-# Default implementations
 """ 
 	isfinite(R::AbstractRegion) 
 Return `true` if the region is bounded in the complex plane.
 """
 isfinite(R::AbstractRegion) = @error "No isfinite() method defined for type $(typeof(R))"
+
+# Default implementations
 
 """
 	(type) RegionIntersection 
@@ -62,6 +63,8 @@ abstract type AbstractConnectedRegion{N} <: AbstractRegion end
 innerboundary(R::AbstractConnectedRegion) = @error "No innerboundary() method defined for type $(typeof(R))"
 outerboundary(R::AbstractConnectedRegion) = @error "No outerboundary() method defined for type $(typeof(R))"
 boundary(R::AbstractConnectedRegion) = outerboundary(R),innerboundary(R)
+
+# Default implementations
 
 +(R::AbstractConnectedRegion,z::Number) = typeof(R)(outerboundary(R)+z,innerboundary(R).+z)
 +(z::Number,R::AbstractConnectedRegion) = +(R,z)

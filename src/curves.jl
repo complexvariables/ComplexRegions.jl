@@ -1,9 +1,8 @@
 #
-# abstract interface
+# abstract interfaces
 #
 
 abstract type AbstractCurve end
-abstract type AbstractClosedCurve <: AbstractCurve end
 
 # Required methods
 """
@@ -12,12 +11,6 @@ Find the point on curve `C` at parameter value `t`, which should lie in the inte
 """
 point(c::AbstractCurve,t::Real) = @error "No point() method defined for type $(typeof(c))"
 
-# """
-# 	arclength(C::AbstractCurve)
-
-# Fetch or compute the arc length of curve `C`.
-# """
-# arclength(c::AbstractCurve) = @error "No arclength() method defined for type $(typeof(c))"
 """
 	tangent(C::AbstractCurve,t::Real)
 Find the complex number representing the tangent to curve `C` at parameter value `t` in [0,1]. 
@@ -33,13 +26,9 @@ Return `true` if the curve is bounded in the complex plane (i.e., does not pass 
 isfinite(C::AbstractCurve) = @error "No isfinite() method defined for type $(typeof(C))"
 
 conj(C::AbstractCurve) = @error "No conj() method defined for type $(typeof(C))"
-
 +(C::AbstractCurve,z::Number) = @error "No addition method defined for type $(typeof(C))"
-
 -(C::AbstractCurve) = @error "No negation method defined for type $(typeof(C))"
-
 *(C::AbstractCurve,z::Number) = @error "No multiplication method defined for type $(typeof(C))"
-
 inv(C::AbstractCurve) = @error "No inversion method defined for type $(typeof(C))"
 
 # Default implementations
@@ -69,6 +58,11 @@ normal(c::AbstractCurve,t::Real) = 1im*unittangent(c,t)
 /(C::AbstractCurve,z::Number) = C*(1/z)
 /(z::Number,C::AbstractCurve) = z*inv(C)
 
+function arclength(C::AbstractCurve,part=[0,1])
+	f = t -> abs(tangent(C,t))
+	intadapt(f,part...,DEFAULT[:tol])
+end
+
 """
 	plotdata(C::AbstractCurve,n=501)
 
@@ -79,6 +73,10 @@ plotdata(C::AbstractCurve) = adaptpoints(t->point(C,t),t->unittangent(C,t),0,1)
 show(io::IO,C::AbstractCurve) = print(io,"Complex-valued $(typeof(C))")
 show(io::IO,::MIME"text/plain",C::AbstractCurve) = print(io,"Complex-valued $(typeof(C))")
 
+# AbstractClosedCurve
+abstract type AbstractClosedCurve <: AbstractCurve end
+
+# Default implementations
 function winding(C::AbstractClosedCurve,z::Number)
 	# Integrate around the curve
 	f = t -> imag(tangent(C,t)/(point(C,t)-z))
@@ -89,11 +87,8 @@ end
 isinside(z::Number,C::AbstractClosedCurve) = winding(C,z) != 0
 isoutside(z::Number,C::AbstractClosedCurve) = winding(C,z) == 0
 
-# Generic documentation
-# (so that each subtype doesn't have to repeat them)
-
 #
-# generic curve type 
+# generic Curve 
 #
 
 """
@@ -107,8 +102,10 @@ end
 """
 	Curve(f)
 	Curve(f,a,b)
-
 Construct a `Curve` object from the complex-valued function `f` accepting an argument in the interval [0,1]. If `a` and `b` are given, they are the limits of the parameter in the call to the supplied `f`. However, the resulting object will be defined on [0,1], which is internally scaled to [a,b].
+
+	Curve(f,df[,a,b])
+Construct a curve with point location and tangent given by the complex-valued functions `f` and `df`, respectively, optionally with given limits on the parameter.
 """
 Curve(f) = Curve(f,t->fdtangent(f,t))
 Curve(f,df,a::Real,b::Real) = Curve(t->f(scaleto(a,b,t)),t->df(scaleto(a,b,t)))
@@ -128,7 +125,7 @@ isfinite(C::Curve) = true
 inv(C::Curve) = Curve(t->1/C.point(t),t->-C.tangent(t)/C.point(t)^2)
 
 #
-# generic closed curve type
+# generic ClosedCurve
 # 
 
 """
@@ -143,11 +140,12 @@ struct ClosedCurve <: AbstractClosedCurve
 end
 
 """
-	ClosedCurve(f,arclen=missing;tol=DEFAULT[:tol])
-	ClosedCurve(f,a,b,arclen=missing;tol=DEFAULT[:tol])
-Construct a `ClosedCurve` object from the complex-valued function `point` accepting an argument in the interval [0,1]. The constructor checks whether `f(0)≈f(1)` to tolerance `tol`. 
+	ClosedCurve(f; tol=<default>)
+	ClosedCurve(f,a,b; tol=<default)
+Construct a `ClosedCurve` object from the complex-valued function `point` accepting an argument in the interval [0,1]. The constructor checks whether `f(0)≈f(1)` to tolerance `tol`. If `a` and `b` are given, they are the limits of the parameter in the call to the supplied `f`. However, the resulting object will be defined on [0,1], which is internally scaled to [a,b].
 
-If `a` and `b` are given, they are the limits of the parameter in the call to the supplied `f`. However, the resulting object will be defined on [0,1], which is internally scaled to [a,b].
+	ClosedCurve(f,df[,a,b]; tol=<default>)
+Construct a closed curve with point location and tangent given by the complex-valued functions `f` and `df`, respectively, optionally with given limits on the parameter.
 """
 ClosedCurve(f,df=t->fdtangent(f,t);kw...) = ClosedCurve(Curve(f,df;kw...))
 ClosedCurve(f,a::Real,b::Real;kw...) = ClosedCurve(Curve(f,a,b;kw...))
