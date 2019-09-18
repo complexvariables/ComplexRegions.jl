@@ -268,7 +268,7 @@ arclength(p::ClosedPath) = sum(arclength(c) for c in p)
 function enclosing_circle(p::AbstractPath,expansion=2)
 	#z = [vertices(p);point(p,0:1/50:1)]
 	z = vertices(p)
-	return Circle(enclosing_circle(filter(isfinite,z))...)
+	return Circle(enclosing_circle(filter(isfinite,z),expansion)...)
 end
 
 include("polygons.jl")

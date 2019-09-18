@@ -32,7 +32,7 @@ end
     else
         C = ComplexRegions.enclosing_circle(p,8)
         q = truncate(p,C)
-        z,R = C.center,C.radius/4
+        z,R = C.center,C.radius/3
         xlims --> (real(z)-R,real(z)+R)
         ylims --> (imag(z)-R,imag(z)+R)
         q.path
