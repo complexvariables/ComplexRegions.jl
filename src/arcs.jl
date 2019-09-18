@@ -116,9 +116,14 @@ reverse(A::Arc) = Arc(A(1),A(0.5),A(0))
 Determine if `A1` and `A2` represent the same arc, irrespective of the type or values of its parameters. Identity is determined by agreement within `tol`, which is interpreted as the weaker of absolute and relative differences.
 """
 function isapprox(A1::Arc,A2::Arc;tol=DEFAULT[:tol])
-	return isapprox(A1.Circle,A2.Circle,tol) &&
-		isapprox(A1.start,A2.start,rtol=tol,atol=tol) &&
-		isapprox(A1.delta,A2.delta,rtol=tol,atol=tol) 
+	if isapprox(A1.circle,A2.circle,tol=tol) 
+		z1 = point(A1,[0,1])
+		z2 = point(A2,[0,1])
+		appx(u,v) = isapprox(u,v,atol=tol,rtol=tol)
+		return appx(z1,z2) || appx(z1,reverse(z2))
+	else
+		return false
+	end
 end
 
 """ 

@@ -169,15 +169,41 @@ function intersect(c::Circle,s::Segment;tol=DEFAULT[:tol])
 end
 
 function intersect(a1::Arc,a2::Arc;tol=DEFAULT[:tol]) 
-	z = intersect(a1.circle,a2.circle) 
-	f = w -> (dist(w,a1) < tol) & (dist(w,a2) < tol)
-	return filter(f,z)
+	if isapprox(a1.circle,a2.circle,tol=tol)
+		# to what extent do the arcs overlap on the same circle? 
+		r = a1.circle.radius
+		d10ison2 = dist(point(a1,0),a2) < tol*(1+r)
+		d11ison2 = dist(point(a1,1),a2) < tol*(1+r)
+		d20ison1 = dist(point(a2,0),a1) < tol*(1+r)
+		d21ison1 = dist(point(a2,1),a1) < tol*(1+r)
+		if d10ison2 
+			if d11ison2
+				return a1 
+			else
+				t = d20ison1 ? arg(a1,point(a2,0)) : arg(a1,point(a2,1))
+				return Arc(point(a1,[0,t/2,t]))
+			end 
+		elseif d11ison2 
+			t = d20ison1 ? arg(a1,point(a2,0)) : arg(a1,point(a2,1))
+			return Arc(point(a1,[1-t,1-t/2,1]))
+		else
+			return [] 
+		end 
+	else 	
+		z = intersect(a1.circle,a2.circle) 
+		f = w -> (dist(w,a1) < tol) & (dist(w,a2) < tol)
+		return filter(f,z)
+	end
 end 
 
 intersect(c::AbstractCurve,a::Arc;kw...) = intersect(a,c;kw...)
 function intersect(a::Arc,c::AbstractCurve;tol=DEFAULT[:tol]) 
-	z = intersect(a.circle,c)
-	return filter(v->dist(v,a)<tol,z)
+	if isapprox(a.circle,c,tol=tol)
+		return a 
+	else
+		z = intersect(a.circle,c)
+		return filter(v->dist(v,a)<tol,z)
+	end
 end
 
 # Determine the (directional) crossings of a Ray(y*1im,0) with a given curve.
