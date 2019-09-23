@@ -118,7 +118,9 @@ function intadapt(f,a,b,tol)
 end
 
 function enclosing_circle(z::AbstractVector,expansion=2)
-	zc = sum(z)/length(z)
+	xa,xb = extrema(real(z))
+	ya,yb = extrema(imag(z))
+	zc = complex((xa+xb)/2,(ya+yb)/2)
 	R = length(z) > 1 ? maximum(@. abs(z - zc)) : max(1,abs(zc))
 	return zc,expansion*R
 end

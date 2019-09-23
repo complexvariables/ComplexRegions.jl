@@ -73,9 +73,9 @@ end
     p1 = innerboundary(R)
     z1 = [plotdata(p) for p in p1]
     if isnothing(p0)
-        zc,R = enclosing_circle(vcat(z1...),8)
-        p0 = Circle(zc,R)
-        r = 0.2*R 
+        zc,rho = enclosing_circle(vcat(z1...),8)
+        p0 = Circle(zc,rho)
+        r = 0.2*rho 
         xlims --> [real(zc)-r,real(zc)+r]
         ylims --> [imag(zc)-r,imag(zc)+r]    
     end

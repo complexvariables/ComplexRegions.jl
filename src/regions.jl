@@ -77,7 +77,7 @@ boundary(R::AbstractConnectedRegion) = outerboundary(R),innerboundary(R)
 *(z::Number,R::AbstractConnectedRegion) = R*z
 
 /(R::AbstractConnectedRegion,z::Number) = *(R,1/z)
-/(z::Number,R::AbstractConnectedRegion) = z*inv(R)
+#/(z::Number,R::AbstractConnectedRegion) = z*inv(R)
 #inv(p::AbstractConnectedRegion) = typeof(R)([inv(c) for c in curves(p)])
 
 #
@@ -162,7 +162,7 @@ end
 
 outerboundary(R::ConnectedRegion) = R.outer
 innerboundary(R::ConnectedRegion) = R.inner 
-innerboundary(R::ConnectedRegion{2}) = R.inner[1] 
+#innerboundary(R::ConnectedRegion{2}) = R.inner[1] 
 
 #
 # special cases
