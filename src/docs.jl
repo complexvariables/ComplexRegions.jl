@@ -82,7 +82,7 @@ Construct a curve or path identical to `X` except with opposite direction of par
 Fetch or compute the arc length of the curve or path `X`.
 
 # Example
-```jldoctest
+```
 julia> ellipse = ClosedCurve( t->cos(t)+2im*sin(t), 0,2π );
 julia> arclength(ellipse)  # good to about 10 digits
 9.688448219981513

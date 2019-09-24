@@ -23,11 +23,13 @@ function default(;kw...)
 	return nothing
 end
 
-export Polar,Spherical
-using ComplexValues,LinearAlgebra,StaticArrays
+using Reexport
+@reexport using ComplexValues
+using LinearAlgebra,StaticArrays
 
 AnyComplex = Union{Complex{S},Polar{S},Spherical{S}} where {S<:AbstractFloat}
 
+export Polar,Spherical
 import Base: +,-,*,/,!,∘,sign,inv,angle,real,imag,conj,show,iterate,eltype,length,getindex,isapprox,isfinite,intersect,union,truncate,reverse,in
 export +,-,*,/,!,∘,sign,inv,angle,real,imag,conj,show,iterate,eltype,length,getindex,isapprox,isfinite,intersect,union,truncate,reverse,in
 
