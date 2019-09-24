@@ -1,5 +1,5 @@
-# ComplexValues
-*Polar and Riemann sphere representations of complex numbers in Julia*
+# ComplexRegions
+*Paths and regions in the complex plane for Julia*
 
 **Documentation**           | **Build Status**          |
 |:-------------------------:|:----------------------------:|
