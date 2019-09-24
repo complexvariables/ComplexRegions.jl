@@ -8,12 +8,11 @@ A `CircularPolygon` is a closed path whose curve components are all of type `Arc
 
 In addition to the usual methods for a `ClosedPath`, the following are implemented:
 
-- `side`\
-Alias for `curve`.
-- `winding(P,z)`\
-Compute the winding number of `P` relative to `z`. Each counterclockwise rotation about `z` counts +1, and each clockwise rotation counts -1. The result is unreliable for points lying on `P`, for which the quantity is ill-posed.
-- `truncate(P)`\
-Replace pairs of rays that meet at infinity with two segments to new vertices along the rays, and an arc between the new vertices. This can be useful for plotting an unbounded path, or for some other computations. This is *not* a true clipping algorithm; in fact, any bounded polygon will be unchanged.
+| Method | Description |
+|:-----|:-----|
+| `side`| Alias for `curve`. |
+| `winding(P,z)` | Winding number of `P` relative to `z`. |
+| `truncate(P)` | Replace infinite sides with finite ones. |
 
 ## Polygon
 
@@ -23,30 +22,74 @@ An alternative construction is to provide a vector of vertices. In place of an i
 
 In addition to the methods for the [Abstract interface](@ref interface_paths) and [CircularPolygon](@ref), the `Polygon` type offers
 
-- `angles(P)`\
-Compute a vector of the interior angles of the polygon. Angles at a finite vertex are in the interval $(0,2\pi]$, while angles at an infinite vertex are in $[-2\pi,0]$, representing the angle at the pole of the Riemann sphere.
+| Method | Description |
+|:-----|:-----|
+| `angles(P)` | Interior angles of the polygon. |
+
+Angles at a finite vertex are in the interval $(0,2\pi]$, while angles at an infinite vertex are in $[-2\pi,0]$, representing the angle at the pole of the Riemann sphere.
 
 Two additional special polygon constructors are defined:
 
-- `rectangle(xlim,ylim)` or `rectangle(z1,z2)`\
-Construct an axes-aligned rectangle given vectors of the real and imaginary limits, or two opposing complex corners.
-- `n_gon(n)`\
-Construct a regular n-gon with vertices on the unit circle.
+| Method | Description |
+|:-----|:-----|
+| `rectangle(xlim,ylim)` or `rectangle(z1,z2)` |  Construct an axes-aligned rectangle.  |
+| `n_gon(n)` | Construct a regular n-gon with unit vertices. |
 
 # [Examples](@id examples_polygons)
 
-For example,
-the following produces a polygon with two infinite vertices, resembling an infinite channel with a step:
+```@setup 1
+using ComplexRegions,Plots 
+default(linewidth=2,legend=:none)
+```
+
+A big plus:
 
 ```@example 1
-using ComplexRegions # hide
+box = [1-1im,3-1im,3+1im];
+plus = Polygon([box;1im*box;-box;-1im*box])
+plot(plus,color=:red)
+savefig("plus.svg"); nothing # hide
+```
+
+![plus polygon](plus.svg)
+
+A Koch snowflake:
+
+```@example1
+v = vertices(n_gon(3));
+pattern = [1; (v.-v[1])/(v[1]-v[3])/3 .+ 2/3 ];
+koch(a,b) = b .+ (a-b)*pattern;
+for m = 1:3
+	@show n = length(v);
+	global v = vcat( [koch(v[k],v[mod(k,n)+1]) for k in 1:n]... );
+end
+plot(Polygon(v))
+savefig("snowflake.svg"); nothing # hide
+```
+
+![snowflake polygon](snowflake.svg)
+
+
+Infinite channel with a step:
+
+```@example 1
 p = Polygon([0,-1im,(0,0),1im,(pi,pi)])
 ```
 
 ```@example 1
-using Plots # hide
 plot(p)
 savefig("channel.svg"); nothing # hide
 ```
 
-![](channel.svg)
+![channel polygon](channel.svg)
+
+Infinite polygons can seem quite strange sometimes:
+
+```@example 1
+probe1 = [1,0,1im,-1im,0];
+probe2 = exp(-1im*3π/4)*probe1 .- (3 + 2im);
+p = Polygon([probe1...,(0,-3π/4),probe2...,(-3π/4,0)])
+savefig("probes.svg"); nothing # hide
+```
+
+![probes polygon](probes.svg)

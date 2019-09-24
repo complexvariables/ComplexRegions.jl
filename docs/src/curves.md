@@ -9,41 +9,38 @@ A **curve** is meant to be a smooth, non-self-intersecting curve in the extended
 
 ## [Abstract interface](@id interface_curves)
 
-Every `AbstractCurve` type is expected to provide the following methods. (Here `C` represents a value of type `AbstractCurve` and `z` is a number.)
+Every `AbstractCurve` type is expected to implement the following methods. (Here `C` represents a value of type `AbstractCurve` and `z` is a number.)
 
-- `point(C,t::Real)`\
-Return a complex value from a parameterization of the curve over the interval [0,1].
-- `tangent(C,t::Real)`\
-Return a unit complex value with the same argument as the tangent to `C` at `t`.
-- `reverse(C)`\
-Construct the curve identical to `C` except with the traversal direction reversed.
-- `isfinite(C)`\
-True if the curve does not pass through infinity.
-- `conj(C)`\
-Construct the complex conjugate of the curve.
-- `C+z`\
-Translate the curve by `z`.
-- `-C`\
-Negate the curve.
-- `C*z`\
-Multiply the curve `C` by complex number `z`; i.e., scale and rotate it about the origin.
-- `inv(C)`\
-Invert the curve pointwise.
+| Method | Description |
+|:-----|:-----|
+| `point(C,t::Real)` | Complex point on `C` at parameter value `t` in [0,1].|
+| `tangent(C,t::Real)` | Complex tangent to `C` at `t`.|
+| `reverse(C)` | Reverse the direction of traversal.|
+| `isfinite(C)` | True if the curve does not pass through infinity.|
+| `conj(C)` | Complex conjugate of the curve. |
+| `C+z` | Translate of the curve by `z`.|
+| `-C` | Negate the curve.|
+| `C*z` | Multiply the curve `C` by complex number `z`; i.e., scale and rotate it about the origin.|
+| `inv(C)` | Invert the curve pointwise.|
 
 There are also default implementations of the following methods:
 
-- `point(C,t::AbstractArray{T}) where T<:Real`\
-Vectorization of the `point` method. 
-- `z+C,C-z,z-C,z*C,C/z,z/C`
-Like the above but with operands in different orders.
-- `unittangent(C,t::Real)`\
-Return a unit complex value with the same argument as the tangent to `C` at `t`.
-- `normal(C,t::Real)`\
-Return a unit complex value with the same argument as the (leftward) normal to `C` at `t`.
-- `plotdata(C)`\
-Return a vector of complex values that should be suitable for making a plot.
+| Method | Description |
+|:-----|:-----|
+| `point(C,t::AbstractArray{T<:Real})`| Vectorization of the `point` method. |
+| `z+C,C-z,z-C,z*C,C/z,z/C` | Translate/rotate/scale by a complex value.|
+| `unittangent(C,t::Real)`| Normalized tangent to `C` at `t`.|
+| `normal(C,t::Real)`| Unit (leftward) normal to `C` at `t`.|
+| `arclength(C)`| Arc length of `C`.|
+| `plotdata(C)`| Complex values that should be suitable for making a plot.|
 
-There is also an `AbstractClosedCurve` subtype that is used to distinguish curves that close. It has no special definitions of its own.
+There is also an `AbstractClosedCurve` subtype that is used to distinguish curves that close. It provides default implementations of the following methods.
+
+| Method | Description |
+|:-----|:-----|
+| `winding(C,z::Number)` | Winding number of `C` about `z`. |
+| `isinside(z::Number,C)` | Detect whether `z` lies inside the curve. |
+| `isoutside(z::Number,C)` | Detect whether `z` lies outside the curve. | 
 
 ## [Generic types](@id generic_curves)
 
@@ -63,18 +60,15 @@ The following important particular types of curves are provided, together with a
 
 Each type below is parameterized; e.g., `Line{T}`, where `T` is either a native `Complex` type, or a `Polar` or `Spherical` type from `ComplexValues`. Points on the curve have the type `T`, which mainly affects how they are plotted. You can convert the value type, so for example, `Spherical(C)` will be plotted on the Riemann sphere.
 
-In addition to the minimal methods set by the `AbstractCurve` definition above, each of these types provides the following methods:
+In addition to the minimal methods set by the `AbstractCurve` definition above, each of these types provides the following methods. (`C` is a value of one of these types, and `z` is a number.)
 
-- `arclength`\
-Arc length of the curve (which may be infinite).
-- `arg`\
-Find the argument (parameter value) of a point on the curve.
-- `isapprox`\
-Compares two values of the same type to see if they represent the same actual curve, up to orientation, within a tolerance. Can also be invoked as `≈`, which is "\approx" followed by a TAB.
-- `isleft`, `isright`\
-Determine whether a point lies "to the left" or "to the right" of the curve in its given orientation. (Not defined for an `Arc`.)
-- `dist`, `closest`\
-Respectively, find the distance from a point to the curve, or find the point on the curve nearest to a given number.
+| Method | Description |
+|:-----|:-----|
+| `arg(C,z)`| Parameter value of a given point on the curve. |
+| `isapprox(C1,C2)`| Determine whether two values represent the same curve.  |
+| `isleft(z,C)`, `isright(z,C)`| Determine whether a point lies "to the left" or "to the right" of a line, ray, or segment cin its given orientation. |
+| `dist(z,C)` | Distance from a point to the curve. |
+| `closest(z,C)`| Point on the curve nearest to a given number. |
 
 ### Line
 

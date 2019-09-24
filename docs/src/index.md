@@ -27,7 +27,9 @@ A **path** is a piecewise-continuous complex-valued path. In practice a [Path](@
 
 Both curves and paths have **closed** variants. These are additionally checked that the initial and final points are the same.
 
-A **region** is the open region in the extended plane bounded by a closed curve or path.
+One atypical aspect of curves and paths, even "closed" ones, is that they lie in the *extended* or compactified complex plane and thus may be unbounded. For instance, a line in the plane may be interpreted as a circle on the Riemann sphere, and is thus a "closed" curve passing through infinity.
+
+A **region** is an open region in the extended plane bounded by a closed curve or path.
 
 Some examples:
 
@@ -72,10 +74,10 @@ savefig("heptagons.svg"); nothing # hide
 ```@repl examples
 p = Polygon([0,-1im,(0,0),1im,(pi,pi)])      # channel with a step
 plot(interior(p));
-savefig("channel.svg"); nothing # hide
+savefig("channel.png"); nothing # hide
 ```
 
-![channel with step](channel.svg)
+![channel with step](channel.png)
 
 ## Tolerance
 
@@ -85,14 +87,13 @@ Boundaries and endpoints are not well-posed ideas in floating-point, since an ar
 
 For work at the REPL, it's convenient to be able to set an influential parameter just once rather than in multiple calls. This mechanism is provided via [`ComplexRegions.default`](@ref). You can see all the default parameters and values as follows:
 
-```@repl 1
-using ComplexRegions; # hide
+```@repl examples
 ComplexRegions.default()
 ```
 
 Changing them is done with the same function:
 
-```@repl 1
+```@repl examples
 ComplexRegions.default(tol=1e-8)
 ```
 
