@@ -11,7 +11,7 @@ Most functionality is provided through Julia types (roughly equivalent to classe
 
 Other functions (methods, in Julia terms) may create values of these types, but since they are not distinct types themselves, they are not capitalized. For example, the [`rectangle`](@ref) method creates a [Polygon](@ref).
 
-The methods in this package should work not only with the built-in `Complex` type, but also with the `Polar` and `Spherical` types from the [`ComplexValues`](https://complexvariables.github.io/ComplexValues.jl/stable/) package.
+The methods in this package should work not only with the built-in `Complex` type, but also with the `Polar` and `Spherical` types from the [`ComplexValues`](https://complexvariables.github.io/ComplexValues.jl/stable/) package, which it re-exports.
 
 ## Abstract types
 

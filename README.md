@@ -11,12 +11,13 @@ The package can be installed with Julia's package manager:
 
 ```julia
 julia> import Pkg
-julia> Pkg.add("https://github.com/complexvariables/ComplexRegions.jl")
+julia> Pkg.add("ComplexRegions")
 ```
+or just use ```] add ComplexRegions``` at the usual command prompt.
 
 ## Project Status
 
-Please open an [issue][issues-url] if you encounter any problems. 
+Please open an [issue][issues-url] if you encounter any problems.
 
 [docs-latest-img]: https://img.shields.io/badge/docs-latest-blue.svg
 [docs-latest-url]: https://complexvariables.github.io/ComplexRegions.jl/latest
