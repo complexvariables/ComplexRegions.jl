@@ -27,4 +27,6 @@ Julia's multiple dispatch facility enables some convenient uses of this basic fr
 
 The `ComplexRegions` package builds on the `ComplexValues` package that defines `Polar` and `Spherical` types for working with polar and Riemann sphere representations of complex numbers. It also provides recipes for plotting the major abstract types with the popular `Plots.jl` package. For example, the following figure was created by calling `plot` on a region created in four statements: ![exterior region](triple.pdf)
 
+[`DomainSets.jl`](https://github.com/JuliaApproximation/DomainSets.jl) and [`IntervalSets,jl`](https://github.com/JuliaMath/IntervalSets.jl), by D. Huybrechs, S. Olver, *et al.*, are a pair of packages with similar goals and interface, but oriented toward the representation of function domains in real spaces. Although `ComplexRegions` was not consciously patterned after them, there is enough similarity in approach to consider merging the functionality in the future. 
+
 # References
