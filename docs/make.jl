@@ -1,6 +1,7 @@
 import Pkg; Pkg.update("ComplexRegions")
 using Documenter, ComplexRegions, Plots
 
+ENV["GKSwstype"] = "100"
 DocMeta.setdocmeta!(ComplexRegions, :DocTestSetup, :(using ComplexRegions); recursive=true)
 makedocs(sitename="ComplexRegions.jl",
     format = Documenter.HTML(),
