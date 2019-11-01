@@ -12,12 +12,13 @@ julia&gt; intersect(ℓ,c)
  0.5 + 0.8660254037844386im
  0.5 - 0.8660254037844386im
 
-julia&gt; plot(ℓ);  plot!(c);</code></pre><p><img src="line_circle.svg" alt="line and circle"/></p><pre><code class="language-julia-repl">julia&gt; plot(Spherical(ℓ));
-
-julia&gt; plot!(Spherical(c));</code></pre><p><img src="line_circle_sphere.svg" alt="line and circle on Riemann sphere"/></p><pre><code class="language-julia-repl">julia&gt; reflect(-1,c)       # reflection of a point through the circle
+julia&gt; plot(ℓ); plot!(c)
+Plot{Plots.GRBackend() n=2}</code></pre><p><img src="line_circle.svg" alt="line and circle"/></p><pre><code class="language-julia-repl">julia&gt; plot(Spherical(ℓ)); plot!(Spherical(c))
+Plot{Plots.GRBackend() n=40}</code></pre><p><img src="line_circle_sphere.svg" alt="line and circle on Riemann sphere"/></p><pre><code class="language-julia-repl">julia&gt; reflect(-1,c)       # reflection of a point through the circle
 0.5 + 0.0im
 
-julia&gt; plot(interior(ℓ));   # plot a half-plane</code></pre><p><img src="halfplane.svg" alt="half-plan"/></p><pre><code class="language-julia-repl">julia&gt; h = n_gon(7)
+julia&gt; plot(interior(ℓ))   # plot a half-plane
+Plot{Plots.GRBackend() n=1}</code></pre><p><img src="halfplane.svg" alt="half-plan"/></p><pre><code class="language-julia-repl">julia&gt; h = n_gon(7)
 Polygon with 7 vertices:
    1.0 + 0.0im, interior angle 0.7142857142857143⋅π
    0.6234898018587336 + 0.7818314824680298im, interior angle 0.7142857142857143⋅π
@@ -40,7 +41,8 @@ Polygon with 5 vertices:
    0.0 + 1.0im, interior angle 1.0⋅π
    Inf + 0.0im, interior angle 0.0⋅π
 
-julia&gt; plot(interior(p));</code></pre><p><img src="channel.png" alt="channel with step"/></p><h2><a class="nav-anchor" id="Tolerance-1" href="#Tolerance-1">Tolerance</a></h2><p>Boundaries and endpoints are not well-posed ideas in floating-point, since an arbitrarily small perturbation to a value can move a point on or off of them. Thus many concepts in the package such as intersection or continuity are checked only up to a small tolerance. This value can be set on a per-call basis, or by using <a href="#global_defaults-1">global defaults</a>.</p><h2><a class="nav-anchor" id="global_defaults-1" href="#global_defaults-1">Global defaults</a></h2><p>For work at the REPL, it&#39;s convenient to be able to set an influential parameter just once rather than in multiple calls. This mechanism is provided via <a href="api/#ComplexRegions.default-Tuple{}"><code>ComplexRegions.default</code></a>. You can see all the default parameters and values as follows:</p><pre><code class="language-julia-repl">julia&gt; ComplexRegions.default()
+julia&gt; plot(interior(p))
+Plot{Plots.GRBackend() n=1}</code></pre><p><img src="channel.png" alt="channel with step"/></p><h2><a class="nav-anchor" id="Tolerance-1" href="#Tolerance-1">Tolerance</a></h2><p>Boundaries and endpoints are not well-posed ideas in floating-point, since an arbitrarily small perturbation to a value can move a point on or off of them. Thus many concepts in the package such as intersection or continuity are checked only up to a small tolerance. This value can be set on a per-call basis, or by using <a href="#global_defaults-1">global defaults</a>.</p><h2><a class="nav-anchor" id="global_defaults-1" href="#global_defaults-1">Global defaults</a></h2><p>For work at the REPL, it&#39;s convenient to be able to set an influential parameter just once rather than in multiple calls. This mechanism is provided via <a href="api/#ComplexRegions.default-Tuple{}"><code>ComplexRegions.default</code></a>. You can see all the default parameters and values as follows:</p><pre><code class="language-julia-repl">julia&gt; ComplexRegions.default()
 Dict{Symbol,Float64} with 1 entry:
   :tol =&gt; 1.0e-12</code></pre><p>Changing them is done with the same function:</p><pre><code class="language-julia-repl">julia&gt; ComplexRegions.default(tol=1e-8)
 [ Info: Default value of `tol` set to 1.0e-8.</code></pre><p>Be advised that this type of &quot;stateful&quot; computing brings some subtle undesirable consequences. For example, if the global default <code>tol</code> is changed in a future release of the package, existing code could give different results when testing for interior points. If maximum reproducibility is a concern, you should develop the habit of setting all defaults yourself at the beginning of your code.</p><footer><hr/><a class="next" href="curves/"><span class="direction">Next</span><span class="title">Curves</span></a></footer></article></body></html>
