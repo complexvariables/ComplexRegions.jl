@@ -6,28 +6,10 @@ right = Path([4+1im+a,4-1im-1im*a]);
 s = Segment(-3+1im,3+1im);
 p = ClosedPath([s,right...,-s,-right...]);
 r = interior(exp(1im*pi/4)*p)
-plot(r);</code></pre><pre><code class="language-none">/home/travis/.julia/packages/GR/f1Iqi/src/../deps/gr/bin/gksqt: error while loading shared libraries: libQt5Widgets.so.5: cannot open shared object file: No such file or directory
-connect: Connection refused
-GKS: can&#39;t connect to GKS socket application
-Did you start &#39;gksqt&#39;?
-
-GKS: Open failed in routine OPEN_WS
-GKS: GKS not in proper state. GKS must be either in the state WSOP or WSAC in routine ACTIVATE_WS</code></pre><p><img src="../bone-region.svg" alt="dog-bone region"/></p><p>Inspired by the Swiss flag?</p><pre><code class="language-julia">box = [1-1im,3-1im,3+1im];
+plot(r);</code></pre><p><img src="../bone-region.svg" alt="dog-bone region"/></p><p>Inspired by the Swiss flag?</p><pre><code class="language-julia">box = [1-1im,3-1im,3+1im];
 plus = Polygon([box;1im*box;-box;-1im*box]);
 r = between(rectangle(-6-4im,6+4im),plus)
-plot(r,color=:red,linewidth=0);</code></pre><pre><code class="language-none">/home/travis/.julia/packages/GR/f1Iqi/src/../deps/gr/bin/gksqt: error while loading shared libraries: libQt5Widgets.so.5: cannot open shared object file: No such file or directory
-connect: Connection refused
-GKS: can&#39;t connect to GKS socket application
-Did you start &#39;gksqt&#39;?
-
-GKS: Open failed in routine OPEN_WS
-GKS: GKS not in proper state. GKS must be either in the state WSOP or WSAC in routine ACTIVATE_WS</code></pre><p><img src="../swiss.svg" alt="Swiss flag"/></p><p>A multiply-connected exterior region:</p><pre><code class="language-julia">c = Circle(0,1)
+plot(r,color=:red,linewidth=0);</code></pre><p><img src="../swiss.svg" alt="Swiss flag"/></p><p>A multiply-connected exterior region:</p><pre><code class="language-julia">c = Circle(0,1)
 t = n_gon(3)
 s = n_gon(4)
-plot( ExteriorRegion([c,3+s,6+t]) );</code></pre><pre><code class="language-none">/home/travis/.julia/packages/GR/f1Iqi/src/../deps/gr/bin/gksqt: error while loading shared libraries: libQt5Widgets.so.5: cannot open shared object file: No such file or directory
-connect: Connection refused
-GKS: can&#39;t connect to GKS socket application
-Did you start &#39;gksqt&#39;?
-
-GKS: Open failed in routine OPEN_WS
-GKS: GKS not in proper state. GKS must be either in the state WSOP or WSAC in routine ACTIVATE_WS</code></pre><p><img src="../triple.svg" alt="3-connected region"/></p><footer><hr/><a class="previous" href="../intersections/"><span class="direction">Previous</span><span class="title">Intersections</span></a><a class="next" href="../mobius/"><span class="direction">Next</span><span class="title">Möbius</span></a></footer></article></body></html>
+plot( ExteriorRegion([c,3+s,6+t]) );</code></pre><p><img src="../triple.svg" alt="3-connected region"/></p><footer><hr/><a class="previous" href="../intersections/"><span class="direction">Previous</span><span class="title">Intersections</span></a><a class="next" href="../mobius/"><span class="direction">Next</span><span class="title">Möbius</span></a></footer></article></body></html>

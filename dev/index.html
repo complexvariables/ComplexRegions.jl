@@ -12,36 +12,12 @@ julia&gt; intersect(ℓ,c)
  0.5 + 0.8660254037844386im
  0.5 - 0.8660254037844386im
 
-julia&gt; plot(ℓ);  plot!(c);
+julia&gt; plot(ℓ);  plot!(c);</code></pre><p><img src="line_circle.svg" alt="line and circle"/></p><pre><code class="language-julia-repl">julia&gt; plot(Spherical(ℓ));
 
-/home/travis/.julia/packages/GR/f1Iqi/src/../deps/gr/bin/gksqt: error while loading shared libraries: libQt5Widgets.so.5: cannot open shared object file: No such file or directory
-connect: Connection refused
-GKS: can&#39;t connect to GKS socket application
-Did you start &#39;gksqt&#39;?
-
-GKS: Open failed in routine OPEN_WS
-GKS: GKS not in proper state. GKS must be either in the state WSOP or WSAC in routine ACTIVATE_WS</code></pre><p><img src="line_circle.svg" alt="line and circle"/></p><pre><code class="language-julia-repl">julia&gt; plot(Spherical(ℓ));
-
-julia&gt; plot!(Spherical(c));
-
-/home/travis/.julia/packages/GR/f1Iqi/src/../deps/gr/bin/gksqt: error while loading shared libraries: libQt5Widgets.so.5: cannot open shared object file: No such file or directory
-connect: Connection refused
-GKS: can&#39;t connect to GKS socket application
-Did you start &#39;gksqt&#39;?
-
-GKS: Open failed in routine OPEN_WS
-GKS: GKS not in proper state. GKS must be either in the state WSOP or WSAC in routine ACTIVATE_WS</code></pre><p><img src="line_circle_sphere.svg" alt="line and circle on Riemann sphere"/></p><pre><code class="language-julia-repl">julia&gt; reflect(-1,c)       # reflection of a point through the circle
+julia&gt; plot!(Spherical(c));</code></pre><p><img src="line_circle_sphere.svg" alt="line and circle on Riemann sphere"/></p><pre><code class="language-julia-repl">julia&gt; reflect(-1,c)       # reflection of a point through the circle
 0.5 + 0.0im
 
-julia&gt; plot(interior(ℓ));   # plot a half-plane
-
-/home/travis/.julia/packages/GR/f1Iqi/src/../deps/gr/bin/gksqt: error while loading shared libraries: libQt5Widgets.so.5: cannot open shared object file: No such file or directory
-connect: Connection refused
-GKS: can&#39;t connect to GKS socket application
-Did you start &#39;gksqt&#39;?
-
-GKS: Open failed in routine OPEN_WS
-GKS: GKS not in proper state. GKS must be either in the state WSOP or WSAC in routine ACTIVATE_WS</code></pre><p><img src="halfplane.svg" alt="half-plan"/></p><pre><code class="language-julia-repl">julia&gt; h = n_gon(7)
+julia&gt; plot(interior(ℓ));   # plot a half-plane</code></pre><p><img src="halfplane.svg" alt="half-plan"/></p><pre><code class="language-julia-repl">julia&gt; h = n_gon(7)
 Polygon with 7 vertices:
    1.0 + 0.0im, interior angle 0.7142857142857143⋅π
    0.6234898018587336 + 0.7818314824680298im, interior angle 0.7142857142857143⋅π
@@ -56,15 +32,7 @@ julia&gt; plot(h);
 julia&gt; for k in 1:7
        	z = exp(k*2im*π/20)
        	plot!(z*h - 0.5k - 0.1im*k^2)
-       end
-
-/home/travis/.julia/packages/GR/f1Iqi/src/../deps/gr/bin/gksqt: error while loading shared libraries: libQt5Widgets.so.5: cannot open shared object file: No such file or directory
-connect: Connection refused
-GKS: can&#39;t connect to GKS socket application
-Did you start &#39;gksqt&#39;?
-
-GKS: Open failed in routine OPEN_WS
-GKS: GKS not in proper state. GKS must be either in the state WSOP or WSAC in routine ACTIVATE_WS</code></pre><p><img src="heptagons.svg" alt="heptagons"/></p><pre><code class="language-julia-repl">julia&gt; p = Polygon([0,-1im,(0,0),1im,(pi,pi)])      # channel with a step
+       end</code></pre><p><img src="heptagons.svg" alt="heptagons"/></p><pre><code class="language-julia-repl">julia&gt; p = Polygon([0,-1im,(0,0),1im,(pi,pi)])      # channel with a step
 Polygon with 5 vertices:
    0.0 + 0.0im, interior angle 1.5⋅π
    0.0 - 1.0im, interior angle 0.5⋅π
@@ -72,15 +40,7 @@ Polygon with 5 vertices:
    0.0 + 1.0im, interior angle 1.0⋅π
    Inf + 0.0im, interior angle 0.0⋅π
 
-julia&gt; plot(interior(p));
-
-/home/travis/.julia/packages/GR/f1Iqi/src/../deps/gr/bin/gksqt: error while loading shared libraries: libQt5Widgets.so.5: cannot open shared object file: No such file or directory
-connect: Connection refused
-GKS: can&#39;t connect to GKS socket application
-Did you start &#39;gksqt&#39;?
-
-GKS: Open failed in routine OPEN_WS
-GKS: GKS not in proper state. GKS must be either in the state WSOP or WSAC in routine ACTIVATE_WS</code></pre><p><img src="channel.png" alt="channel with step"/></p><h2><a class="nav-anchor" id="Tolerance-1" href="#Tolerance-1">Tolerance</a></h2><p>Boundaries and endpoints are not well-posed ideas in floating-point, since an arbitrarily small perturbation to a value can move a point on or off of them. Thus many concepts in the package such as intersection or continuity are checked only up to a small tolerance. This value can be set on a per-call basis, or by using <a href="#global_defaults-1">global defaults</a>.</p><h2><a class="nav-anchor" id="global_defaults-1" href="#global_defaults-1">Global defaults</a></h2><p>For work at the REPL, it&#39;s convenient to be able to set an influential parameter just once rather than in multiple calls. This mechanism is provided via <a href="api/#ComplexRegions.default-Tuple{}"><code>ComplexRegions.default</code></a>. You can see all the default parameters and values as follows:</p><pre><code class="language-julia-repl">julia&gt; ComplexRegions.default()
+julia&gt; plot(interior(p));</code></pre><p><img src="channel.png" alt="channel with step"/></p><h2><a class="nav-anchor" id="Tolerance-1" href="#Tolerance-1">Tolerance</a></h2><p>Boundaries and endpoints are not well-posed ideas in floating-point, since an arbitrarily small perturbation to a value can move a point on or off of them. Thus many concepts in the package such as intersection or continuity are checked only up to a small tolerance. This value can be set on a per-call basis, or by using <a href="#global_defaults-1">global defaults</a>.</p><h2><a class="nav-anchor" id="global_defaults-1" href="#global_defaults-1">Global defaults</a></h2><p>For work at the REPL, it&#39;s convenient to be able to set an influential parameter just once rather than in multiple calls. This mechanism is provided via <a href="api/#ComplexRegions.default-Tuple{}"><code>ComplexRegions.default</code></a>. You can see all the default parameters and values as follows:</p><pre><code class="language-julia-repl">julia&gt; ComplexRegions.default()
 Dict{Symbol,Float64} with 1 entry:
   :tol =&gt; 1.0e-12</code></pre><p>Changing them is done with the same function:</p><pre><code class="language-julia-repl">julia&gt; ComplexRegions.default(tol=1e-8)
 [ Info: Default value of `tol` set to 1.0e-8.</code></pre><p>Be advised that this type of &quot;stateful&quot; computing brings some subtle undesirable consequences. For example, if the global default <code>tol</code> is changed in a future release of the package, existing code could give different results when testing for interior points. If maximum reproducibility is a concern, you should develop the habit of setting all defaults yourself at the beginning of your code.</p><footer><hr/><a class="next" href="curves/"><span class="direction">Next</span><span class="title">Curves</span></a></footer></article></body></html>
