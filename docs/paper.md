@@ -25,14 +25,33 @@ The `ComplexRegions` package for Julia provides a software framework for the fro
 
 Julia's multiple dispatch facility enables some convenient uses of this basic framework. For example, the `Base.intersect` method is extended to have definitions for many possible pairings of curve and path arguments. In the future, a method for constructing conformal maps, say, could have one method for arguments of types `AbstractDisk` and `PolygonalRegion` that would call upon a Schwarz-Christoffel mapping code. The end user need not know what sort of mapping algorithm is needed for a particular problem, and the master method could easily be extended to numerous other contexts without the need for a "switchyard" portal that could become difficult to maintain.
 
-The `ComplexRegions` package builds on the `ComplexValues` package that defines `Polar` and `Spherical` types for working with polar and Riemann sphere representations of complex numbers. It also provides recipes for plotting the major abstract types with the popular `Plots.jl` package. For example, the following figure was created by calling `plot` on a region created in four statements:
+The `ComplexRegions` package builds on the `ComplexValues` package that defines `Polar` and `Spherical` types for working with polar and Riemann sphere representations of complex numbers. It also provides recipes for plotting the major abstract types with the popular `Plots.jl` package. For example:
 ```
+using ComplexRegions,Plots
 c = Circle(0,1)
 t = n_gon(3)
 s = n_gon(4)
 plot( ExteriorRegion([c,3+s,6+t]),leg=:none )
 ```
 ![exterior region](triple.pdf)
+
+```
+julia> ℓ = Line(1/2,1/2+1im)  # line through 0.5 and 0.5+1i
+Line{Complex{Float64}} in the complex plane:
+   through (0.5 + 0.0im) parallel to (0.0 + 1.0im)
+
+julia> c = 1 / ℓ          # a circle
+Circle{Complex{Float64}} in the complex plane:
+   centered at (1.0 + 0.0im) with radius 1.0, negatively oriented
+
+julia> intersect(ℓ,c)
+   2-element Array{Complex{Float64},1}:
+    0.5 + 0.8660254037844386im
+    0.5 - 0.8660254037844386im
+
+julia> plot(Spherical(ℓ),leg=:none);  plot!(Spherical(c))
+```
+![line and circle](line_circle.pdf)
 
 [`DomainSets.jl`](https://github.com/JuliaApproximation/DomainSets.jl) and [`IntervalSets,jl`](https://github.com/JuliaMath/IntervalSets.jl), by D. Huybrechs, S. Olver, *et al.*, are a pair of packages with similar goals and interface, but oriented toward the representation of function domains in real spaces. Although `ComplexRegions` was not consciously patterned after them, there is enough similarity in approach to consider merging the functionality in the future.
 
