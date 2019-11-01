@@ -40,7 +40,7 @@ There is also an `AbstractClosedCurve` subtype that is used to distinguish curve
 |:-----|:-----|
 | `winding(C,z::Number)` | Winding number of `C` about `z`. |
 | `isinside(z::Number,C)` | Detect whether `z` lies inside the curve. |
-| `isoutside(z::Number,C)` | Detect whether `z` lies outside the curve. | 
+| `isoutside(z::Number,C)` | Detect whether `z` lies outside the curve. |
 
 ## [Generic types](@id generic_curves)
 
@@ -105,8 +105,7 @@ Here we set up a generic `ClosedCurve` for an ellipse, then plot it along with t
 ```@repl examples
 el = ClosedCurve( t->cos(t)+2im*sin(t), 0,2π )
 invel = 1/el;
-plot(el);
-plot!(invel);
+plot(el);  plot!(invel);
 t = 0:0.05:0.95;
 z = invel.(t);
 n = [normal(invel,ti) for ti in t]
@@ -116,7 +115,7 @@ savefig("inv_ellipse.svg"); nothing # hide
 
 ![ellipse and inverse](inv_ellipse.svg)
 
-It's often convenient to create a "standard" shape that is then moved and scaled using arithmetic operations. 
+It's often convenient to create a "standard" shape that is then moved and scaled using arithmetic operations.
 
 ```@repl examples
 a = Arc(1,1+1im,1im)
@@ -124,6 +123,7 @@ plot(a);
 for n = 1:3
 	plot!((1im)^n*a);
 end
+plot!()
 savefig("arcs.svg"); nothing # hide
 ```
 
@@ -137,7 +137,7 @@ l = Spherical(Line(-1,1im))
 plot(c); plot!(l,sphere=false);
 1 / c
 1 / l
-plot!(1/c,sphere=false); plot!(1/l,sphere=false);
+plot!(1/c,sphere=false); plot!(1/l,sphere=false)
 savefig("circles_sphere.svg"); nothing # hide
 ```
 

@@ -38,7 +38,7 @@ Two additional special polygon constructors are defined:
 # [Examples](@id examples_polygons)
 
 ```@setup 1
-using ComplexRegions,Plots 
+using ComplexRegions,Plots
 default(linewidth=2,legend=:none)
 ```
 
@@ -88,7 +88,7 @@ Infinite polygons can seem quite strange sometimes:
 ```@example 1
 probe1 = [1,0,1im,-1im,0];
 probe2 = exp(-1im*3π/4)*probe1 .- (3 + 2im);
-p = Polygon([probe1...,(0,-3π/4),probe2...,(-3π/4,0)])
+plot( Polygon([probe1...,(0,-3π/4),probe2...,(-3π/4,0)]) )
 savefig("probes.svg"); nothing # hide
 ```
 

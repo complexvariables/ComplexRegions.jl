@@ -7,11 +7,11 @@ There are also methods for finding the intersections between curves and paths, a
 ## [Examples](@id examples_intersections)
 
 ```@setup examples
-using ComplexRegions,Plots 
+using ComplexRegions,Plots
 default(linewidth=2,markersize=3,legend=:none)
 ```
 
-Circles and Arcs intersect at zero, one, or two points, or as an Arc. 
+Circles and Arcs intersect at zero, one, or two points, or as an Arc.
 
 ```@repl examples
 c = Circle(0,1)
@@ -22,7 +22,7 @@ intersect(c,b)
 ans ≈ b
 ```
 
-Segments and Lines intersect at zero or one point, or as a Line or Segment. 
+Segments and Lines intersect at zero or one point, or as a Line or Segment.
 
 ```@repl examples
 l = Line(1im,1+1im)
@@ -41,7 +41,7 @@ s = Segment(-3-2im,2+2im)
 z = intersect(plus,s)
 plot(plus);
 plot!(s);
-scatter!(Complex.(z));
+scatter!(Complex.(z))
 savefig("plus_intersect.svg"); nothing # hide
 ```
 

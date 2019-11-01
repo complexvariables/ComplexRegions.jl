@@ -78,7 +78,7 @@ a = Arc(-1,1,-1im)
 right = Path([4+1im+a,4-1im-1im*a])
 s = Segment(-3+1im,3+1im)
 p = ClosedPath([s,right...,-s,-right...])
-plot(exp(1im*pi/4)*p);
+plot(exp(1im*pi/4)*p)
 savefig("bone.svg"); nothing # hide
 ```
 

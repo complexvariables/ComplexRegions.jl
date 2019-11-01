@@ -2,7 +2,7 @@
 
 ```@setup examples
 using ComplexRegions,Plots
-default(linewidth=2,legend=:none)
+default(linewidth=2,legend=:none,show=false)
 ```
 
 This package provides types and methods that are useful for working with curves and regions in the (extended) complex plane.
@@ -37,15 +37,14 @@ Some examples:
 ℓ = Line(1/2,1/2+1im)  # line through 0.5 and 0.5+1i
 c = 1 / ℓ          # a circle
 intersect(ℓ,c)
-plot(ℓ);  plot!(c);
+plot(ℓ); plot!(c)
 savefig("line_circle.svg"); nothing # hide
 ```
 
 ![line and circle](line_circle.svg)
 
 ```@repl examples
-plot(Spherical(ℓ));
-plot!(Spherical(c));
+plot(Spherical(ℓ)); plot!(Spherical(c))
 savefig("line_circle_sphere.svg"); nothing # hide
 ```
 
@@ -53,7 +52,7 @@ savefig("line_circle_sphere.svg"); nothing # hide
 
 ```@repl examples
 reflect(-1,c)       # reflection of a point through the circle
-plot(interior(ℓ));   # plot a half-plane
+plot(interior(ℓ))   # plot a half-plane
 savefig("halfplane.svg"); nothing # hide
 ```
 
@@ -73,7 +72,7 @@ savefig("heptagons.svg"); nothing # hide
 
 ```@repl examples
 p = Polygon([0,-1im,(0,0),1im,(pi,pi)])      # channel with a step
-plot(interior(p));
+plot(interior(p))
 savefig("channel.png"); nothing # hide
 ```
 

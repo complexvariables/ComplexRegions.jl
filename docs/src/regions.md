@@ -40,7 +40,7 @@ In addition to the methods of the [Abstract interface](@ref interface_regions), 
 
 | Method | Description |
 |:-----|:-----|
-| `!(R)` | Complement of `R`. 
+| `!(R)` | Complement of `R`.
 | `isapprox(R1,R2)` | Determine whether `R1` and `R2` represent the same region. |
 
 The `SimplyConnectedRegion` type is parameterized by the type of curve bounding it in order to facilitate dispatch. Notably included are the definitions
@@ -67,7 +67,7 @@ For half-planes there are
 
 ### ExteriorRegion
 
-The parameterized type `ExteriorRegion{N}` represents a region lying exterior to `N` closed curves or paths. It is constructed by `ExteriorRegion(inner)`, where `inner` is a vector of closed curves/paths. These are returned by `innerboundary`, and `outerboundary` returns `nothing`. 
+The parameterized type `ExteriorRegion{N}` represents a region lying exterior to `N` closed curves or paths. It is constructed by `ExteriorRegion(inner)`, where `inner` is a vector of closed curves/paths. These are returned by `innerboundary`, and `outerboundary` returns `nothing`.
 
 ### ConnectedRegion
 
@@ -96,7 +96,7 @@ right = Path([4+1im+a,4-1im-1im*a]);
 s = Segment(-3+1im,3+1im);
 p = ClosedPath([s,right...,-s,-right...]);
 r = interior(exp(1im*pi/4)*p)
-plot(r);
+plot(r)
 savefig("bone-region.svg"); nothing # hide
 ```
 
@@ -108,7 +108,7 @@ Inspired by the Swiss flag?
 box = [1-1im,3-1im,3+1im];
 plus = Polygon([box;1im*box;-box;-1im*box]);
 r = between(rectangle(-6-4im,6+4im),plus)
-plot(r,color=:red,linewidth=0);
+plot(r,color=:red,linewidth=0)
 savefig("swiss.svg"); nothing # hide
 ```
 
@@ -120,7 +120,7 @@ A multiply-connected exterior region:
 c = Circle(0,1)
 t = n_gon(3)
 s = n_gon(4)
-plot( ExteriorRegion([c,3+s,6+t]) );
+plot( ExteriorRegion([c,3+s,6+t]) )
 savefig("triple.svg"); nothing # hide
 ```
 
