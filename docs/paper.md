@@ -25,8 +25,16 @@ The `ComplexRegions` package for Julia provides a software framework for the fro
 
 Julia's multiple dispatch facility enables some convenient uses of this basic framework. For example, the `Base.intersect` method is extended to have definitions for many possible pairings of curve and path arguments. In the future, a method for constructing conformal maps, say, could have one method for arguments of types `AbstractDisk` and `PolygonalRegion` that would call upon a Schwarz-Christoffel mapping code. The end user need not know what sort of mapping algorithm is needed for a particular problem, and the master method could easily be extended to numerous other contexts without the need for a "switchyard" portal that could become difficult to maintain.
 
-The `ComplexRegions` package builds on the `ComplexValues` package that defines `Polar` and `Spherical` types for working with polar and Riemann sphere representations of complex numbers. It also provides recipes for plotting the major abstract types with the popular `Plots.jl` package. For example, the following figure was created by calling `plot` on a region created in four statements: ![exterior region](triple.pdf)
+The `ComplexRegions` package builds on the `ComplexValues` package that defines `Polar` and `Spherical` types for working with polar and Riemann sphere representations of complex numbers. It also provides recipes for plotting the major abstract types with the popular `Plots.jl` package. For example, the following figure was created by calling `plot` on a region created in four statements:
+```
+c = Circle(0,1)
+t = n_gon(3)
+s = n_gon(4)
+plot( ExteriorRegion([c,3+s,6+t]),leg=:none )
+```
+![exterior region](triple.pdf)
 
-[`DomainSets.jl`](https://github.com/JuliaApproximation/DomainSets.jl) and [`IntervalSets,jl`](https://github.com/JuliaMath/IntervalSets.jl), by D. Huybrechs, S. Olver, *et al.*, are a pair of packages with similar goals and interface, but oriented toward the representation of function domains in real spaces. Although `ComplexRegions` was not consciously patterned after them, there is enough similarity in approach to consider merging the functionality in the future. 
+[`DomainSets.jl`](https://github.com/JuliaApproximation/DomainSets.jl) and [`IntervalSets,jl`](https://github.com/JuliaMath/IntervalSets.jl), by D. Huybrechs, S. Olver, *et al.*, are a pair of packages with similar goals and interface, but oriented toward the representation of function domains in real spaces. Although `ComplexRegions` was not consciously patterned after them, there is enough similarity in approach to consider merging the functionality in the future.
 
+One future use case for this package is to implement numerical methods for conformal maps. Another is for the fast solution of special cases of the Laplace equation that are especially amenable to solution using complex-variable methods [@GT19].  
 # References
