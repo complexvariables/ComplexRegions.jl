@@ -4,9 +4,7 @@ Complex-valued ClosedCurve
 
 julia&gt; invel = 1/el;
 
-julia&gt; plot(el);
-
-julia&gt; plot!(invel);
+julia&gt; plot(el);  plot!(invel);
 
 julia&gt; t = 0:0.05:0.95;
 
@@ -16,27 +14,27 @@ julia&gt; n = [normal(invel,ti) for ti in t]
 20-element Array{Complex{Float64},1}:
                      1.0 - 1.4589943964682566e-12im
       0.5474587794549212 - 0.8368326504132879im
-   -0.016834250140184314 - 0.9998582939708096im
-    -0.26783278278398936 - 0.9634654121794848im
-     -0.2514293238162319 - 0.9678756609840503im
+    -0.01683425014018431 - 0.9998582939708095im
+    -0.26783278278398936 - 0.9634654121794847im
+    -0.25142932381623195 - 0.9678756609840504im
    6.123233995736766e-17 - 1.0im
         0.25142932382187 - 0.9678756609825858im
      0.26783278278358813 - 0.9634654121795962im
-    0.016834250140184658 - 0.9998582939708096im
+    0.016834250140184654 - 0.9998582939708095im
      -0.5474587794543113 - 0.8368326504136867im
                     -1.0 - 4.898587196589413e-16im
      -0.5474587794534348 + 0.8368326504142602im
     0.016834250139898053 + 0.9998582939708143im
-      0.2678327827821566 + 0.963465412179994im
+     0.26783278278215666 + 0.9634654121799943im
       0.2514293238195183 + 0.9678756609831967im
  -1.8369701987210297e-16 + 1.0im
     -0.25142932382019706 + 0.9678756609830202im
     -0.26783278278378003 + 0.963465412179543im
     -0.01683425013961257 + 0.9998582939708192im
-      0.5474587794536067 + 0.8368326504141476im
+      0.5474587794536068 + 0.8368326504141477im
 
 julia&gt; quiver!(real(z),imag(z),quiver=(real(n)/3,imag(n)/3))
-Plot{Plots.GRBackend() n=3}</code></pre><p><img src="../inv_ellipse.svg" alt="ellipse and inverse"/></p><p>It&#39;s often convenient to create a &quot;standard&quot; shape that is then moved and scaled using arithmetic operations. </p><pre><code class="language-julia-repl">julia&gt; a = Arc(1,1+1im,1im)
+Plot{Plots.GRBackend() n=3}</code></pre><p><img src="../inv_ellipse.svg" alt="ellipse and inverse"/></p><p>It&#39;s often convenient to create a &quot;standard&quot; shape that is then moved and scaled using arithmetic operations.</p><pre><code class="language-julia-repl">julia&gt; a = Arc(1,1+1im,1im)
 Arc{Complex{Float64}} in the complex plane:
    fraction 0.5 of (Circle(0.5+0.5im,0.707107,ccw)) starting at 0.875
 
@@ -46,13 +44,8 @@ julia&gt; for n = 1:3
        	plot!((1im)^n*a);
        end
 
-/home/travis/.julia/packages/GR/ZI5OE/src/../deps/gr/bin/gksqt: error while loading shared libraries: libQt5Widgets.so.5: cannot open shared object file: No such file or directory
-connect: Connection refused
-GKS: can&#39;t connect to GKS socket application
-Did you start &#39;gksqt&#39;?
-
-GKS: Open failed in routine OPEN_WS
-GKS: GKS not in proper state. GKS must be either in the state WSOP or WSAC in routine ACTIVATE_WS</code></pre><p><img src="../arcs.svg" alt="ellipse and inverse"/></p><p>On the Riemann sphere, lines and circles are all simply circles. So are their inverses.</p><pre><code class="language-julia-repl">julia&gt; c = Spherical(Circle(1,1))
+julia&gt; plot!()
+Plot{Plots.GRBackend() n=4}</code></pre><p><img src="../arcs.svg" alt="ellipse and inverse"/></p><p>On the Riemann sphere, lines and circles are all simply circles. So are their inverses.</p><pre><code class="language-julia-repl">julia&gt; c = Spherical(Circle(1,1))
 Circle{Spherical{Float64}} in the complex plane:
    centered at ((latitude = 0.0⋅π, angle = 0.0⋅π)) with radius 1.0, positively oriented
 
@@ -70,12 +63,5 @@ julia&gt; 1 / l
 Circle{Spherical{Float64}} in the complex plane:
    centered at ((latitude = -0.1081734479693922⋅π, angle = -0.7499999999999997⋅π)) with radius 0.7071067811865485, positively oriented
 
-julia&gt; plot!(1/c,sphere=false); plot!(1/l,sphere=false);
-
-/home/travis/.julia/packages/GR/ZI5OE/src/../deps/gr/bin/gksqt: error while loading shared libraries: libQt5Widgets.so.5: cannot open shared object file: No such file or directory
-connect: Connection refused
-GKS: can&#39;t connect to GKS socket application
-Did you start &#39;gksqt&#39;?
-
-GKS: Open failed in routine OPEN_WS
-GKS: GKS not in proper state. GKS must be either in the state WSOP or WSAC in routine ACTIVATE_WS</code></pre><p><img src="../circles_sphere.svg" alt="lines and circles on the Riemann sphere"/></p><footer><hr/><a class="previous" href="../"><span class="direction">Previous</span><span class="title">Introduction</span></a><a class="next" href="../paths/"><span class="direction">Next</span><span class="title">Paths</span></a></footer></article></body></html>
+julia&gt; plot!(1/c,sphere=false); plot!(1/l,sphere=false)
+Plot{Plots.GRBackend() n=23}</code></pre><p><img src="../circles_sphere.svg" alt="lines and circles on the Riemann sphere"/></p><footer><hr/><a class="previous" href="../"><span class="direction">Previous</span><span class="title">Introduction</span></a><a class="next" href="../paths/"><span class="direction">Next</span><span class="title">Paths</span></a></footer></article></body></html>
