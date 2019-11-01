@@ -33,25 +33,25 @@ t = n_gon(3)
 s = n_gon(4)
 plot( ExteriorRegion([c,3+s,6+t]),leg=:none )
 ```
-![exterior region](triple.pdf)
+![A multiply connected exterior region](triple.pdf)
 
 ```
-julia> ℓ = Line(1/2,1/2+1im)  # line through 0.5 and 0.5+1i
+julia> li = Line(1/2,1/2+1im)  # line through 0.5 and 0.5+1i
 Line{Complex{Float64}} in the complex plane:
    through (0.5 + 0.0im) parallel to (0.0 + 1.0im)
 
-julia> c = 1 / ℓ          # a circle
+julia> c = 1 / li          # a circle
 Circle{Complex{Float64}} in the complex plane:
    centered at (1.0 + 0.0im) with radius 1.0, negatively oriented
 
-julia> intersect(ℓ,c)
+julia> intersect(li,c)
    2-element Array{Complex{Float64},1}:
     0.5 + 0.8660254037844386im
     0.5 - 0.8660254037844386im
 
-julia> plot(Spherical(ℓ),leg=:none);  plot!(Spherical(c))
+julia> plot(Spherical(li),leg=:none);  plot!(Spherical(c))
 ```
-![line and circle](line_circle.pdf)
+![Line and circle on the Riemann sphere](line_circle.pdf)
 
 [`DomainSets.jl`](https://github.com/JuliaApproximation/DomainSets.jl) and [`IntervalSets,jl`](https://github.com/JuliaMath/IntervalSets.jl), by D. Huybrechs, S. Olver, *et al.*, are a pair of packages with similar goals and interface, but oriented toward the representation of function domains in real spaces. Although `ComplexRegions` was not consciously patterned after them, there is enough similarity in approach to consider merging the functionality in the future.
 
