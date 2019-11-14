@@ -53,7 +53,7 @@ julia> plot(Spherical(li),leg=:none);  plot!(Spherical(c))
 ```
 ![Line and circle on the Riemann sphere](line_circle.pdf)
 
-[`DomainSets.jl`](https://github.com/JuliaApproximation/DomainSets.jl) and [`IntervalSets,jl`](https://github.com/JuliaMath/IntervalSets.jl), by D. Huybrechs, S. Olver, *et al.*, are a pair of packages with similar goals and interface, but oriented toward the representation of function domains in real spaces. Although `ComplexRegions` was not consciously patterned after them, there is enough similarity in approach to consider merging the functionality in the future.
+[`DomainSets`](https://github.com/JuliaApproximation/DomainSets.jl) and [`IntervalSets`](https://github.com/JuliaMath/IntervalSets.jl) are a pair of packages with similar goals and interface, but oriented toward the representation of function domains in real spaces. Although `ComplexRegions` was not consciously patterned after them, there is enough similarity in approach to consider merging the functionality in the future.
 
 One future use case for this package is to implement numerical methods for conformal maps. Another is for the fast solution of special cases of the Laplace equation that are especially amenable to solution using complex-variable methods [@GT19].  
 # References
