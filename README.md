@@ -1,9 +1,10 @@
 # ComplexRegions
 *Paths and regions in the complex plane for Julia*
 
-**Documentation**           | **Build Status**          |
-|:-------------------------:|:----------------------------:|
-| [![][docs-stable-img]][docs-stable-url] | [![][travis-img]][travis-url]  |
+**Documentation**           | **Build Status**          | **DOI** |
+|:-------------------------:|:----------------------------:|:-------:|
+| [![][docs-stable-img]][docs-stable-url] | [![][travis-img]][travis-url]  |  [![DOI](https://zenodo.org/badge/210664766.svg)](https://zenodo.org/badge/latestdoi/210664766) |
+
 
 ## Installation
 
