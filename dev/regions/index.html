@@ -9,7 +9,21 @@ r = interior(exp(1im*pi/4)*p)
 plot(r)</code></pre><p><img src="../bone-region.svg" alt="dog-bone region"/></p><p>Inspired by the Swiss flag?</p><pre><code class="language-julia">box = [1-1im,3-1im,3+1im];
 plus = Polygon([box;1im*box;-box;-1im*box]);
 r = between(rectangle(-6-4im,6+4im),plus)
-plot(r,color=:red,linewidth=0)</code></pre><p><img src="../swiss.svg" alt="Swiss flag"/></p><p>A multiply-connected exterior region:</p><pre><code class="language-julia">c = Circle(0,1)
+plot(r,color=:red,linewidth=0)</code></pre><pre><code class="language-none">┌ Warning: Attribute alias `aspectratio` detected in the user recipe defined for the signature (::ConnectedRegion{2}). To ensure expected behavior it is recommended to use the default attribute `aspect_ratio`.
+└ @ Plots ~/.julia/packages/Plots/GzWxB/src/pipeline.jl:7
+┌ Warning: Attribute alias `aspectratio` detected in the user recipe defined for the signature (::ConnectedRegion{2}). To ensure expected behavior it is recommended to use the default attribute `aspect_ratio`.
+└ @ Plots ~/.julia/packages/Plots/GzWxB/src/pipeline.jl:7
+┌ Warning: Attribute alias `aspectratio` detected in the user recipe defined for the signature (::ConnectedRegion{2}). To ensure expected behavior it is recommended to use the default attribute `aspect_ratio`.
+└ @ Plots ~/.julia/packages/Plots/GzWxB/src/pipeline.jl:7</code></pre><p><img src="../swiss.svg" alt="Swiss flag"/></p><p>A multiply-connected exterior region:</p><pre><code class="language-julia">c = Circle(0,1)
 t = n_gon(3)
 s = n_gon(4)
-plot( ExteriorRegion([c,3+s,6+t]) )</code></pre><p><img src="../triple.svg" alt="3-connected region"/></p><footer><hr/><a class="previous" href="../intersections/"><span class="direction">Previous</span><span class="title">Intersections</span></a><a class="next" href="../mobius/"><span class="direction">Next</span><span class="title">Möbius</span></a></footer></article></body></html>
+plot( ExteriorRegion([c,3+s,6+t]) )</code></pre><pre><code class="language-none">┌ Warning: Attribute alias `aspectratio` detected in the user recipe defined for the signature (::ExteriorRegion{3}). To ensure expected behavior it is recommended to use the default attribute `aspect_ratio`.
+└ @ Plots ~/.julia/packages/Plots/GzWxB/src/pipeline.jl:7
+┌ Warning: Attribute alias `aspectratio` detected in the user recipe defined for the signature (::ExteriorRegion{3}). To ensure expected behavior it is recommended to use the default attribute `aspect_ratio`.
+└ @ Plots ~/.julia/packages/Plots/GzWxB/src/pipeline.jl:7
+┌ Warning: Attribute alias `aspectratio` detected in the user recipe defined for the signature (::ExteriorRegion{3}). To ensure expected behavior it is recommended to use the default attribute `aspect_ratio`.
+└ @ Plots ~/.julia/packages/Plots/GzWxB/src/pipeline.jl:7
+┌ Warning: Attribute alias `aspectratio` detected in the user recipe defined for the signature (::ExteriorRegion{3}). To ensure expected behavior it is recommended to use the default attribute `aspect_ratio`.
+└ @ Plots ~/.julia/packages/Plots/GzWxB/src/pipeline.jl:7
+┌ Warning: Attribute alias `aspectratio` detected in the user recipe defined for the signature (::ExteriorRegion{3}). To ensure expected behavior it is recommended to use the default attribute `aspect_ratio`.
+└ @ Plots ~/.julia/packages/Plots/GzWxB/src/pipeline.jl:7</code></pre><p><img src="../triple.svg" alt="3-connected region"/></p><footer><hr/><a class="previous" href="../intersections/"><span class="direction">Previous</span><span class="title">Intersections</span></a><a class="next" href="../mobius/"><span class="direction">Next</span><span class="title">Möbius</span></a></footer></article></body></html>
