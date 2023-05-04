@@ -109,7 +109,7 @@ Type for closed paths consisting entirely of segments and rays.
 """
 struct Polygon <: AbstractPolygon
 	path
-	function Polygon(p::AbstractClosedPath) where T<:AbstractCurve
+	function Polygon(p::AbstractClosedPath)
 		# Assumes continuity and closure have been checked previously
 		valid = isa.(curves(p),Union{Segment,Ray})
 		@assert all(valid) "All sides must be a Segment or Ray"
