@@ -1,7 +1,5 @@
 using RecipesBase,Colors
 
-RecipesBase.debug(false)
-
 @recipe function f(::Type{T},C::T) where T <: AbstractCurve
     aspect_ratio --> 1.0
     plotdata(C)
