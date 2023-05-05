@@ -14,8 +14,8 @@ Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
 
 [compat]
 julia = "1"
-Colors = "0.9"
-ComplexValues = "0.2"
+Colors = "0"
+ComplexValues = "0"
 RecipesBase = "1"
-Reexport = "0.2" 
-StaticArrays = "0.12"
+Reexport = "0" 
+StaticArrays = "0"
