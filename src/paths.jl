@@ -108,6 +108,7 @@ end
 conj(p::AbstractPath) = typeof(p)(conj.(curves(p)))
 
 reverse(p::AbstractPath) = typeof(p)(reverse(reverse.(curves(p))))
+isclosed(p::AbstractPath) = isa(p, AbstractClosedPath)
 
 +(p::AbstractPath,z::Number) = typeof(p)([c+z for c in curves(p)])
 +(z::Number,p::AbstractPath) = typeof(p)([z+c for c in curves(p)])

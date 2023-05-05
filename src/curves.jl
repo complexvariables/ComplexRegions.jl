@@ -63,6 +63,8 @@ function arclength(C::AbstractCurve,part=[0,1])
 	intadapt(f,part...,DEFAULT[:tol])
 end
 
+isclosed(c::AbstractCurve) = isa(c, AbstractClosedCurve)
+
 """
 	plotdata(C::AbstractCurve,n=501)
 
