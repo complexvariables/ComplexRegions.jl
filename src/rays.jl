@@ -43,7 +43,7 @@ function point(R::Ray{T},t::Real) where T
 	elseif t==1 
 		T(Inf)
 	else
-		R.base + t/(1-t)*exp(complex(0,R.angle))
+		R.base + t/(1-t)*cis(R.angle)
 	end	
 end
 (C::Ray)(t::Real) = point(C,t)
@@ -65,12 +65,12 @@ function arg(R::Ray,z::Number)
 end
 
 function unittangent(R::Ray{T},t::Real=0) where T <: AnyComplex 
-	τ = T( exp(complex(0,R.angle)) )
+	τ = T( cis(R.angle) )
 	R.reverse ? -τ : τ
 end
 
 function tangent(R::Ray{T},t::Real) where T <: AnyComplex 
-	τ = exp(complex(0,R.angle))
+	τ = cis(R.angle)
 	R.reverse ? T(-τ/t^2) : T(τ/(1-t)^2)
 end
 
@@ -136,7 +136,7 @@ Find the point on ray `R` that lies closest to `z`.
 """
 function closest(z::Number,R::Ray) 
 	# translate and rotate to positive Re axis
-	s = exp(complex(0,R.angle))
+	s = cis(R.angle)
 	ζ = (z-R.base)/s
 	R.base + max(real(ζ),0)*s
 end

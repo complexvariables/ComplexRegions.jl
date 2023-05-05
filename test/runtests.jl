@@ -10,10 +10,10 @@ using Test
 	 z = 2im .+ 3*exp.(2im*pi*[0.8,0.1,0.25])
 	 @test( CR.isccw(z...) )
 	 @test( CR.intadapt(exp,0,4,1e-13) ≈ (exp(4)-1)  )
-	 z = t -> exp(1im*t)
+	 z = t -> cis(t)
 	 @test( CR.fdtangent(z,0) ≈ 1im )
 	 @test( CR.fdtangent(z,1) ≈ 1im*exp(1im) )
-	 @test( CR.fdtangent(z,0.2) ≈ 1im*exp(0.2im) )
+	 @test( CR.fdtangent(z,0.2) ≈ 1im*cis(0.2) )
 end
 
 @testset "Curves" begin
@@ -34,7 +34,7 @@ end
 	@test( isinside(1.5-1im,c) && isoutside(1.5+1im,reverse(c)) )
 	@test( isinf(reflect(c.center,c)) )
 	@test( reflect(reflect(-1+2im,c),c) ≈ -1+2im )
-	@test( all( abs(arg(c,c(t))-t) < 1e-11 for t in 0.1:0.1:1 ) )
+	@test( all( mod(abs(arg(c,c(t))-t), 1) < 1e-11 for t in 0:0.1:1 ) )
 	@test( angle(unittangent(c,0.125)) ≈ 0.75π )
 	@test( abs(tangent(c,0.125)) ≈ 2π*sqrt(2) )
 
@@ -44,7 +44,7 @@ end
 	c = Circle(1f0,-1im,0)
 	@test( c.radius ≈ 1/sqrt(2f0) )
 	c = Circle(1,-1im,false)
-	@test( all( abs(arg(c,c(t))-t) < 1e-11 for t in 0.1:0.1:1 ) )
+	@test( all( mod(abs(arg(c,c(t))-t),1) < 1e-11 for t in 0:0.1:1 ) )
 	zz = point(5im - c/3im,.23)
 	@test( abs(zz-(5im-c.center/3im)) ≈ c.radius/3 )
 	@test( tangent(c,0.7) ≈ CR.fdtangent(c,0.7) )
@@ -56,7 +56,7 @@ end
 	zz = 1/sqrt(2)*(1+1im)
 	@test( point(a,0.5) ≈ zz )
 	@test( all( abs(arg(a,a(t))-t) < 1e-11 for t in 0:0.1:1 ) )
-	@test( dist(3im+.5*2im*exp(1im*pi/5),3im+2im*a) ≈ 2*0.5 )
+	@test( dist(3im+.5*2im*cispi(1/5),3im+2im*a) ≈ 2*0.5 )
 	@test( tangent(a,0.2) ≈ CR.fdtangent(a,0.2) )
 	@test( angle(unittangent(a,0.5)) ≈ -0.25π )
 	a = (a-2)/1im 
@@ -215,7 +215,7 @@ end
 	@test( sum(angles(p)) ≈ 4*pi )
 
 	p = CircularPolygon([Arc(1,2+1im,1im),Segment(1im,-1),Arc(-1,-0.5im,-1im),Segment(-1im,1)])
-	@test( all(winding(p,z)==1 for z in [1+0.5im,1.7+1im,0,-1+0.05*exp(1im*pi/5),-1im+0.05*exp(1im*0.3*pi)]) )
+	@test( all(winding(p,z)==1 for z in [1+0.5im,1.7+1im,0,-1+0.05*cispi(1/5),-1im+0.05*cispi(0.3)]) )
 	@test( all(winding(p,z)==0 for z in [-.999im,0.001-1im,-.999,-1.001,1.001,1.999im]) )
 end
 

@@ -56,7 +56,7 @@ end
 
 # Required methods
 function point(C::Circle,t::Real)
-	z = C.ccw ? exp(2im*pi*t) : exp(-2im*pi*t)
+	z = C.ccw ? cispi(2t) : cispi(-2t)
 	C.center + typeof(C.center)(z*C.radius)
 end
 (C::Circle)(t::Real) = point(C,t)
@@ -78,7 +78,7 @@ function arg(C::Circle,z::Number)
 end
 
 function unittangent(C::Circle{T},t::Real) where T <: AnyComplex
-	C.ccw ? T( 1im*exp(2im*pi*t) ) : T( -1im*exp(-2im*pi*t) )
+	C.ccw ? T( 1im*cispi(2t) ) : T( -1im*cispi(-2t) )
 end
 function tangent(C::Circle{T},t::Real) where T <: AnyComplex
 	T( 2π*C.radius*unittangent(C,t) )

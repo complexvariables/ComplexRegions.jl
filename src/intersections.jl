@@ -66,7 +66,7 @@ function intersect(l::Line,g::Segment;tol=DEFAULT[:tol])
 end
 
 function intersect(r1::Ray,r2::Ray;tol=DEFAULT[:tol]) 
-	s1,s2 = exp(complex(0,r1.angle)),exp(complex(0,r2.angle))
+	s1,s2 = cis(r1.angle), cis(r2.angle)
 	z1,z2 = r1.base,r2.base
 	t1,t2 = twolines_meet(z1,s1,z2,s2,tol)
 	if isnan(t1)     # parallel lines
@@ -83,7 +83,7 @@ end
 intersect(r::Ray,l::Line;tol=DEFAULT[:tol]) = intersect(l,r,tol=tol)
 function intersect(l::Line,r::Ray;tol=DEFAULT[:tol])
 	z1,z2 = l.base,r.base
-	s1,s2 = l.direction,exp(1im*r.angle)
+	s1,s2 = l.direction,cis(r.angle)
 	t1,t2 = twolines_meet(z1,s1,z2,s2,tol)
 	if isnan(t1)   # parallel lines
 		return dist(r.base,l) < tol*(1+abs(r.base)) ? r : [] 
@@ -95,7 +95,7 @@ end
 intersect(g::Segment,r::Ray;kw...) = intersect(r,g;kw...)
 function intersect(r::Ray,g::Segment;tol=DEFAULT[:tol])
 	z1,z2 = r.base,g.za
-	s1,s2 = exp(1im*r.angle),g.zb-g.za
+	s1,s2 = cis(r.angle),g.zb-g.za
 	t1,t2 = twolines_meet(z1,s1,z2,s2,tol)
 	if isnan(t1)   # parallel lines
 		# move ray to positive Re axis
@@ -155,7 +155,7 @@ end
 intersect(r::Ray,c::Circle;tol=DEFAULT[:tol]) = intersect(c,r,tol=tol)
 function intersect(c::Circle,r::Ray;tol=DEFAULT[:tol])
 	# probably not the most efficient way
-	z = intersect(c,Line(r.base,direction=exp(1im*r.angle)),tol=tol)
+	z = intersect(c,Line(r.base,direction=cis(r.angle)),tol=tol)
 	d = [ dist(z,r) for z in z ]
 	return z[d.<=tol]
 end

@@ -151,7 +151,7 @@ function closest(z::Number,A::Arc)
 	ζ = z - A.circle.center
 	d = A.delta/2
 	# rotate arc to position symmetric about positive Re axis
-	ϕ = angle( ζ/exp(2im*pi*(A.start+d)) ) / (2π)
+	ϕ = angle( ζ/cispi(2*(A.start+d)) ) / (2π)
 	if ϕ > d 
 		point(A,1)
 	elseif ϕ < -d 
