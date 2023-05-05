@@ -158,10 +158,12 @@ intersect(P::AbstractPath,C::AbstractCurve) = ∪( [intersect(s,C) for s in curv
 intersect(P1::AbstractPath,P2::AbstractPath) = ∪( [intersect(P1,s) for s in curves(P2)]...  )
 
 function show(io::IO,P::AbstractPath)
-	print(IOContext(io,:compact=>true),typeof(P)," with ",length(P)," curves") 
+	str = length(P) == 1 ? " curve" : " curves"
+	print(IOContext(io,:compact=>true), typeof(P), " with ", length(P), str) 
 end
 function show(io::IO,::MIME"text/plain",P::AbstractPath) 
-	print(io,typeof(P)," with ",length(P)," curves")
+	str = length(P) == 1 ? " curve" : " curves"
+	print(io, typeof(P), " with ", length(P), str)
 end
 
 plotdata(P::AbstractPath) = vcat(plotdata.(P)...)
