@@ -1,10 +1,10 @@
 # Type and constructors
 """
-	(type) Circle{T<:AnyComplex} in the complex plane 
+	(type) Circle{T<:AnyComplex} in the complex plane
 
-Each `Circle` type is parameterized according to the common type of its complex input arguments. 
+Each `Circle` type is parameterized according to the common type of its complex input arguments.
 """
-struct Circle{T<:AnyComplex} <: AbstractClosedCurve 
+struct Circle{T<:AnyComplex} <: AbstractClosedCurve
 	center::T
 	radius::Float64
 	ccw::Bool
@@ -22,7 +22,7 @@ Circle(z::AnyComplex,r::Real,ccw::Bool=true) = Circle{typeof(z)}(z,r,ccw)
 Circle(z::Number,r::Real,ccw::Bool=true) = Circle(complex(float(z)),r,ccw)
 
 # Construction by three points
-function Circle(a::Number,b::Number,c::Number) 
+function Circle(a::Number,b::Number,c::Number)
 	a,b,c = promote( complex.(float.([a,b,c]))... )
 	Circle(a,b,c)
 end
@@ -30,7 +30,7 @@ function Circle(a::T,b::T,c::T) where {T<:AnyComplex}
 	isinf(a) && return Line(b,c)
 	isinf(b) && return Line(c,a)
 	isinf(c) && return Line(a,b)
-	# Use intersection of chord bisectors to find the center of the circle. 
+	# Use intersection of chord bisectors to find the center of the circle.
 	w = (a-c)/2
 	d1,d2 = a-b,c-b
 	M = SMatrix{2,2}(real(d1),imag(d1),real(d2),imag(d2))
@@ -48,9 +48,9 @@ end
 # Complex type converters
 for ctype in [:Spherical,:Polar,:Complex]
 	@eval begin
-		function $ctype(C::Circle{T}) where T<:AnyComplex 
+		function $ctype(C::Circle{T}) where T<:AnyComplex
 			Circle($ctype(C.center),C.radius,C.ccw)
-		end	
+		end
 	end
 end
 
@@ -65,12 +65,12 @@ ispositive(C::Circle) = C.ccw
 
 arclength(C::Circle) = 2π*C.radius
 
-""" 
-	arg(C::Circle,z) 
+"""
+	arg(C::Circle,z)
 
-Find the parameter argument `t` such that `C(t)==z` is true. 
+Find the parameter argument `t` such that `C(t)==z` is true.
 
-This gives undefined results if `z` is not actually on the circle. 
+This gives undefined results if `z` is not actually on the circle.
 """
 function arg(C::Circle,z::Number)
 	α = angle(z-C.center)/(2π)
@@ -84,27 +84,27 @@ function tangent(C::Circle{T},t::Real) where T <: AnyComplex
 	T( 2π*C.radius*unittangent(C,t) )
 end
 
-+(C::Circle,z::Number) = Circle(C.center+z,C.radius,C.ccw)
--(C::Circle) = Circle(-C.center,C.radius,C.ccw)
-*(C::Circle,z::Number) = Circle(C.center*z,C.radius*abs(z),C.ccw)
+Base.:+(C::Circle,z::Number) = Circle(C.center+z,C.radius,C.ccw)
+Base.:-(C::Circle) = Circle(-C.center,C.radius,C.ccw)
+Base.:*(C::Circle,z::Number) = Circle(C.center*z,C.radius*abs(z),C.ccw)
 
 """
-	inv(C) 
+	inv(C)
 Invert the circle `C` through the origin. In general the inverse is a `Circle`, though the result is a `Line` if `C` passes through the origin.
 """
-function inv(C::Circle) 
+function inv(C::Circle)
 	w = 1 ./ point(C,[0,0.25,0.5])
 	Circle(w...)
 end
 
 # Other methods
-isfinite(::Circle) = true 
+isfinite(::Circle) = true
 conj(C::Circle) = Circle(conj(C.center),C.radius,!C.ccw)
 reverse(C::Circle) = Circle(C.center,C.radius,!C.ccw)
 
 """
-	isapprox(C1::Circle,C2::Circle; tol=<default>) 
-	C1 ≈ C2 
+	isapprox(C1::Circle,C2::Circle; tol=<default>)
+	C1 ≈ C2
 Determine if `C1` and `C2` represent the same circle, irrespective of the type or values of its parameters. Identity is determined by agreement within `tol`, which is interpreted as the weaker of absolute and relative differences.
 """
 function isapprox(C1::Circle,C2::Circle;tol=DEFAULT[:tol])
@@ -117,20 +117,20 @@ function winding(C::Circle,z::Number)
 	C.ccw ? w : -w
 end
 
-""" 
-	dist(z,C::Circle) 
-Compute the distance from number `z` to the circle `C`. 
+"""
+	dist(z,C::Circle)
+Compute the distance from number `z` to the circle `C`.
 """
 dist(z::Number,C::Circle) = abs( abs(z-C.center) - C.radius )
 
-""" 
-	closest(z,C::Circle) 
+"""
+	closest(z,C::Circle)
 Find the point on circle `C` that lies closest to `z`.
 """
 closest(z::Number,C::Circle) =	C.center + C.radius*sign(z - C.center)
 
-""" 
-	reflect(z,C::Circle) 
+"""
+	reflect(z,C::Circle)
 Reflect the value `z` across the circle `C`. (For reflection of a circle through a point, use translation and negation.)
 """
 function reflect(z::Number,C::Circle)

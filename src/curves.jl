@@ -7,28 +7,28 @@ abstract type AbstractCurve end
 # Required methods
 """
 	point(C::AbstractCurve,t::Real)
-Find the point on curve `C` at parameter value `t`, which should lie in the interval [0,1]. 
+Find the point on curve `C` at parameter value `t`, which should lie in the interval [0,1].
 """
 point(c::AbstractCurve,t::Real) = @error "No point() method defined for type $(typeof(c))"
 
 """
 	tangent(C::AbstractCurve,t::Real)
-Find the complex number representing the tangent to curve `C` at parameter value `t` in [0,1]. 
+Find the complex number representing the tangent to curve `C` at parameter value `t` in [0,1].
 """
 tangent(C::AbstractCurve,t::Real) = @error "No tangent() method defined for type $(typeof(C))"
 
 reverse(C::AbstractCurve) = @error "No reverse() method defined for type $(typeof(C))"
 
-""" 
-	isfinite(C::AbstractCurve) 
+"""
+	isfinite(C::AbstractCurve)
 Return `true` if the curve is bounded in the complex plane (i.e., does not pass through infinity).
 """
 isfinite(C::AbstractCurve) = @error "No isfinite() method defined for type $(typeof(C))"
 
 conj(C::AbstractCurve) = @error "No conj() method defined for type $(typeof(C))"
-+(C::AbstractCurve,z::Number) = @error "No addition method defined for type $(typeof(C))"
--(C::AbstractCurve) = @error "No negation method defined for type $(typeof(C))"
-*(C::AbstractCurve,z::Number) = @error "No multiplication method defined for type $(typeof(C))"
+Base.:+(C::AbstractCurve,z::Number) = @error "No addition method defined for type $(typeof(C))"
+Base.:-(C::AbstractCurve) = @error "No negation method defined for type $(typeof(C))"
+Base.:*(C::AbstractCurve,z::Number) = @error "No multiplication method defined for type $(typeof(C))"
 inv(C::AbstractCurve) = @error "No inversion method defined for type $(typeof(C))"
 
 # Default implementations
@@ -47,16 +47,16 @@ unittangent(C::AbstractCurve,t::Real) = sign(tangent(C,t))
 
 """
 	normal(C::AbstractCurve,t::Real)
-Find the unit complex number in the direction of the leftward-pointing normal to curve `C` at parameter value `t` in [0,1]. 
+Find the unit complex number in the direction of the leftward-pointing normal to curve `C` at parameter value `t` in [0,1].
 """
 normal(c::AbstractCurve,t::Real) = 1im*unittangent(c,t)
 
-+(z::Number,C::AbstractCurve) = +(C,z)
--(C::AbstractCurve,z::Number) = C + (-z)
--(z::Number,C::AbstractCurve) = z + (-C)
-*(z::Number,C::AbstractCurve) = *(C,z)
-/(C::AbstractCurve,z::Number) = C*(1/z)
-/(z::Number,C::AbstractCurve) = z*inv(C)
+Base.:+(z::Number,C::AbstractCurve) = +(C,z)
+Base.:-(C::AbstractCurve,z::Number) = C + (-z)
+Base.:-(z::Number,C::AbstractCurve) = z + (-C)
+Base.:*(z::Number,C::AbstractCurve) = *(C,z)
+Base.:/(C::AbstractCurve,z::Number) = C*(1/z)
+Base.:/(z::Number,C::AbstractCurve) = z*inv(C)
 
 function arclength(C::AbstractCurve,part=[0,1])
 	f = t -> abs(tangent(C,t))
@@ -90,14 +90,14 @@ isinside(z::Number,C::AbstractClosedCurve) = winding(C,z) != 0
 isoutside(z::Number,C::AbstractClosedCurve) = winding(C,z) == 0
 
 #
-# generic Curve 
+# generic Curve
 #
 
 """
-(type) Smooth curve defined by an explicit function of a real paramerter in [0,1]. 
+(type) Smooth curve defined by an explicit function of a real paramerter in [0,1].
 """
-struct Curve <: AbstractCurve 
-	point 
+struct Curve <: AbstractCurve
+	point
 	tangent
 end
 
@@ -121,19 +121,19 @@ conj(C::Curve) = Curve(t->conj(C.point(t)))
 reverse(C::Curve) = Curve(t->C.point(1-t))
 isfinite(C::Curve) = true
 
-+(C::Curve,z::Number) = Curve(t->C.point(t)+z,C.tangent)
--(C::Curve) = Curve(t->-C.point(t),t->-C.tangent(t))
-*(C::Curve,z::Number) = Curve(t->C.point(t)*z,t->C.tangent(t)*z)
+Base.:+(C::Curve,z::Number) = Curve(t->C.point(t)+z,C.tangent)
+Base.:-(C::Curve) = Curve(t->-C.point(t),t->-C.tangent(t))
+Base.:*(C::Curve,z::Number) = Curve(t->C.point(t)*z,t->C.tangent(t)*z)
 inv(C::Curve) = Curve(t->1/C.point(t),t->-C.tangent(t)/C.point(t)^2)
 
 #
 # generic ClosedCurve
-# 
+#
 
 """
-(type) Smooth closed curve defined by an explicit function of a real paramerter in [0,1]. 
+(type) Smooth closed curve defined by an explicit function of a real paramerter in [0,1].
 """
-struct ClosedCurve <: AbstractClosedCurve 
+struct ClosedCurve <: AbstractClosedCurve
 	curve::Curve
 	function ClosedCurve(c::Curve;tol=DEFAULT[:tol])
 		@assert isapprox(point(c,0),point(c,1);rtol=tol,atol=tol) "Curve does not close"
@@ -158,10 +158,10 @@ point(C::ClosedCurve,t::Real) = point(C.curve,t)
 tangent(C::ClosedCurve,t::Real) = tangent(C.curve,t)
 conj(C::ClosedCurve) = ClosedCurve(conj(C.curve))
 reverse(C::ClosedCurve) = ClosedCurve(reverse(C.curve))
-isfinite(C::ClosedCurve) = isfinite(C.curve) 
-+(C::ClosedCurve,z::Number) = ClosedCurve(C.curve+z)
--(C::ClosedCurve) = ClosedCurve(-C.curve)
-*(C::ClosedCurve,z::Number) = ClosedCurve(C.curve*z)
+isfinite(C::ClosedCurve) = isfinite(C.curve)
+Base.:+(C::ClosedCurve,z::Number) = ClosedCurve(C.curve+z)
+Base.:-(C::ClosedCurve) = ClosedCurve(-C.curve)
+Base.:*(C::ClosedCurve,z::Number) = ClosedCurve(C.curve*z)
 inv(C::ClosedCurve) = ClosedCurve(inv(C.curve))
 
 include("lines.jl")

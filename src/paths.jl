@@ -3,22 +3,22 @@ abstract type AbstractPath end
 # Required methods
 """
 	curves(P::AbstractPath)
-Return an array of the curves that make up the path `P`. 
+Return an array of the curves that make up the path `P`.
 """
 curves(p::AbstractPath) = @error "No curves() method defined for type $(typeof(p))"
 
 # Default implementations
 """
 	curve(P::AbstractPath,k::Integer)
-Return the `k`th curve in the path `P`. 
+Return the `k`th curve in the path `P`.
 """
 curve(p::AbstractPath,k::Integer) = curves(p)[k]
 
 """
-	vertex(P::AbstractPath,k::Integer) 
+	vertex(P::AbstractPath,k::Integer)
 Return the `k`th vertex of the path `P`.
 """
-function vertex(P::AbstractPath,k::Integer) 
+function vertex(P::AbstractPath,k::Integer)
 	C = curves(P)
 	n = length(C)
 	if 1 ≤ k ≤ n
@@ -34,18 +34,18 @@ end
 	vertices(P::AbstractPath)
 Return an array of the vertices (endpoints of the curves) of the path `P`. The length is one greater than the number of curves in `P`.
 """
-function vertices(P::AbstractPath) 
+function vertices(P::AbstractPath)
 	[ vertex(P,k) for k = 1:length(P)+1]
 end
 
-""" 
-	isfinite(P::AbstractPath) 
+"""
+	isfinite(P::AbstractPath)
 Return `true` if the path is bounded in the complex plane (i.e., does not pass through infinity).
 """
 isfinite(p::AbstractPath) = all(isfinite(s) for s in curves(p))
 
 # iteration interface
-eltype(::Type{AbstractPath}) = AbstractCurve 
+eltype(::Type{AbstractPath}) = AbstractCurve
 length(p::AbstractPath) = length(curves(p))
 getindex(p::AbstractPath,k) = curve(p,k)
 iterate(p::AbstractPath,state=1) = state > length(curves(p)) ? nothing : (p[state], state+1)
@@ -53,34 +53,34 @@ iterate(p::AbstractPath,state=1) = state > length(curves(p)) ? nothing : (p[stat
 """
 	point(P::AbstractPath,t::Real)
 	P(t)
-Compute the point along path `P` at parameter value `t`. Values of `t` in [k,k+1] correspond to values in [0,1] along curve k of the path, for k = 1,2,...,length(P)-1. 
+Compute the point along path `P` at parameter value `t`. Values of `t` in [k,k+1] correspond to values in [0,1] along curve k of the path, for k = 1,2,...,length(P)-1.
 
 	point(P::AbstractPath,t::AbstractVector)
-Vectorize the `point` method for path `P`. 
+Vectorize the `point` method for path `P`.
 """
 point(p::AbstractPath,t::AbstractArray{T}) where T<:Real = [point(p,t) for t in t]
 
 # This determines how to parse a parameter of a path. Overloaded later for the case of a closed path.
-function sideargs(p::AbstractPath,t) 
+function sideargs(p::AbstractPath,t)
 	n = length(p)
-	if (t < 0) || (t > n) 
+	if (t < 0) || (t > n)
 		throw(BoundsError(p,t))
 	end
-	if t==n 
+	if t==n
 		return n,1
 	else
-		return 1+floor(Int,t),t%1 
+		return 1+floor(Int,t),t%1
 	end
 end
 
-function point(p::AbstractPath,t::Real) 
+function point(p::AbstractPath,t::Real)
 	k,s = sideargs(p,t)
 	point(curve(p,k),s)
 end
 
 """
 	tangent(P::AbstractPath,t::Real)
-Compute the complex-valued tangent along path `P` at parameter value `t`. Values of `t` in [k,k+1] correspond to values in [0,1] along curve k of the path, for k = 1,2,...,length(P)-1. The result is not well-defined at an integer value of `t`. 
+Compute the complex-valued tangent along path `P` at parameter value `t`. Values of `t` in [k,k+1] correspond to values in [0,1] along curve k of the path, for k = 1,2,...,length(P)-1. The result is not well-defined at an integer value of `t`.
 """
 function tangent(p::AbstractPath,t::Real)
 	k,s = sideargs(p,t)
@@ -89,16 +89,16 @@ end
 
 """
 	unittangent(P::AbstractPath,t::Real)
-Compute the complex-valued unit tangent along path `P` at parameter value `t`. Values of `t` in [k,k+1] correspond to values in [0,1] along curve k of the path, for k = 1,2,...,length(P)-1. The result is not well-defined at an integer value of `t`. 
+Compute the complex-valued unit tangent along path `P` at parameter value `t`. Values of `t` in [k,k+1] correspond to values in [0,1] along curve k of the path, for k = 1,2,...,length(P)-1. The result is not well-defined at an integer value of `t`.
 """
 function unittangent(p::AbstractPath,t::Real)
 	k,s = sideargs(p,t)
 	unittangent(curve(p,k),s)
-end 
+end
 
 """
 	normal(P::AbstractPath,t::Real)
-Compute a complex-valued normal to path `P` at parameter value `t`. Values of `t` in [k,k+1] correspond to values in [0,1] along curve k of the path, for k = 1,2,...,length(P)-1. The result is not well-defined at an integer value of `t`. 
+Compute a complex-valued normal to path `P` at parameter value `t`. Values of `t` in [k,k+1] correspond to values in [0,1] along curve k of the path, for k = 1,2,...,length(P)-1. The result is not well-defined at an integer value of `t`.
 """
 function normal(p::AbstractPath,t::Real)
 	k,s = sideargs(p,t)
@@ -110,18 +110,18 @@ conj(p::AbstractPath) = typeof(p)(conj.(curves(p)))
 reverse(p::AbstractPath) = typeof(p)(reverse(reverse.(curves(p))))
 isclosed(p::AbstractPath) = isa(p, AbstractClosedPath)
 
-+(p::AbstractPath,z::Number) = typeof(p)([c+z for c in curves(p)])
-+(z::Number,p::AbstractPath) = typeof(p)([z+c for c in curves(p)])
+Base.:+(p::AbstractPath,z::Number) = typeof(p)([c+z for c in curves(p)])
+Base.:+(z::Number,p::AbstractPath) = typeof(p)([z+c for c in curves(p)])
 
--(p::AbstractPath) = typeof(p)([-c for c in curves(p)])
--(p::AbstractPath,z::Number) = typeof(p)([c-z for c in curves(p)])
--(z::Number,p::AbstractPath) = typeof(p)([z-c for c in curves(p)])
+Base.:-(p::AbstractPath) = typeof(p)([-c for c in curves(p)])
+Base.:-(p::AbstractPath,z::Number) = typeof(p)([c-z for c in curves(p)])
+Base.:-(z::Number,p::AbstractPath) = typeof(p)([z-c for c in curves(p)])
 
-*(p::AbstractPath,z::Number) = typeof(p)([c*z for c in curves(p)])
-*(z::Number,p::AbstractPath) = typeof(p)([z*c for c in curves(p)])
+Base.:*(p::AbstractPath,z::Number) = typeof(p)([c*z for c in curves(p)])
+Base.:*(z::Number,p::AbstractPath) = typeof(p)([z*c for c in curves(p)])
 
-/(p::AbstractPath,z::Number) = typeof(p)([c/z for c in curves(p)])
-/(z::Number,p::AbstractPath) = z*inv(p)
+Base.:/(p::AbstractPath,z::Number) = typeof(p)([c/z for c in curves(p)])
+Base.:/(z::Number,p::AbstractPath) = z*inv(p)
 inv(p::AbstractPath) = typeof(p)([inv(c) for c in curves(p)])
 
 """
@@ -129,8 +129,8 @@ inv(p::AbstractPath) = typeof(p)([inv(c) for c in curves(p)])
 	P1 ≈ P2       (type "\\approx" followed by tab key)
 Determine whether `P1` and `P2` represent the same path, up to tolerance `tol`, irrespective of the parameterization of its curves.
 """
-function isapprox(P1::AbstractPath,P2::AbstractPath;tol=DEFAULT[:tol]) 
-	if length(P1) != length(P2) 
+function isapprox(P1::AbstractPath,P2::AbstractPath;tol=DEFAULT[:tol])
+	if length(P1) != length(P2)
 		return false
 	else
 		c1,c2 = curves(P1),curves(P2)
@@ -140,14 +140,14 @@ end
 isapprox(::AbstractCurve,::AbstractPath;kw...) = false
 isapprox(::AbstractPath,::AbstractCurve;kw...) = false
 
-""" 
-	dist(z,P::AbstractPath) 
+"""
+	dist(z,P::AbstractPath)
 Find the distance from the path `P` to the point `z`.
 """
 dist(z::Number,P::AbstractPath) = minimum(dist(z,C) for C in P)
 
-""" 
-	closest(z,P::AbstractPath) 
+"""
+	closest(z,P::AbstractPath)
 Find the point on the path `P` that lies closest to `z`.
 """
 function closest(z::Number,P::AbstractPath)
@@ -160,9 +160,9 @@ intersect(P1::AbstractPath,P2::AbstractPath) = ∪( [intersect(P1,s) for s in cu
 
 function show(io::IO,P::AbstractPath)
 	str = length(P) == 1 ? " curve" : " curves"
-	print(IOContext(io,:compact=>true), typeof(P), " with ", length(P), str) 
+	print(IOContext(io,:compact=>true), typeof(P), " with ", length(P), str)
 end
-function show(io::IO,::MIME"text/plain",P::AbstractPath) 
+function show(io::IO,::MIME"text/plain",P::AbstractPath)
 	str = length(P) == 1 ? " curve" : " curves"
 	print(io, typeof(P), " with ", length(P), str)
 end
@@ -173,13 +173,13 @@ abstract type AbstractClosedPath <: AbstractPath end
 
 """
 	curve(P::AbstractClosedPath,k::Integer)
-Return the `k`th curve in the path `P`. The index is applied circularly; e.g, if the closed path has n curves, then ...,1-n,1,1+n,... all refer to the first curve. 
+Return the `k`th curve in the path `P`. The index is applied circularly; e.g, if the closed path has n curves, then ...,1-n,1,1+n,... all refer to the first curve.
 """
 curve(p::AbstractClosedPath,k::Integer) = curves(p)[mod(k-1,length(p))+1]
 
 """
-	vertex(P::AbstractPath,k::Integer) 
-Return the `k`th vertex of the path `P`. The index is applied circularly; e.g, if the closed path has n curves, then ...,1-n,1,1+n,... all refer to the first vertex. 
+	vertex(P::AbstractPath,k::Integer)
+Return the `k`th vertex of the path `P`. The index is applied circularly; e.g, if the closed path has n curves, then ...,1-n,1,1+n,... all refer to the first vertex.
 """
 vertex(P::AbstractClosedPath,k::Integer) = point(curve(P,k),0)
 
@@ -189,7 +189,7 @@ Return an array of the unique vertices (endpoints of the curves) of the closed p
 """
 vertices(P::AbstractClosedPath) = [ vertex(P,k) for k = 1:length(P) ]
 
-function sideargs(p::AbstractClosedPath,t) 
+function sideargs(p::AbstractClosedPath,t)
 	n = length(p)
 	return 1+mod(floor(Int,t),n), t%1
 end
@@ -204,8 +204,8 @@ function winding(P::AbstractClosedPath,z::Number)
 	return round(Int,w/(2π))
 end
 
-isinside(z::Number,P::AbstractClosedPath) = winding(P,z) != 0 
-isoutside(z::Number,P::AbstractClosedPath) = winding(P,z) == 0 
+isinside(z::Number,P::AbstractClosedPath) = winding(P,z) != 0
+isoutside(z::Number,P::AbstractClosedPath) = winding(P,z) == 0
 
 #
 # Concrete implementations
@@ -213,10 +213,10 @@ isoutside(z::Number,P::AbstractClosedPath) = winding(P,z) == 0
 
 # Path
 """
-	(type) Path 
+	(type) Path
 Generic implementation of an `AbstractPath`.
 """
-struct Path <: AbstractPath 
+struct Path <: AbstractPath
 	curve
 	function Path(c::AbstractVector{T};tol::Real=DEFAULT[:tol]) where T<:AbstractCurve
 		n = length(c)
@@ -228,11 +228,11 @@ struct Path <: AbstractPath
 end
 """
 	Path(c::AbstractVector; tol=<default>)
-Given a vector `c` of curves, construct a path. The path is checked for continuity (to tolerance `tol`) at the interior vertices. 
+Given a vector `c` of curves, construct a path. The path is checked for continuity (to tolerance `tol`) at the interior vertices.
 """
 Path(c::AbstractCurve) = Path([c])
 
-curves(p::Path) = p.curve 
+curves(p::Path) = p.curve
 """
 	arclength(P::Path)
 Compute the arclength of the path `P`.
@@ -242,10 +242,10 @@ arclength(p::Path) = sum(arclength(c) for c in p)
 
 # ClosedPath
 """
-	(type) ClosedPath 
+	(type) ClosedPath
 Generic implementation of an `AbstractClosedPath`.
 """
-struct ClosedPath <: AbstractClosedPath 
+struct ClosedPath <: AbstractClosedPath
 	curve
 	function ClosedPath(p::AbstractVector{T};tol=DEFAULT[:tol]) where T<:AbstractCurve
 		q = Path(p)
@@ -257,13 +257,13 @@ end
 """
 	ClosedPath(c::AbstractVector; tol=<default>)
 	ClosedPath(P::Path; tol=<default>)
-Given a vector `c` of curves, or an existing path, construct a closed path. The path is checked for continuity (to tolerance `tol`) at all of the vertices. 
+Given a vector `c` of curves, or an existing path, construct a closed path. The path is checked for continuity (to tolerance `tol`) at all of the vertices.
 """
 ClosedPath(c::AbstractCurve) = ClosedPath([c])
 ClosedPath(c::AbstractClosedPath) = c
 ClosedPath(p::Path;kw...) = ClosedPath(p.curve;kw...)
 
-curves(p::ClosedPath) = p.curve 
+curves(p::ClosedPath) = p.curve
 arclength(p::ClosedPath) = sum(arclength(c) for c in p)
 (p::ClosedPath)(t) = point(p,t)
 

@@ -48,9 +48,9 @@ arg(S::Segment,z::Number) = (real(z) - real(S.za)) / (real(S.zb) - real(S.za))
 tangent(S::Segment,t::Real) = S.zb - S.za
 unittangent(S::Segment,t::Real=0) = sign(S.zb-S.za)
 
-+(S::Segment,z::Number) = Segment(S.za+z,S.zb+z)
--(S::Segment) = Segment(-S.za,-S.zb)
-*(S::Segment,z::Number) = Segment(S.za*z,S.zb*z)
+Base.:+(S::Segment,z::Number) = Segment(S.za+z,S.zb+z)
+Base.:-(S::Segment) = Segment(-S.za,-S.zb)
+Base.:*(S::Segment,z::Number) = Segment(S.za*z,S.zb*z)
 
 """
 	inv(S)
