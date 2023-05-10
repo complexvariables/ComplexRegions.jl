@@ -44,6 +44,12 @@ Return `true` if the path is bounded in the complex plane (i.e., does not pass t
 """
 isfinite(p::AbstractPath) = all(isfinite(s) for s in curves(p))
 
+"""
+	isreal(P::AbstractPath)
+Return `true` if the path is entirely on the real axis.
+"""
+Base.isreal(p::AbstractPath) = all(isreal(s) for s in curves(p))
+
 # iteration interface
 eltype(::Type{AbstractPath}) = AbstractCurve
 length(p::AbstractPath) = length(curves(p))
