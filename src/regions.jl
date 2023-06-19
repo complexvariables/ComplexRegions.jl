@@ -10,6 +10,7 @@ boundary(R::AbstractRegion) = @error "No boundary() method defined for type $(ty
 True if `z` is in the region `R`.
 """
 in(z::Number,R::AbstractRegion;tol=DEFAULT[:tol]) = @error "No in() method defined for type $(typeof(R))"
+in(R::AbstractRegion; kw...) = z -> in(z, R; kw...)
 
 """
 	isfinite(R::AbstractRegion)

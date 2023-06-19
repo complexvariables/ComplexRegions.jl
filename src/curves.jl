@@ -87,8 +87,10 @@ function winding(C::AbstractClosedCurve,z::Number)
 	return round(Int,w/(2π))
 end
 
-isinside(z::Number,C::AbstractClosedCurve) = winding(C,z) != 0
-isoutside(z::Number,C::AbstractClosedCurve) = winding(C,z) == 0
+isinside(z::Number, C::AbstractClosedCurve) = winding(C, z) != 0
+isinside(C::AbstractClosedCurve) = z -> isinside(z, C)
+isoutside(z::Number, C::AbstractClosedCurve) = winding(C, z) == 0
+isoutside(C::AbstractClosedCurve) = z -> isoutside(z, C)
 
 #
 # generic Curve
