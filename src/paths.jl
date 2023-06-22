@@ -197,7 +197,7 @@ vertices(P::AbstractClosedPath) = [ vertex(P,k) for k = 1:length(P) ]
 
 function sideargs(p::AbstractClosedPath,t)
 	n = length(p)
-	return 1+mod(floor(Int,t),n), t%1
+	return 1 + mod(floor(Int,t),n), mod(t, 1)
 end
 
 function winding(P::AbstractClosedPath,z::Number)
