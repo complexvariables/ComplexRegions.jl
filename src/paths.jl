@@ -111,6 +111,28 @@ function normal(p::AbstractPath,t::Real)
 	normal(curve(p,k),s)
 end
 
+"""
+	angles(P::AbstractPath)
+Return a vecrtor of the interior angles at the vertices of the path `P`. The length is one greater than the number of curves in `P`, and the first and last values are `NaN`.
+"""
+function angles(P::AbstractPath)
+	τ = []
+	try
+		τ = tangent(P, 0)
+	catch
+		@error "Path must have a tangent defined"
+	end
+	m = length(P)
+	θ = similar([real(τ)], m+1)
+	θ[1] = θ[m+1] = NaN
+	for n in 1:m-1
+		τminus = -tangent(P, prevfloat(float(n)))
+		τplus = tangent(P, nextfloat(float(n)))
+		θ[n+1] = mod2pi(angle(τminus/τplus))
+	end
+	return θ
+end
+
 conj(p::AbstractPath) = typeof(p)(conj.(curves(p)))
 
 reverse(p::AbstractPath) = typeof(p)(reverse(reverse.(curves(p))))
@@ -194,6 +216,28 @@ vertex(P::AbstractClosedPath,k::Integer) = point(curve(P,k),0)
 Return an array of the unique vertices (endpoints of the curves) of the closed path `P`. The length is equal the number of curves in `P`, i.e., the first/last vertex is not duplicated.
 """
 vertices(P::AbstractClosedPath) = [ vertex(P,k) for k = 1:length(P) ]
+
+"""
+	angles(P::AbstractPath)
+Return a vecrtor of the interior angles at the vertices of the path `P`. The length is one greater than the number of curves in `P`, and the first and last values are `NaN`.
+"""
+function angles(P::AbstractClosedPath)
+	τ = []
+	try
+		τ = tangent(P, 0)
+	catch
+		@error "Path must have a tangent defined"
+	end
+	m = length(P)
+	θ = similar([real(τ)], m)
+	for n in 0:m-1
+		τminus = -tangent(P, prevfloat(float(n)))
+		τplus = tangent(P, nextfloat(float(n)))
+		θ[n+1] = mod2pi(angle(τminus/τplus))
+	end
+	return θ
+end
+
 
 function sideargs(p::AbstractClosedPath,t)
 	n = length(p)

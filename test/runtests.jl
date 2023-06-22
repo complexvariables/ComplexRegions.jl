@@ -59,7 +59,7 @@ end
 	@test( dist(3im+.5*2im*cispi(1/5),3im+2im*a) ≈ 2*0.5 )
 	@test( tangent(a,0.2) ≈ CR.fdtangent(a,0.2) )
 	@test( angle(unittangent(a,0.5)) ≈ -0.25π )
-	a = (a-2)/1im 
+	a = (a-2)/1im
 	@test( all( abs(arg(a,a(t))-t) < 1e-11 for t in 0:0.1:1 ) )
 
 	b = Arc(-1im,1im,-1)
@@ -69,11 +69,11 @@ end
 	@test( closest(2-5im,b+2) ≈ 2-1im )
 	@test( all( abs(arg(b,b(t))-t) < 1e-11 for t in 0:0.1:1 ) )
 
-	b = reverse(b) 
+	b = reverse(b)
 	@test( point(b,1/3) ≈ 1im )
 	@test( all( abs(arg(b,b(t))-t) < 1e-11 for t in 0:0.1:1 ) )
 	@test( angle(tangent(b,2/3)) ≈ -0.5π )
-end 
+end
 
 @testset "Lines" begin
 	@test( Line(1,5) isa Line )
@@ -129,7 +129,7 @@ end
 	@test( all( abs(arg(s,s(t))-t) < 1e-11 for t in 0:0.1:1 ) )
 end
 
-@testset "Intersections" begin 
+@testset "Intersections" begin
 	z = intersect(Circle(0,1),Circle(.2+0.5im,1.5))
 	@test( all( @. abs(z-0)≈1 ) )
 	@test( all( @. abs(z-(.2+0.5im))≈1.5 ) )
@@ -178,14 +178,17 @@ end
 	@test( isempty(z) )
 
 end
-	
+
 @testset "Paths" begin
 	S = Segment(1,1im)
 	A = Arc(1im,-1+0.5im,-1)
 	P = Path([S,A,-S])
 	@test( all( point(P,[0,1,1.5,2.5,3]) .≈ [S(0),S(1),A(0.5),-S(0.5),-S(1)] ) )
-	Q = 1 - 3im*P 
+	Q = 1 - 3im*P
 	@test( Q(1.5) ≈ 1 - 3im*A(0.5) )
+
+	p = Path([Arc(-1,-0.4-0.4im,-1im), Arc(-1im,0.4-0.4im,1), Arc(1,0.4+0.4im,1im)])
+	@test( angles(p)[2:3] ≈ 0.78121408739537*[1,1] )
 
 	P = ClosedPath([S,1im*S,-S,-1im*S])
 	@test( vertex(P,3) ≈ -1 )
@@ -193,12 +196,15 @@ end
 	@test( isa(reverse(P),ClosedPath) )
 	@test( all( point(P,[0,1,1.25,2.5,3,4]) .≈ [S(0),S(1),1im*S(.25),-S(0.5),-S(1),S(0)] ) )
 
+	p = ClosedPath([curves(p); Arc(1im,-0.4+0.4im,-1)])
+	@test( all(angles(p) .≈ 0.78121408739537) )
+
 end
 
-@testset "Polygons" begin 
-	s = Segment(2,2im) 
-	p = Polygon([s,1im*s,-s,-1im*s]) 
-	@test( arclength(p) ≈ 8*sqrt(2) ) 
+@testset "Polygons" begin
+	s = Segment(2,2im)
+	p = Polygon([s,1im*s,-s,-1im*s])
+	@test( arclength(p) ≈ 8*sqrt(2) )
 	@test( angle(normal(p,1.1+length(p))) ≈ -π/4 )
 	@test( winding(p,-0.4+0.5im) == 1 )
 	@test( winding(reverse(p),-0.4+0.5im) == -1 )
@@ -231,14 +237,14 @@ end
 	@test( sum(a.-1) ≈ -2 )
 	@test( all(winding(p,z)==1 for z in [1+2im,5-1im,5.5+6im]) )
 	@test( all(winding(p,z)==0 for z in [-3im,3+5im,5.5-6im]) )
-	
+
 	p = Polygon([(-pi/2,pi/2),7,4+3im,3im,-2im,6-2im])
 	a = angles(p)/pi
 	@test( a[1] ≈ -1 )
 	@test( sum(a.-1) ≈ -2 )
 	@test( all(winding(p,z)==1 for z in [4,7-2im,9]) )
 	@test( all(winding(p,z)==0 for z in [4+4im,6+2im,4-3im]) )
-	
+
 	p = Polygon([4+3im,7,(0,0),6-2im,-2im,3im])
 	a = angles(p)/pi
 	@test( a[3] ≈ -2 )
@@ -250,13 +256,13 @@ end
 	w = [Inf,-1im,-1]
 	f = Möbius(z,w)
 	@test( all(f.(z).≈w) )
-	g = inv(f) 
+	g = inv(f)
 	@test( all(g.(w).≈z) )
 	c = Circle(z...)
 	l = Line(w[2],w[3])
 	@test( f(c)≈l && g(l)≈c )
-	d = exterior(c) 
-	h = halfplane(l) 
+	d = exterior(c)
+	h = halfplane(l)
 	@test( f(d)≈!h && g(h)≈!d )
 	@test( f(!d)≈h && g(!h)≈d )
 	f = Möbius([2,3+im,-5],z)
