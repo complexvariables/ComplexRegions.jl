@@ -6,40 +6,40 @@ Line_Circle = Union{Line,Circle}
 Representation of a Möbius or bilinear transformation.
 """
 struct Möbius <: AbstractMap
-	# interpreted as [a,b,c,d], where f(z)=(az+b)/(cz+d) 
-	coeff::SVector{4} 
-end 
+	# interpreted as [a,b,c,d], where f(z)=(az+b)/(cz+d)
+	coeff::SVector{4}
+end
 
 #
 # Construction
-# 
+#
 
 const Mobius = Möbius   # for us lazy Americans
 """
 	Möbius(a,b,c,d)
-Construct the `Möbius` map ``z ↦ (az+b)/(cz+d)`` by giving its coefficients. 
+Construct the `Möbius` map ``z ↦ (az+b)/(cz+d)`` by giving its coefficients.
 """
 Möbius(a::Number,b::Number,c::Number,d::Number) = Möbius(SVector(a,b,c,d))
 
 """
 	Möbius(A::AbstractMatrix)
-Construct the `Möbius` map ``z ↦ (az+b)/(cz+d)`` by giving a matrix `A==[a b;c d]`. 
+Construct the `Möbius` map ``z ↦ (az+b)/(cz+d)`` by giving a matrix `A==[a b;c d]`.
 """
 Möbius(A::AbstractMatrix) = Möbius(SVector(A[1,1],A[1,2],A[2,1],A[2,2]))
 
 """
 	Möbius(z::AbstractVector,w::AbstractVector)
-Construct the `Möbius` map that transforms the points `z[k]` to `w[k]` for k=1,2,3. 
+Construct the `Möbius` map that transforms the points `z[k]` to `w[k]` for k=1,2,3.
 Values of `Inf` are permitted in both vectors.
 """
-function Möbius(source::AbstractVector,image::AbstractVector) 
-	# finds the coeffs of map from (0,1,Inf) to given points 
-	function standard(x,y,z) 
+function Möbius(source::AbstractVector,image::AbstractVector)
+	# finds the coeffs of map from (0,1,Inf) to given points
+	function standard(x,y,z)
 		if isinf(x)
 			return z,y-z,1,0
 		elseif isinf(y)
 			return -z,x,-1,1
-		elseif isinf(z) 
+		elseif isinf(z)
 			return y-x,x,0,1
 		else
 			xy,yz = y-x,z-y
@@ -63,14 +63,14 @@ Möbius(c1::Line_Circle,c2::Line_Circle) = Möbius(point(c1,[0,0.25,0.5]),point(
 # Evaluation
 #
 """
-	f(z::Number) 
+	f(z::Number)
 Evaluate the `Möbius` map `f` at a real or complex value `z`.
 """
 function (f::Möbius)(z::Number)
 	a,b,c,d = f.coeff
-	if isinf(z) 
+	if isinf(z)
 		num,den = a,c
-	else 
+	else
 		num,den = a*z+b,c*z+d
 	end
 	# note: 1 over complex zero is NaN, not Inf
@@ -78,13 +78,13 @@ function (f::Möbius)(z::Number)
 end
 
 """
-	f(C::Union{Circle,Line}) 
-Find the image of the circle or line `C` under the `Möbius` map `f`. The result is also either a `Circle` or a `Line`. 
+	f(C::Union{Circle,Line})
+Find the image of the circle or line `C` under the `Möbius` map `f`. The result is also either a `Circle` or a `Line`.
 """
 (f::Möbius)(C::Line_Circle) = Circle( f.(point(C,[0,0.25,0.5]))... )
 """
-	f(C::Union{Arc,Segment}) 
-Find the image of the arc or segment `C` under the `Möbius` map `f`. The result is also either an `Arc` or a `Segment`. 
+	f(C::Union{Arc,Segment})
+Find the image of the arc or segment `C` under the `Möbius` map `f`. The result is also either an `Arc` or a `Segment`.
 """
 (f::Möbius)(C::Union{Arc,Segment}) = Arc( f.(point(C,[0,0.5,1]))... )
 
@@ -108,11 +108,11 @@ julia> isapprox(ans,unitdisk)
 true
 ```
 """
-(f::Möbius)(R::Union{AbstractDisk,AbstractHalfplane}) = interior(f(R.boundary)) 
+(f::Möbius)(R::Union{AbstractDisk, ExteriorSimplyConnectedRegion{<:Circle}, AbstractHalfplane}) = interior(f(R.boundary))
 
 """
 	inv(f::Möbius)
-Find the inverse of a `Möbius` transformation. This is the functional inverse, not 1/f(z). 
+Find the inverse of a `Möbius` transformation. This is the functional inverse, not 1/f(z).
 """
 inv(f::Möbius) = Möbius(f.coeff[4],-f.coeff[2],-f.coeff[3],f.coeff[1])
 
@@ -123,20 +123,20 @@ Compose two `Möbius` transformations.
 function ∘(f::Möbius,g::Möbius)
 	A = SMatrix{2,2}(f.coeff[1],f.coeff[3],f.coeff[2],f.coeff[4])
 	B = SMatrix{2,2}(g.coeff[1],g.coeff[3],g.coeff[2],g.coeff[4])
-	C = A*B 
+	C = A*B
 	Möbius(C[1,1],C[1,2],C[2,1],C[2,2])
 end
 
 #
 # Display
-# 
+#
 
 function show(io::IO,f::Möbius)
 	a,b,c,d = f.coeff
 	print(IOContext(io,:compact=>true),"Möbius map z --> (($a)*z + $b) / (($c)*z + $d)")
 end
 
-function show(io::IO,::MIME"text/plain",f::Möbius) 
+function show(io::IO,::MIME"text/plain",f::Möbius)
 	a,b,c,d = [repr("text/plain",x) for x in f.coeff]
 	numer = "("*a*") z + ("*b*")"
 	denom = "("*c*") z + ("*d*")"
