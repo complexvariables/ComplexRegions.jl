@@ -23,6 +23,8 @@ function default(;kw...)
 	return nothing
 end
 
+using Statistics
+
 using Reexport
 @reexport using ComplexValues
 using LinearAlgebra,StaticArrays
@@ -40,7 +42,7 @@ export Curve,ClosedCurve,Circle,Line,Arc,Segment,Ray
 include("curves.jl")
 
 export Path,ClosedPath,Polygon,CircularPolygon
-export curve,curves,vertex,vertices,side,sides,isfinite,sign,angle,angles,winding,ispositive,rectangle,n_gon
+export curve,curves,vertex,vertices,side,sides,isfinite,sign,angle,angles,winding,ispositive,Rectangle,rectangle,n_gon
 include("paths.jl")
 
 export SimplyConnectedRegion,ConnectedRegion,ExteriorRegion,disk,unitdisk,Annulus,PolygonalRegion

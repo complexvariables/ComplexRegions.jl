@@ -1,4 +1,4 @@
-using ComplexRegions
+using ComplexRegions, Statistics
 CR = ComplexRegions
 
 using Test
@@ -204,25 +204,35 @@ end
 @testset "Polygons" begin
 	s = Segment(2,2im)
 	p = Polygon([s,1im*s,-s,-1im*s])
-	@test( arclength(p) ≈ 8*sqrt(2) )
-	@test( angle(normal(p,1.1+length(p))) ≈ -π/4 )
-	@test( winding(p,-0.4+0.5im) == 1 )
-	@test( winding(reverse(p),-0.4+0.5im) == -1 )
-	@test( winding(p,-4-0.5im) == 0 )
-	@test( all( angles(p) .≈ 0.5*pi ) )
-	@test( ispositive(p) )
-	@test( !ispositive(reverse(p)) )
+	@test arclength(p) ≈ 8*sqrt(2)
+	@test angle(normal(p,1.1+length(p))) ≈ -π/4
+	@test winding(p,-0.4+0.5im) == 1
+	@test winding(reverse(p),-0.4+0.5im) == -1
+	@test winding(p,-4-0.5im) == 0
+	@test all( angles(p) .≈ 0.5*pi )
+	@test ispositive(p)
+	@test !ispositive(reverse(p))
 
 	p = Polygon([4,4+3im,3im,-2im,6-2im,6])
-	@test( arclength(p) ≈ (3+4+5+6+2+2) )
-	@test( tangent(p,2.3-length(p)) ≈ -5im )
-	@test( winding(p,5-im) == 1 )
-	@test( winding(p,-1) == 0 )
-	@test( sum(angles(p)) ≈ 4*pi )
+	@test arclength(p) ≈ (3+4+5+6+2+2)
+	@test tangent(p,2.3-length(p)) ≈ -5im
+	@test winding(p,5-im) == 1
+	@test winding(p,-1) == 0
+	@test sum(angles(p)) ≈ 4pi
 
 	p = CircularPolygon([Arc(1,2+1im,1im),Segment(1im,-1),Arc(-1,-0.5im,-1im),Segment(-1im,1)])
 	@test( all(winding(p,z)==1 for z in [1+0.5im,1.7+1im,0,-1+0.05*cispi(1/5),-1im+0.05*cispi(0.3)]) )
 	@test( all(winding(p,z)==0 for z in [-.999im,0.001-1im,-.999,-1.001,1.001,1.999im]) )
+
+	r = Rectangle(2., [1, 3], π/2)
+	@test arclength(r) ≈ 16
+	@test all( abs.(real(vertices(r))) .≈ 3)
+	@test mean(imag(vertices(r))) ≈ 2
+	@test all(angles(r) .≈ π/2)
+	@test convert(Polygon, r) ≈ r.polygon
+	@test point(r, 0.33) ≈ r.polygon(.33)
+	@test r(0.33) ≈ r.polygon(.33)
+	@test inv(r) ≈ inv(r.polygon)
 end
 
 @testset "Unbounded polygons" begin
