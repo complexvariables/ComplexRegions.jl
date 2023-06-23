@@ -82,7 +82,7 @@ Determine whether `R1` and `R2` represent the same region, up to tolerance `tol`
 isapprox(R1::S,R2::T;tol=DEFAULT[:tol]) where {S,T<:SimplyConnectedRegion} = isapprox(boundary(R1),boundary(R2),tol=tol)
 
 # disks
-AbstractDisk = SimplyConnectedRegion{T} where T<:Circle
+AbstractDisk = InteriorSimplyConnectedRegion{T} where T<:Circle
 """
 	disk(C::Circle)
 Construct the disk interior to `C`.
@@ -121,6 +121,6 @@ end
 
 """
 	(type) PolygonalRegion
-Representation of a simply connected region bounded by a plane.
+Representation of a simply connected region bounded by a polygon.
 """
 PolygonalRegion = SimplyConnectedRegion{Polygon}
