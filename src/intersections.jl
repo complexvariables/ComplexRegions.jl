@@ -1,13 +1,13 @@
 @doc """
 	intersect(c1::AbstractCurve,c2::AbstractCurve; tol=<default>)
-Find the intersection(s) of two curves. The result could be a vector of zero or more values, or a curve. 
+Find the intersection(s) of two curves. The result could be a vector of zero or more values, or a curve.
 """ intersect
 
 # utility, to be used in what follows
-function twolines_meet(z1,s1,z2,s2,tol) 
+function twolines_meet(z1,s1,z2,s2,tol)
 	M = [ real(s1) -real(s2); imag(s1) -imag(s2) ]
 	if cond(M) > 1/tol
-		# parallel lines, caller must decide 
+		# parallel lines, caller must decide
 		return NaN,NaN
 	else
 		d = z2 - z1
@@ -16,7 +16,7 @@ function twolines_meet(z1,s1,z2,s2,tol)
 	end
 end
 
-function intersect(l1::Line,l2::Line;tol=DEFAULT[:tol]) 
+function intersect(l1::Line,l2::Line;tol=DEFAULT[:tol])
 	s1,s2 = l1.direction,l2.direction
 	z1,z2 = l1.base,l2.base
 	t1,t2 = twolines_meet(z1,s1,z2,s2,tol)
@@ -29,15 +29,15 @@ function intersect(l1::Line,l2::Line;tol=DEFAULT[:tol])
 end
 
 function intersect(g1::Segment,g2::Segment;tol=DEFAULT[:tol])
-	z1,z2 = g1.za,g2.za 
-	s1,s2 = g1.zb-z1,g2.zb-z2 
+	z1,z2 = g1.za,g2.za
+	s1,s2 = g1.zb-z1,g2.zb-z2
 	t1,t2 = twolines_meet(z1,s1,z2,s2,tol)
 	if isnan(t1)   # parallel lines
 		# scale first segment to [0,1]
 		a = real( (g2.za-g1.za)/s1 )
 		b = real( (g2.zb-g1.za)/s1 )
-		if a > b 
-			c = b; b = a; a = c 
+		if a > b
+			c = b; b = a; a = c
 		end
 		if b < -tol || a > 1+tol
 			return []
@@ -48,7 +48,7 @@ function intersect(g1::Segment,g2::Segment;tol=DEFAULT[:tol])
 		if (-tol ≤ t1 ≤ 1+tol) && (-tol ≤ t2 ≤ 1+tol)
 			return [z1 + t1*s1]
 		else
-			return [] 
+			return []
 		end
 	end
 end
@@ -65,7 +65,7 @@ function intersect(l::Line,g::Segment;tol=DEFAULT[:tol])
 	end
 end
 
-function intersect(r1::Ray,r2::Ray;tol=DEFAULT[:tol]) 
+function intersect(r1::Ray,r2::Ray;tol=DEFAULT[:tol])
 	s1,s2 = cis(r1.angle), cis(r2.angle)
 	z1,z2 = r1.base,r2.base
 	t1,t2 = twolines_meet(z1,s1,z2,s2,tol)
@@ -86,7 +86,7 @@ function intersect(l::Line,r::Ray;tol=DEFAULT[:tol])
 	s1,s2 = l.direction,cis(r.angle)
 	t1,t2 = twolines_meet(z1,s1,z2,s2,tol)
 	if isnan(t1)   # parallel lines
-		return dist(r.base,l) < tol*(1+abs(r.base)) ? r : [] 
+		return dist(r.base,l) < tol*(1+abs(r.base)) ? r : []
 	else
 		return 0 ≤ t2 ? [z1+t1*s1] : []
 	end
@@ -101,8 +101,8 @@ function intersect(r::Ray,g::Segment;tol=DEFAULT[:tol])
 		# move ray to positive Re axis
 		a = real((g.za-z1)/s1)
 		b = real((g.zb-z1)/s1)
-		if a > b 
-			c = b; b = a; a = c 
+		if a > b
+			c = b; b = a; a = c
 		end
 		return b < -tol ? [] : Segment(z1+max(0,a)*s1,z1+b*s1)
 	else   # nonparallel
@@ -111,23 +111,23 @@ function intersect(r::Ray,g::Segment;tol=DEFAULT[:tol])
 end
 
 
-function intersect(c1::Circle,c2::Circle;tol=DEFAULT[:tol]) 
-	r1,r2 = c1.radius,c2.radius 
+function intersect(c1::Circle,c2::Circle;tol=DEFAULT[:tol])
+	r1,r2 = c1.radius,c2.radius
 	z1,z2 = c1.center,c2.center
 	delta = z2-z1
-	d = abs(delta) 
-	if abs(d) < tol 
-		if isapprox(r1,r2,rtol=tol,atol=tol) 
-			return c1 
+	d = abs(delta)
+	if abs(d) < tol
+		if isapprox(r1,r2,rtol=tol,atol=tol)
+			return c1
 		else
 			return []
 		end
-	elseif (d > r1+r2) || d < abs(r1-r2) 
-		return [] 
+	elseif (d > r1+r2) || d < abs(r1-r2)
+		return []
 	else
-		a = (r1^2 - r2^2 + d^2)/(2d) 
-		p = z1 + a*delta/d 
-		h = sqrt(r1^2-a^2) 
+		a = (r1^2 - r2^2 + d^2)/(2d)
+		p = z1 + a*delta/d
+		h = sqrt(r1^2-a^2)
 		w = 1im*h*delta/d
 		z = [p+w,p-w]
 		return z
@@ -138,16 +138,16 @@ intersect(l::Line,c::Circle;kw...) = intersect(c,l;kw...)
 function intersect(c::Circle,l::Line;tol=DEFAULT[:tol])
 	# find a radius that is perpendicular to the line
 	p = Line(c.center,direction=1im*l.direction)
-	zi = intersect(p,l)[1] 
+	zi = intersect(p,l)[1]
 	a,r = abs(zi-c.center),c.radius
-	if a ≤ r + tol 
+	if a ≤ r + tol
 		c = sqrt(r^2-a^2)*l.direction
 		if abs(c) > tol
-			return [zi+c,zi-c]  
+			return [zi+c,zi-c]
 		else
 			return [zi]
-		end 
-	else 
+		end
+	else
 		return []
 	end
 end
@@ -168,41 +168,41 @@ function intersect(c::Circle,s::Segment;tol=DEFAULT[:tol])
 	return z[d.<=tol]
 end
 
-function intersect(a1::Arc,a2::Arc;tol=DEFAULT[:tol]) 
+function intersect(a1::Arc,a2::Arc;tol=DEFAULT[:tol])
 	if isapprox(a1.circle,a2.circle,tol=tol)
-		# to what extent do the arcs overlap on the same circle? 
+		# to what extent do the arcs overlap on the same circle?
 		r = a1.circle.radius
 		d10ison2 = dist(point(a1,0),a2) < tol*(1+r)
 		d11ison2 = dist(point(a1,1),a2) < tol*(1+r)
 		d20ison1 = dist(point(a2,0),a1) < tol*(1+r)
 		d21ison1 = dist(point(a2,1),a1) < tol*(1+r)
-		if d10ison2 
+		if d10ison2
 			if d11ison2
-				return a1 
+				return a1
 			else
 				t = d20ison1 ? arg(a1,point(a2,0)) : arg(a1,point(a2,1))
 				return Arc(point(a1,[0,t/2,t]))
-			end 
-		elseif d11ison2 
+			end
+		elseif d11ison2
 			t = d20ison1 ? arg(a1,point(a2,0)) : arg(a1,point(a2,1))
 			return Arc(point(a1,[1-t,1-t/2,1]))
 		else
-			return [] 
-		end 
-	else 	
-		z = intersect(a1.circle,a2.circle) 
+			return []
+		end
+	else
+		z = intersect(a1.circle,a2.circle)
 		f = w -> (dist(w,a1) < tol) & (dist(w,a2) < tol)
 		return filter(f,z)
 	end
-end 
+end
 
 intersect(c::AbstractCurve,a::Arc;kw...) = intersect(a,c;kw...)
-function intersect(a::Arc,c::AbstractCurve;tol=DEFAULT[:tol]) 
-	if isapprox(a.circle,c,tol=tol)
-		return a 
+function intersect(a::Arc, c::AbstractCurve; tol=DEFAULT[:tol])
+	if isa(c, Circle) && isapprox(a.circle, c; tol)
+		return a
 	else
-		z = intersect(a.circle,c)
-		return filter(v->dist(v,a)<tol,z)
+		z = intersect(a.circle, c)
+		return filter(v -> dist(v,a) < tol, z)
 	end
 end
 
@@ -210,7 +210,7 @@ end
 # For intersection at an endpoint, give half the value, which gives the right winding number for a polygon.
 function raycrossing(z,c::Segment;tol=DEFAULT[:tol])
 	s = 0
-	y = imag(z) 
+	y = imag(z)
 	a,b = imag(c(0)),imag(c(1))
 	atend = abs(a-y) < tol || abs(b-y) < tol
 	if y ≥ a
@@ -218,7 +218,7 @@ function raycrossing(z,c::Segment;tol=DEFAULT[:tol])
 			s = atend ? s+0.5 : s+1
 		end
 	else
-		if y ≥ b && !isleft(z,c) 
+		if y ≥ b && !isleft(z,c)
 			s = atend ? s-0.5 : s-1
 		end
 	end
@@ -227,16 +227,16 @@ end
 
 function raycrossing(z,c::AbstractCurve;tol=DEFAULT[:tol])
 	s = 0
-	for z in intersect(c,Ray(z,0)) 
-		t = arg(c,z) 
+	for z in intersect(c,Ray(z,0))
+		t = arg(c,z)
 		if -tol ≤ t ≤ 1+tol
 			y = imag(unittangent(c,t))
-			if abs(y) < tol 
+			if abs(y) < tol
 				# horiztonal tangent; check a perturbed location
 				ϵ = sqrt(tol)
-				if t < 0.5 
+				if t < 0.5
 					y = imag(unittangent(c,t+2ϵ))
-				else 
+				else
 					y = -imag(unittangent(c,t-2ϵ))
 				end
 			end
