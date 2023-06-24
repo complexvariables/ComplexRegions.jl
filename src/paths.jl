@@ -183,7 +183,8 @@ function closest(z::Number,P::AbstractPath)
 	closest(z,side(P,k))
 end
 
-intersect(P::AbstractPath,C::AbstractCurve) = ∪( [intersect(s,C) for s in curves(P)]...  )
+intersect(P::AbstractPath, C::AbstractCurve) = ∪( [intersect(s,C) for s in curves(P)]...  )
+intersect(C::AbstractCurve, P::AbstractPath) = intersect(P, C)
 intersect(P1::AbstractPath,P2::AbstractPath) = ∪( [intersect(P1,s) for s in curves(P2)]...  )
 
 function show(io::IO,P::AbstractPath)

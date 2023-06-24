@@ -156,27 +156,39 @@ end
 	z = intersect(Segment(2+3im,3+3im),Segment(2.7+4im,3.4+6im))
 	@test( isempty(z) )
 
-	z = intersect(Ray(0,pi/4),Segment(.5-1im,.5+2im))
+	z = intersect(Ray(0,pi/4), Segment(.5-1im,.5+2im))
 	@test( z[1]≈0.5+0.5im )
-	@test( isempty(intersect(Ray(0,-3pi/4),Segment(.5-1im,.5+2im))) )
-	z = intersect(Ray(0,pi/4),Ray(2+2im,pi/4))
+	z = intersect(Segment(.5-1im,.5+2im), Ray(0,pi/4))
+	@test( z[1]≈0.5+0.5im )
+	@test( isempty(intersect(Ray(0,-3pi/4), Segment(.5-1im,.5+2im))) )
+	@test( isempty(intersect(Segment(.5-1im,.5+2im), Ray(0,-3pi/4))) )
+	z = intersect(Ray(0,pi/4), Ray(2+2im,pi/4))
 	@test( z≈Ray(2+2im,pi/4) )
-	z = intersect(Ray(0,pi/6),Ray(-1,-pi/2))
+	z = intersect(Ray(0,pi/6), Ray(-1,-pi/2))
 	@test( isempty(z) )
 
-	z = intersect(3+Circle(0,1),3+Line(0.5,0.5+3im))
+	z = intersect(3+Circle(0,1), 3+Line(0.5,0.5+3im))
 	@test( z[1]≈(3.5+sqrt(3)/2*1im) || z[1]≈(3.5-sqrt(3)/2*1im) )
-	z = intersect(Circle(-2im,2),Line(3im,3))
+	z = intersect(3+Line(0.5,0.5+3im), 3+Circle(0,1))
+	@test( z[1]≈(3.5+sqrt(3)/2*1im) || z[1]≈(3.5-sqrt(3)/2*1im) )
+	z = intersect(Circle(-2im,2), Line(3im,3))
+	@test( isempty(z) )
+	z = intersect(Line(3im,3), Circle(-2im,2))
 	@test( isempty(z) )
 
-	z = intersect(3+Ray(0.5+0.1im,pi/2,true),3+Circle(0,1))
+	z = intersect(3+Ray(0.5+0.1im,pi/2,true), 3+Circle(0,1))
+	@test( z[1]≈(3.5+sqrt(3)/2*1im) && length(z)==1 )
+	z = intersect(3+Circle(0,1), 3+Ray(0.5+0.1im,pi/2,true))
 	@test( z[1]≈(3.5+sqrt(3)/2*1im) && length(z)==1 )
 
-	z = intersect(3+Circle(0,1),3+Segment(0.5,0.5+3im))
+	z = intersect(3+Circle(0,1), 3+Segment(0.5,0.5+3im))
+	@test( z[1]≈(3.5+sqrt(3)/2*1im) || z[1]≈(3.5-sqrt(3)/2*1im) )
+	z = intersect(3+Segment(0.5,0.5+3im), 3+Circle(0,1))
 	@test( z[1]≈(3.5+sqrt(3)/2*1im) || z[1]≈(3.5-sqrt(3)/2*1im) )
 	z = intersect(Circle(-2im,2),Segment(-1im,.5-1im))
 	@test( isempty(z) )
-
+	z = intersect(Segment(-1im,.5-1im), Circle(-2im,2))
+	@test( isempty(z) )
 end
 
 @testset "Paths" begin
