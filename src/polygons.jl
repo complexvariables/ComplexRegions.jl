@@ -288,8 +288,11 @@ inv(r::Rectangle) = inv(Polygon(r))
 
 # other methods
 vertices(r::Rectangle) = vertices(Polygon(r))
-angles(r::Rectangle) = fill(π/2, 4)
-area(r::Rectangle) = 4*prod(r.radii)
+angles(::Rectangle) = fill(π/2, 4)
+function Base.extrema(r::Rectangle)
+	z = vertices(r)
+	return extrema(real(z)), extrema(imag(z))
+end
 
 # alternate constructors
 """
@@ -300,7 +303,7 @@ function rectangle(xlim::AbstractVector, ylim::AbstractVector)
 	@assert (length(xlim)==2) && (length(ylim)==2)
 	@assert (xlim[1] < xlim[2]) && (ylim[1] < ylim[2])
 	center = complex(mean(xlim), mean(ylim))
-	radii = SVector(diff(xlim)/2, diff(ylim)/2)
+	radii = SVector((xlim[2] - xlim[1])/2, (ylim[2] - ylim[1])/2)
 	return Rectangle(center, radii, 0)
 	# x = [xlim[1],xlim[2],xlim[2],xlim[1],xlim[1]]
 	# y = [ylim[1],ylim[1],ylim[2],ylim[2],ylim[1]]
