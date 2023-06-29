@@ -52,6 +52,10 @@ function winding(p::AbstractCircularPolygon,z::Number)
 		end
 		v = vnew
 	end
+	if isnan(w)
+		@warn "Point may be on the boundary"
+		return 1
+	end
 	return round(Int,w/(2π))
 end
 
