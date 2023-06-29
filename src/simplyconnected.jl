@@ -101,6 +101,18 @@ function show(io::IO,::MIME"text/plain",R::AbstractDisk)
 	print(io,"Disk $side to:\n   ",R.boundary)
 end
 
+# quads
+AbstractQuad = InteriorSimplyConnectedRegion{<:Rectangle}
+"""
+	quad(R::Rectangle)
+Construct the rectangle interior to `R`.
+"""
+quad(R::Rectangle) = interior(R)
+unitquad = quad(Rectangle(0, [1, 1]))
+function show(io::IO,::MIME"text/plain",R::AbstractQuad)
+	print(io,"Quad inside ",R.boundary)
+end
+
 # half-planes
 AbstractHalfplane = SimplyConnectedRegion{T} where T<:Line
 """

@@ -275,6 +275,10 @@ function Base.show(io::IO,::MIME"text/plain", R::Rectangle)
 	print(io,"Rectangle with center $(R.center), dimensions $(2R.radii[1]) × $(2R.radii[2]), rotation $(R.rotation/π)π")
 end
 
+function Base.show(io::IO, R::Rectangle)
+	print(io,"$(2R.radii[1]) × $(2R.radii[2]) Rectangle")
+end
+
 # converters
 Base.convert(::Type{Polygon}, r::Rectangle) = r.polygon
 Polygon(r::Rectangle) = r.polygon
