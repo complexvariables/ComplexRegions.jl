@@ -21,6 +21,8 @@ SimplyConnectedRegion = Union{InteriorSimplyConnectedRegion{T},ExteriorSimplyCon
 Construct the region interior to the closed curve or path `C`. If `C` is bounded, the bounded enclosure is chosen regardless of the orientation of `C`; otherwise, the region "to the left" is the interior.
 """
 function interior(C::AbstractJordan)
+	# Determine the winding number of the inverse path around the origin. This reveals the
+	# orientation without needing to find an interior point.
 	# use random number to avoid division by zero point
 	if isfinite(C) && winding(1/(C+.13298-0.398127im),0) > 0
 		C = reverse(C)

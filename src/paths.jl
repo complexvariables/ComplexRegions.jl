@@ -250,7 +250,7 @@ function winding(P::AbstractClosedPath,z::Number)
 	w = 0
 	for s in P
 		f = t -> imag(tangent(s,t)/(point(s,t)-z))
-		w += intadapt(f,0,1,1e-4)
+		w += intadapt(f,0,1,1e-3)
 	end
 	return round(Int,w/(2π))
 end
