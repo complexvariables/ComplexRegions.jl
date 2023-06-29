@@ -286,6 +286,13 @@ point(r::Rectangle, t::Real) = point(Polygon(r), t)
 (r::Rectangle)(t) = point(Polygon(r), t)
 inv(r::Rectangle) = inv(Polygon(r))
 
+# these provide shortcuts
+Base.:+(r::Rectangle, z::Number) = Rectangle(r.center + z, r.radii, r.rotation)
+Base.:+(z::Number, r::Rectangle) = r + z
+Base.:-(r::Rectangle) = rectangle(-verices(r))
+Base.:-(r::Rectangle, z::Number) = Rectangle(r.center - z, r.radii, r.rotation)
+Base.:-(z::Number, r::Rectangle) = (-r) + z
+
 # other methods
 vertices(r::Rectangle) = vertices(Polygon(r))
 angles(::Rectangle) = fill(π/2, 4)
@@ -295,6 +302,26 @@ function Base.extrema(r::Rectangle)
 end
 
 # alternate constructors
+"""
+	rectangle(v)
+Construct the rectangle with vertices given in the vector `v`.
+"""
+function rectangle(v::AbstractVector{<:Number})
+	@assert length(v) == 4
+	p = Polygon(v)
+	if !ispositive(p)
+		p = reverse(p)
+		v = reverse(v)
+	end
+	@assert all( isapprox.(angles(p), π/2, atol=1e-13) ) "Given vertices do not form a rectangle"
+	center = sum(v) / 4
+	v .-= center
+	θ = angle(v[2] - v[1])
+	v *= cis(-θ)
+	radii = abs.([real(v[2] - v[1]), imag(v[4] - v[1])])
+	return Rectangle(center, radii, θ)
+end
+
 """
 	rectangle(xlim, ylim)
 Construct the rectangle defined by `xlim[1]` < Re(z) < `xlim[2]`, `ylim[1]` < Im(z) < `ylim[2]`.
