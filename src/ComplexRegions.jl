@@ -24,6 +24,7 @@ function default(;kw...)
 end
 
 using Statistics
+using Dierckx
 
 using Reexport
 @reexport using ComplexValues
@@ -51,6 +52,9 @@ export RegionIntersection,RegionUnion
 export region,interior,exterior,between,boundary,innerboundary,outerboundary
 include("regions.jl")
 include("simplyconnected.jl")
+
+export discretize
+include("discretize.jl")
 
 export Möbius,Mobius
 include("mobius.jl")

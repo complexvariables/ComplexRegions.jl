@@ -279,6 +279,23 @@ end
     @test( sum(a.-1) ≈ -2 )
 end
 
+@testset "Discretization" begin
+    p = Polygon([4,4+3im,3im,-2im,6-2im,6])
+    t, z = discretize(p, 200)
+    @test length(t) == 200
+    @test all( abs.(z .- p(t)) .< 1e-10 )
+    dz = abs.(diff(z))
+    @test mean(dz) ≈ 0.1100035321168
+    @test median(dz) ≈ 0.109297108752856
+
+    Z = discretize(interior(p), 300)
+    @test size(Z) == (300, 300)
+    @test count(isnan.(Z)) == 18000
+    Z = discretize(exterior(p), 400, limits=[-5,10,-8,7])
+    @test size(Z) == (400, 400)
+    @test count(isnan.(Z)) == 17040
+end
+
 @testset "Möbius" begin
     z = [0,1,2+2im]
     w = [Inf,-1im,-1]
