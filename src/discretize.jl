@@ -4,7 +4,20 @@ Discretize a closed path or curve at `n` points, roughly equidistributed by arc 
 
 Returns a tuple of vectors `t` and `z` such that `z[j]` is the point on the curve at parameter value `t[j]`.
 """
-function discretize(p::AbstractJordan, n=1200)
+function discretize(p::AbstractClosedCurve, n=1000)
+    t = range(0, 1, n+1)
+    z = p.(t)
+    # Use inverse linear interpolation to roughly equidistribute points.
+    for _ in 1:2
+        s = [0; cumsum(abs.(diff(z)))]
+        f = Spline1D(s, t, k=1)
+        t = f.(range(0, s[end], n+1))
+        z = p.(t)
+    end
+    return t[1:end-1], z[1:end-1]
+end
+
+function discretize(p::AbstractClosedPath, n=min(1600, 500*length(p)))
     m = length(p)
     t = range(0, length(p), n+1)
     z = p.(t)

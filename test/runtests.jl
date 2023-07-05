@@ -288,6 +288,12 @@ end
     @test mean(dz) ≈ 0.1100035321168
     @test median(dz) ≈ 0.109297108752856
 
+    c = Circle(1im, 2.0)
+    t, z = discretize(c, 200)
+    @test length(t) == 200
+    @test z ≈ c.(t) atol=1e-10
+    @test all(abs.(z .- 1im) .≈ 2.0)
+
     Z = discretize(interior(p), 300)
     @test size(Z) == (300, 300)
     @test count(isnan.(Z)) == 18000
