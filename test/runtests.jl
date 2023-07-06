@@ -238,8 +238,8 @@ end
 
     r = Rectangle(2., [1, 3], π/2)
     @test arclength(r) ≈ 16
-    @test all( abs.(real(vertices(r))) .≈ 3)
-    @test mean(imag(vertices(r))) ≈ 2
+    @test all( abs.(imag(vertices(r))) .≈ 1)
+    @test mean(real(vertices(r))) ≈ 2
     @test all(angles(r) .≈ π/2)
     @test convert(Polygon, r) ≈ r.polygon
     @test point(r, 0.33) ≈ r.polygon(.33)

@@ -269,8 +269,9 @@ struct Rectangle <: AbstractPolygon
 	function Rectangle(center::Number=0, radii::AbstractVector=[1.0, 1.0], rotation::Real=0)
 		# rotation is in radians
 		@assert (length(radii) == 2) && all(radii .>= 0)
-		z = center .+ complex.(radii[1]*[-1,1,1,-1], radii[2]*[-1,-1,1,1])
-		p = Polygon(z .* cis(rotation))
+		ρ = cis(rotation)
+		z = @. center + ρ * complex.(radii[1]*[-1,1,1,-1], radii[2]*[-1,-1,1,1])
+		p = Polygon(z)
 		new(complex(center), radii, rotation, p)
 	end
 end
