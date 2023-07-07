@@ -43,7 +43,7 @@ function exterior(C::AbstractJordan)
 		if C isa AbstractClosedPath && (length(filter(isinf,vertices(C))) > 1)
 			@error "Disconnected exterior"
 		end
-		C = reverse(C)
+		#C = reverse(C)
 	end
 	ExteriorSimplyConnectedRegion(C)
 end
@@ -74,8 +74,8 @@ end
 	!(R::SimplyConnectedRegion)
 Compute the region complementary to `R`. This is not quite set complementation, as neither region includes its boundary. The complement is always simply connected in the extended plane.
 """
-!(R::InteriorSimplyConnectedRegion) = exterior(reverse(boundary(R)))
-!(R::ExteriorSimplyConnectedRegion) = interior(reverse(boundary(R)))
+!(R::InteriorSimplyConnectedRegion) = ExteriorSimplyConnectedRegion(boundary(R))
+!(R::ExteriorSimplyConnectedRegion) = InteriorSimplyConnectedRegion(boundary(R))
 
 """
 	isapprox(R1::SimplyConnectedRegion,R2::SimplyConnectedRegion; tol=<default>)
