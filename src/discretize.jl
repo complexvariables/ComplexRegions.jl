@@ -66,7 +66,7 @@ function discretize(
     P::InteriorSimplyConnectedRegion, n=600;
     limits=nothing,
     )
-    @assert isfinite(P) "Region must be bounded"
+    @assert (isfinite(P) || !isnothing(limits)) "Unbounded region must have limits specified"
     # Get boundary points for determining interiority.
     z = discretize(boundary(P), 2n)[2]
     if isnothing(limits)
@@ -89,7 +89,7 @@ function discretize(
     if isnothing(limits)
         # Enlarge a bit to get an enclosing box.
         zc = mean(z)
-        zz = zc .+ 2 * (z .- zc)
+        zz = zc .+ 2.5 * (z .- zc)
         xlims, ylims = extrema(real(zz)), extrema(imag(zz))
     else
         xlims, ylims = Tuple(limits[1:2]), Tuple(limits[3:4])
