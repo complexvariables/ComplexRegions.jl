@@ -89,8 +89,11 @@ function discretize(
     if isnothing(limits)
         # Enlarge a bit to get an enclosing box.
         zc = mean(z)
-        zz = zc .+ 2.5 * (z .- zc)
-        xlims, ylims = extrema(real(zz)), extrema(imag(zz))
+        r = max(maximum(real(z .- zc)), maximum(imag(z .- zc)))
+        # zz = zc .+ 2.5*complex(r, r)
+        # xlims, ylims = extrema(real(zz)), extrema(imag(zz))
+        xlims = (real(zc) - 2r, real(zc) + 2r)
+        ylims = (imag(zc) - 2r, imag(zc) + 2r)
     else
         xlims, ylims = Tuple(limits[1:2]), Tuple(limits[3:4])
     end
