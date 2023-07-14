@@ -49,7 +49,7 @@ include("paths.jl")
 export SimplyConnectedRegion,ConnectedRegion,ExteriorRegion,disk,unitdisk,Annulus,PolygonalRegion
 export halfplane,upperhalfplane,lowerhalfplane,lefthalfplane,righthalfplane
 export RegionIntersection,RegionUnion
-export region,interior,exterior,between,boundary,innerboundary,outerboundary
+export region,interior,exterior,between,boundary,innerboundary,outerboundary,modulus
 include("regions.jl")
 include("simplyconnected.jl")
 

@@ -214,6 +214,7 @@ function Annulus(outerrad::Real,innerrad::Real,center::Number=0)
 	Annulus(Circle(center,outerrad,true),Circle(center,innerrad,false))
 end
 
+modulus(A::Annulus) = A.inner.radius / A.outer.radius
 innerboundary(A::Annulus) = A.inner
 outerboundary(A::Annulus) = A.outer
 in(z::Number,A::Annulus) = isinside(z,A.outer) && isoutside(z,A.inner)

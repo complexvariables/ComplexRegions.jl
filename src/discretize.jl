@@ -103,6 +103,35 @@ function discretize(
     return discretize(xlims, ylims, n, point)
 end
 
+function discretize(
+    P::AbstractConnectedRegion{2}, n=600;
+    limits=nothing,
+    )
+    @assert (isfinite(outerboundary(P)) || !isnothing(limits)) "Unbounded region must have limits specified"
+    # Get boundary points for determining interiority.
+    zo = discretize(outerboundary(P), 2n)[2]
+    if isnothing(limits)
+        xlims, ylims = extrema(real(zo)), extrema(imag(zo))
+    else
+        xlims, ylims = Tuple(limits[1:2]), Tuple(limits[3:4])
+    end
+    zi = discretize(innerboundary(P), 2n)[2]
+
+    # This function selects only inside points:
+    function point(x, y)
+        z = complex(x, y)
+        wo = wind(z, zo)
+        wi = wind(z, zi)
+        if (wi != 0) || (wo == 0)
+            return NaN
+        else
+            return z
+        end
+    end
+
+    return discretize(xlims, ylims, n, point)
+end
+
 # Utility function for the main calls.
 function discretize(xlims::NTuple{2}, ylims::NTuple{2}, n::Int, selector::Function)
     # selector(x,y) should return a complex number if (x,y) is inside P, and NaN otherwise.
@@ -116,6 +145,7 @@ function discretize(xlims::NTuple{2}, ylims::NTuple{2}, n::Int, selector::Functi
     end
     return Z
 end
+
 
 # Fully discrete form of the winding number; faster than more precise versions
 function wind(z0::Number, z::AbstractVector)
