@@ -33,6 +33,8 @@ Base.:*(C::AbstractCurve,z::Number) = @error "No multiplication method defined f
 inv(C::AbstractCurve) = @error "No inversion method defined for type $(typeof(C))"
 
 # Default implementations
+Base.length(::AbstractCurve) = 1  # length of parameter interval
+
 """
 	point(C::AbstractCurve,t::AbstractArray)
 
