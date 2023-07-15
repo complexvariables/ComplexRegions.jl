@@ -4,7 +4,7 @@ Discretize a closed path or curve at `n` points, roughly equidistributed by arc 
 
 Returns a tuple of vectors `t` and `z` such that `z[j]` is the point on the curve at parameter value `t[j]`.
 """
-function discretize(p::AbstractCurve, n=1000)
+function discretize(p::AbstractCurve, n=1000; with_arg=false)
     if isfinite(p)
         t = range(0, 1, n+1)
     else
@@ -19,13 +19,12 @@ function discretize(p::AbstractCurve, n=1000)
         z = p.(t)
     end
     if isclosed(p)
-        return t[1:end-1], z[1:end-1]
-    else
-        return t, z
+        t, z = t[1:end-1], z[1:end-1]
     end
+    return with_arg ? t, z : z
 end
 
-function discretize(p::AbstractPath, n=min(1600, 500*length(p)))
+function discretize(p::AbstractPath, n=min(1600, 500*length(p)); with_arg=false)
     m = length(p)
     t = range(0, length(p), n+1)
     z = p.(t)
@@ -48,10 +47,9 @@ function discretize(p::AbstractPath, n=min(1600, 500*length(p)))
         t[idx], z[idx] = j, v
     end
     if isclosed(p)
-        return t[1:end-1], z[1:end-1]
-    else
-        return t, z
+        t, z = t[1:end-1], z[1:end-1]
     end
+    return with_arg ? t, z : z
 end
 
 """
