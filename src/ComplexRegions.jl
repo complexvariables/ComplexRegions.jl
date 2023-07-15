@@ -46,6 +46,8 @@ export Path,ClosedPath,Polygon,CircularPolygon
 export curve,curves,vertex,vertices,side,sides,isfinite,sign,angle,angles,winding,ispositive,Rectangle,rectangle,n_gon
 include("paths.jl")
 
+const AbstractCurveOrPath = Union{AbstractCurve,AbstractPath}
+
 export SimplyConnectedRegion,ConnectedRegion,ExteriorRegion,disk,unitdisk,Annulus,PolygonalRegion
 export halfplane,upperhalfplane,lowerhalfplane,lefthalfplane,righthalfplane
 export RegionIntersection,RegionUnion

@@ -1,40 +1,89 @@
-"""
-    discretize(p::AbstractJordan, n=1200)
-Discretize a closed path or curve at `n` points, roughly equidistributed by arc length. All vertices are also included.
+# Use inverse linear interpolation to roughly equidistribute points on a curve.
+function equidist!(t::AbstractVector, z::AbstractVector, p::AbstractCurveOrPath)
+    s = [0; cumsum(abs.(diff(z)))]
+    f = Spline1D(s, t, k=1)
+    t .= f.(range(0, s[end], length=length(t)))
+    @. z = p(t)
+    return s[end]
+end
 
-Returns a tuple of vectors `t` and `z` such that `z[j]` is the point on the curve at parameter value `t[j]`.
-"""
-function discretize(p::AbstractCurve, n=1000; with_arg=false)
-    if isfinite(p)
-        t = range(0, 1, n+1)
-    else
-        t = range(0.05, 0.95, n+1)
-    end
-    z = p.(t)
-    # Use inverse linear interpolation to roughly equidistribute points.
-    for _ in 1:2
-        s = [0; cumsum(abs.(diff(z)))]
-        f = Spline1D(s, t, k=1)
-        t = f.(range(0, s[end], n+1))
+function refine_discretization(p::AbstractCurveOrPath, lims::NTuple{2}, ds::Real)
+    t = collect(range(lims[1], lims[2], 20))
+    idx = [1]
+    while length(idx) > 0
         z = p.(t)
+        S = equidist!(t, z, p)
+        idx = findall(abs(z[i+1] - z[i]) > ds*S for i in 1:length(z)-1)
+        t = [t; (t[idx] + t[idx.+1])/2]
+        if length(t) > 50S / ds
+            error("Too many points")
+        end
+        sort!(t)
     end
     if isclosed(p)
         t, z = t[1:end-1], z[1:end-1]
     end
-    return with_arg ? t, z : z
+    return t, z
 end
 
-function discretize(p::AbstractPath, n=min(1600, 500*length(p)); with_arg=false)
-    m = length(p)
-    t = range(0, length(p), n+1)
+"""
+    discretize(p; ds=0.002, with_arg=false)
+Discretize a path or curve, with points roughly equidistributed by arc length and chosen to be separated by no more than `ds` times the total arc length. All vertices are also included.
+
+If `with_arg` is true, returns a tuple of vectors `t` and `z` such that `z[j]` is the point on the curve at parameter value `t[j]`. Otherwise, returns only `z`.
+"""
+
+function discretize(p::AbstractCurve; ds=0.002, with_arg=false)
+    lims = isfinite(p) ? (0, 1) : (0.05, 0.95)
+    t, z = refine_discretization(p, lims, ds)
+    return with_arg ? (t, z) : z
+end
+
+function discretize(p::AbstractPath; ds=0.002, with_arg=false)
+    lims = isfinite(p) ? (0, length(p)) : (0.05, 0.95*length(p))
+    t, z = refine_discretization(p, lims, ds)
+    v = vertices(p)[2:end]
+    t = [t; 1:length(v)]
+    sp = sortperm(t)
+    t, z = t[sp], [z; v][sp]
+    idx = findall(diff(t) .< 1e-14)
+    deleteat!(t, idx)
+    deleteat!(z, idx)
+    return with_arg ? (t, z) : z
+end
+
+"""
+    discretize(p, n)
+Discretize a path or curve at `n` points, roughly equidistributed by arc length. All vertices are also included.
+
+Returns a tuple of vectors `t` and `z` such that `z[j]` is the point on the curve at parameter value `t[j]`.
+"""
+function discretize(p::AbstractClosedCurve, n::Integer)
+    t = isfinite(p) ? range(0, 1, n+1) : range(0.05, 0.95, n+1)
+    t = collect(t)
     z = p.(t)
-    # Use inverse linear interpolation to roughly equidistribute points.
-    for _ in 1:2
-        s = [0; cumsum(abs.(diff(z)))]
-        f = Spline1D(s, t, k=1)
-        t = f.(range(0, s[end], n+1))
-        z = p.(t)
-    end
+    equidist!(t, z, p)
+    equidist!(t, z, p)
+    return t[1:end-1], z[1:end-1]
+end
+
+function discretize(p::AbstractCurve, n::Integer)
+    t = isfinite(p) ? range(0, 1, n) : range(0.05, 0.95, n)
+    t = collect(t)
+    z = p.(t)
+    equidist!(t, z, p)
+    equidist!(t, z, p)
+    return t, z
+end
+
+function discretize(p::AbstractCurveOrPath, n::Integer)
+    m = length(p)
+    isclosed(p) && (n += 1)
+    t = isfinite(p) ? range(0, m, n) : range(0.05, 0.95m, n)
+    t = collect(t)
+    z = p.(t)
+    equidist!(t, z, p)
+    equidist!(t, z, p)
     # Ensure that vertices are included.
     idx = 1
     for j in 1:m-1
@@ -49,7 +98,7 @@ function discretize(p::AbstractPath, n=min(1600, 500*length(p)); with_arg=false)
     if isclosed(p)
         t, z = t[1:end-1], z[1:end-1]
     end
-    return with_arg ? t, z : z
+    return t, z
 end
 
 """
