@@ -1,5 +1,4 @@
 module ComplexRegions
-
 DEFAULT = Dict(:tol=>1e-12)
 """
 	ComplexRegions.default()
@@ -62,6 +61,7 @@ export Möbius,Mobius
 include("mobius.jl")
 
 include("docs.jl")
-include("plotrecipes.jl")
+import Makie
+include("plotting.jl")
 
 end # module
