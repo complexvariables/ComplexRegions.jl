@@ -59,37 +59,3 @@ function Base.truncate(R::ExteriorRegion)
 end
 
 convert_arguments(PT::Type{<:Poly}, A::Annulus) = convert_arguments(PT, ConnectedRegion{2}(A.outer, [A.inner]))
-
-# RegionPlot = Makie.Combined{Any, S} where {N, S <: Tuple{ConnectedRegion{N}}}
-# function Makie.plot!(plt::RegionPlot)
-#     pol = Makie.convert_single_argument(plt[1][])
-#     Makie.poly!(plt, pol)
-#     plt
-# end
-
-# ISCPlot = Makie.Combined{Any, S} where {S <: Tuple{InteriorSimplyConnectedRegion}}
-# function Makie.plot!(plt::ISCPlot)
-#     pol = Makie.convert_single_argument(plt[1][])
-#     Makie.poly!(plt, pol)
-#     plt
-# end
-
-# ESCPlot = Makie.Combined{Any, S} where {S <: Tuple{ExteriorSimplyConnectedRegion}}
-# function Makie.plot!(plt::ESCPlot)
-#     R = truncate(plt[1][])
-#     Makie.plot!(plt, R)
-#     C = outerboundary(R)
-#     zc = C.center
-#     r = 0.15*C.radius
-#     if !isnothing(Makie.current_axis())
-#         Makie.current_axis().limits = (real(zc) - r, real(zc) + r, imag(zc) - r, imag(zc) + r)
-#     end
-#     plt
-# end
-
-# AnnPlot = Makie.Combined{Any, S} where {N, S <: Tuple{Annulus}}
-# function Makie.plot!(plt::AnnPlot)
-#     pol = Makie.convert_single_argument(plt[1][])
-#     Makie.plot!(plt, pol)
-#     plt
-# end
