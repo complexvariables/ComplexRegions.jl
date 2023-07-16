@@ -319,10 +319,17 @@ arclength(p::ClosedPath) = sum(arclength(c) for c in p)
 (p::ClosedPath)(t) = point(p,t)
 
 # Find a circle that fully encloses all the finite vertices and some points of a path.
-function enclosing_circle(p::AbstractPath,expansion=2)
-	#z = [vertices(p);point(p,0:1/50:1)]
-	z = vertices(p)
-	return Circle(enclosing_circle(filter(isfinite,z),expansion)...)
+function enclosing_circle(p::AbstractPath, expansion=2)
+	z = discretize(p, ds=0.02)
+	return Circle(enclosing_circle(filter(isfinite,z), expansion)...)
+end
+
+function enclosing_circle(p::AbstractVector{<:AbstractPath}, expansion=2)
+	z = []
+	map(p) do p
+		z = vcat(z, discretize(p, ds=0.02))
+	end
+	return Circle(enclosing_circle(filter(isfinite,z), expansion)...)
 end
 
 include("polygons.jl")
