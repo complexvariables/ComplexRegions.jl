@@ -150,7 +150,7 @@ Construct an open connected region by specifying its boundary components. The `o
 """
 function ConnectedRegion(outer,inner)
 	n = length(inner)
-	if isnothing(outer) || isempty(outer)
+	if isnothing(outer)
 		ExteriorRegion{n}(inner)
 	else
 		ConnectedRegion{n+1}(outer,inner)
