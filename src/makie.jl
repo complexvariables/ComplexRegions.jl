@@ -3,8 +3,8 @@ const GB = Makie.GeometryBasics
 export complex_theme
 import .Makie
 using ColorSchemes
-using .Makie: PointBased, Poly, Lines, Point2f
-import .Makie: convert_arguments, plottype
+using .Makie: PointBased, Poly, Lines, Point2f, Combined
+import .Makie: convert_arguments, plottype, plot!
 
 complex_theme = Makie.Theme(
     Axis = (aspect = Makie.DataAspect(),),
@@ -19,14 +19,36 @@ complex_theme = Makie.Theme(
 z_to_point(z::AnyComplex) = Point2f(reim(z)...)
 convert_arguments(::PointBased, z::AbstractVector{<:Complex}) = (z_to_point.(z), )
 
+#####
+##### Curves and paths
+#####
+
 # Convert a pathlike object to a vector of points
 plottype(::AbstractCurveOrPath) = Lines
 curve_to_points(c::AbstractCurveOrPath) = z_to_point.(plotdata(c))
 convert_arguments(::PointBased, c::AbstractCurveOrPath) = (curve_to_points(c), )
 
+# Plot a compound boundary (i.e., from a generic ConnectedRegion)
+Compound = Tuple{Union{Nothing,AbstractCurveOrPath}, Vector{<:AbstractCurveOrPath}}
+function plot!(plt::Combined{Any, S} where S<:Tuple{Compound})
+    outer, inner = plt[1][]
+    if !isnothing(outer)
+        Makie.plot!(plt, outer)
+    end
+    foreach(inner) do curve
+        Makie.plot!(plt, curve)
+    end
+    return plt
+end
+
+#####
+##### Regions
+#####
+
 # Convert a generic region to a Makie Polygon
 plottype(::AbstractRegion) = Poly
 function convert_arguments(PT::Type{<:Poly}, R::ConnectedRegion{N}) where N
+    @show PT
     outer = curve_to_points(outerboundary(R))
     inner = curve_to_points.(innerboundary(R))
     return convert_arguments(PT, GB.Polygon(outer, inner))
