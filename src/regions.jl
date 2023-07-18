@@ -193,15 +193,15 @@ Representation of the region between two circles.
 struct Annulus <: AbstractConnectedRegion{2}
 	outer::Circle
 	inner::Circle
-	function Annulus(outer::Circle,inner::Circle)
+	function Annulus(outer::Circle, inner::Circle)
 		@assert(outer.center ≈ inner.center)
-		if isinside(Inf,outer)
+		if isinside(Inf, outer)
 			outer = reverse(outer)
 		end
-		if isoutside(Inf,inner)
+		if isoutside(Inf, inner)
 			inner = reverse(inner)
 		end
-		new(outer,inner)
+		new(outer, inner)
 	end
 end
 """
@@ -215,7 +215,7 @@ function Annulus(outerrad::Real,innerrad::Real,center::Number=0)
 end
 
 modulus(A::Annulus) = A.inner.radius / A.outer.radius
-innerboundary(A::Annulus) = A.inner
+innerboundary(A::Annulus) = [A.inner]    # must be a vector
 outerboundary(A::Annulus) = A.outer
 in(z::Number,A::Annulus) = isinside(z,A.outer) && isoutside(z,A.inner)
 isfinite(::Annulus) = true

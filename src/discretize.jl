@@ -162,7 +162,7 @@ function discretize(
     else
         xlims, ylims = Tuple(limits[1:2]), Tuple(limits[3:4])
     end
-    zi = discretize(innerboundary(P), 2n)[2]
+    zi = discretize(innerboundary(P)[1], 2n)[2]
 
     # This function selects only inside points:
     function point(x, y)
