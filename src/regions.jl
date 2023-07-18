@@ -80,6 +80,25 @@ Base.:*(z::Number,R::AbstractConnectedRegion) = R*z
 Base.:/(R::AbstractConnectedRegion,z::Number) = *(R,1/z)
 #/(z::Number,R::AbstractConnectedRegion) = z*inv(R)
 #inv(p::AbstractConnectedRegion) = typeof(R)([inv(c) for c in curves(p)])
+function show(io::IO, ::MIME"text/plain", R::AbstractConnectedRegion)
+	print(io,"Region in the complex plane with\n")
+	outer = outerboundary(R)
+	if !isnothing(outer)
+		print(io,"   outer boundary: ",outer, "\n")
+	end
+	inner = innerboundary(R)
+	if !isempty(inner)
+		print(io,"   inner boundary components: ")
+		foreach(inner) do curve
+			print(io, curve, "; ")
+		end
+		println(io,"\b\b")
+	end
+end
+
+function show(io::IO, R::AbstractConnectedRegion)
+	print(io, "Region in the complex plane")
+end
 
 #
 # concrete implementations
