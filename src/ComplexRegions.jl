@@ -31,26 +31,26 @@ using LinearAlgebra,StaticArrays
 
 AnyComplex = Union{Complex{S},Polar{S},Spherical{S}} where {S<:AbstractFloat}
 
-export Polar,Spherical
-import Base: !,∘,sign,inv,angle,real,imag,conj,show,iterate,eltype,length,getindex,isapprox,isfinite,intersect,union,truncate,reverse,in
-export !,∘,sign,inv,angle,real,imag,conj,show,iterate,eltype,length,getindex,isapprox,isfinite,intersect,union,truncate,reverse,in
+export Polar, Spherical
+import Base: !, ∘, sign, inv, angle, real, imag, conj, show, iterate, eltype, length, getindex, isapprox, isfinite, intersect, union, truncate, reverse, in
+export !, ∘, sign, inv, angle, real, imag, conj, show, iterate, eltype, length, getindex, isapprox, isfinite, intersect, union, truncate, reverse, in
 
 include("utilities.jl")
 
-export point,arclength,slope,dist,closest,isleft,plotdata,isright,reflect,tangent,unittangent,normal,arg,isinside,isoutside,isclosed
-export Curve,ClosedCurve,Circle,Line,Arc,Segment,Ray
+export point, arclength, slope, dist, closest, isleft, plotdata, isright, reflect, tangent, unittangent, normal, arg, isinside, isoutside, isclosed
+export Curve, ClosedCurve, Circle, Line, Arc, Segment, Ray
 include("curves.jl")
 
-export Path,ClosedPath,Polygon,CircularPolygon
-export curve,curves,vertex,vertices,side,sides,isfinite,sign,angle,angles,winding,ispositive,Rectangle,rectangle,n_gon
+export Path, ClosedPath, Polygon, polygon, CircularPolygon
+export curve, curves, vertex, vertices, side, sides, isfinite, sign, angle, angles, winding, ispositive, Rectangle, rectangle, n_gon
 include("paths.jl")
 
 const AbstractCurveOrPath = Union{AbstractCurve,AbstractPath}
 
-export SimplyConnectedRegion,ConnectedRegion,ExteriorRegion,disk,unitdisk,Annulus,PolygonalRegion
-export halfplane,upperhalfplane,lowerhalfplane,lefthalfplane,righthalfplane
-export RegionIntersection,RegionUnion
-export region,interior,exterior,between,boundary,innerboundary,outerboundary,modulus
+export SimplyConnectedRegion, ConnectedRegion, ExteriorRegion, disk, unitdisk, Annulus, PolygonalRegion
+export halfplane, upperhalfplane, lowerhalfplane, lefthalfplane, righthalfplane
+export RegionIntersection, RegionUnion
+export region, interior, exterior, between, boundary, innerboundary, outerboundary, modulus
 include("regions.jl")
 include("simplyconnected.jl")
 
