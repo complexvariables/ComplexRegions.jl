@@ -23,8 +23,8 @@ Construct the region interior to the closed curve or path `C`. If `C` is bounded
 function interior(C::AbstractJordan)
 	# Determine the winding number of the inverse path around the origin. This reveals the
 	# orientation without needing to find an interior point.
-	# use random number to avoid division by zero point
-	if isfinite(C) && winding(1/(C+.13298-0.398127im),0) > 0
+	# use a strange number to avoid divide by zero when it's on the curve
+	if isfinite(C) && winding(1/(C + .13298-0.398127im), 0) > 0
 		C = reverse(C)
 	end
 	InteriorSimplyConnectedRegion(C)
@@ -36,7 +36,8 @@ Construct the region exterior to  the closed curve or path `C`. If `C` is bounde
 """
 function exterior(C::AbstractJordan)
 	if isfinite(C)
-		if winding(1/C,0) < 0
+		# use a strange number to avoid divide by zero when it's on the curve
+		if winding(1/(C + .13298-0.398127im), 0) < 0
 			C = reverse(C)
 		end
 	else

@@ -1,19 +1,38 @@
 AbstractJordan = Union{AbstractClosedCurve,AbstractClosedPath}
+
+# get one point inside a closed path
+function get_one_inside(C::AbstractJordan)
+    zc = mean(discretize(C, ds=1/100))
+    if isinside(zc, C)   # ignores the orientation
+        return zc
+    elseif isinside(0, C)  # allows manual control
+        return 0
+    else
+        for a in range(0.25, 0.75, 10), b in range(a + 0.25, a + 0.75, 10)
+            zc = mean(C.([a, b]))
+            if isinside(zc, C)
+                return zc
+            end
+        end
+    end
+    @error "Could not find a point inside the curve"
+end
+
 abstract type AbstractRegion end
 
 # Required methods
 boundary(R::AbstractRegion) = @error "No boundary() method defined for type $(typeof(R))"
 
 """
-	in(z::Number,R::AbstractRegion;tol=<default>)
-	z ∈ R   (type "\\in" followed by tab)
+    in(z::Number,R::AbstractRegion;tol=<default>)
+    z ∈ R   (type "\\in" followed by tab)
 True if `z` is in the region `R`.
 """
 in(z::Number,R::AbstractRegion;tol=DEFAULT[:tol]) = @error "No in() method defined for type $(typeof(R))"
 in(R::AbstractRegion; kw...) = z -> in(z, R; kw...)
 
 """
-	isfinite(R::AbstractRegion)
+    isfinite(R::AbstractRegion)
 Return `true` if the region is bounded in the complex plane.
 """
 isfinite(R::AbstractRegion) = @error "No isfinite() method defined for type $(typeof(R))"
@@ -21,35 +40,35 @@ isfinite(R::AbstractRegion) = @error "No isfinite() method defined for type $(ty
 # Default implementations
 
 """
-	(type) RegionIntersection
+    (type) RegionIntersection
 Representation of the intersection of two regions.
 """
 struct RegionIntersection <: AbstractRegion
-	one::AbstractRegion
-	two::AbstractRegion
+    one::AbstractRegion
+    two::AbstractRegion
 end
 in(z::Number,R::RegionIntersection) = in(z,R.one) && in(z,R.two)
 
 """
-	(type) RegionUnion
+    (type) RegionUnion
 Representation of the union of two regions.
 """
 struct RegionUnion <: AbstractRegion
-	one::AbstractRegion
-	two::AbstractRegion
+    one::AbstractRegion
+    two::AbstractRegion
 end
 in(z::Number,R::RegionUnion) = in(z,R.one) || in(z,R.two)
 
 """
-	intersect(R1::AbstractRegion,R2::AbstractRegion)
-	R1 ∩ R2    (type "\\cap" followed by tab key)
+    intersect(R1::AbstractRegion,R2::AbstractRegion)
+    R1 ∩ R2    (type "\\cap" followed by tab key)
 Create the region that is the intersection of `R1` and `R2`.
 """
 intersect(R1::AbstractRegion,R2::AbstractRegion) = RegionIntersection(R1,R2)
 
 """
-	union(R1::AbstractRegion,R2::AbstractRegion)
-	R1 ∪ R2    (type "\\cup" followed by tab key)
+    union(R1::AbstractRegion,R2::AbstractRegion)
+    R1 ∪ R2    (type "\\cup" followed by tab key)
 Create the region that is the union of `R1` and `R2`.
 """
 union(R1::AbstractRegion,R2::AbstractRegion) = RegionUnion(R1,R2)
@@ -81,23 +100,23 @@ Base.:/(R::AbstractConnectedRegion,z::Number) = *(R,1/z)
 #/(z::Number,R::AbstractConnectedRegion) = z*inv(R)
 #inv(p::AbstractConnectedRegion) = typeof(R)([inv(c) for c in curves(p)])
 function show(io::IO, ::MIME"text/plain", R::AbstractConnectedRegion)
-	print(io,"Region in the complex plane with\n")
-	outer = outerboundary(R)
-	if !isnothing(outer)
-		print(io,"   outer boundary: ",outer, "\n")
-	end
-	inner = innerboundary(R)
-	if !isempty(inner)
-		print(io,"   inner boundary components: ")
-		foreach(inner) do curve
-			print(io, curve, "; ")
-		end
-		println(io,"\b\b")
-	end
+    print(io,"Region in the complex plane with\n")
+    outer = outerboundary(R)
+    if !isnothing(outer)
+        print(io,"   outer boundary: ",outer, "\n")
+    end
+    inner = innerboundary(R)
+    if !isempty(inner)
+        print(io,"   inner boundary components: ")
+        foreach(inner) do curve
+            print(io, curve, "; ")
+        end
+        println(io,"\b\b")
+    end
 end
 
 function show(io::IO, R::AbstractConnectedRegion)
-	print(io, "Region in the complex plane")
+    print(io, "Region in the complex plane")
 end
 
 #
@@ -108,20 +127,20 @@ end
 # ExteriorRegion
 #
 struct ExteriorRegion{N} <: AbstractConnectedRegion{N}
-	inner::AbstractVector
-	function ExteriorRegion{N}(inner) where N
-		@assert N == length(inner) "Incorrect connectivity"
-		@assert all(c isa AbstractJordan for c in inner) "Boundary components must be closed curves or paths"
-		@assert all(isfinite.(inner)) "Inner boundaries must be finite"
-		# correct orientations of inner components
-		b = copy(inner)
-		for c in b
-			if isoutside(Inf,c)
-				 c = reverse(c)
-			end
-		end
-		new(b)
-	end
+    inner::AbstractVector
+    function ExteriorRegion{N}(inner) where N
+        @assert N == length(inner) "Incorrect connectivity"
+        @assert all(c isa AbstractJordan for c in inner) "Boundary components must be closed curves or paths"
+        @assert all(isfinite.(inner)) "Inner boundaries must be finite"
+        # Correct the orientations of inner components (region is on the left)
+        b = copy(inner)
+        for k in eachindex(b)
+            if winding(b[k], get_one_inside(b[k])) > 0
+                b[k] = reverse(b[k])
+            end
+        end
+        new(b)
+    end
 end
 
 ExteriorRegion(inner) = ExteriorRegion{length(inner)}(inner)
@@ -134,50 +153,50 @@ outerboundary(R::ExteriorRegion) = nothing
 #
 
 """
-	(type) ConnectedRegion{N}
+    (type) ConnectedRegion{N}
 Representation of a `N`-connected region in the extended complex plane.
 """
 struct ConnectedRegion{N} <: AbstractConnectedRegion{N}
-	outer::Union{Nothing,AbstractJordan}
-	inner::AbstractVector
-	function ConnectedRegion{N}(outer,inner) where N
-		n = length(inner) + !isnothing(outer)
-		@assert N == n "Incorrect connectivity"
-		if !isnothing(outer)
-			# correct orientation of outer component?
-			isin = [isinside(point(c,0),outer) for c in inner ]
-			if all(.!isin)
-				outer = reverse(outer)
-			else
-				@assert all(isin) "Inner components appear to be crossing the outer boundary"
-			end
-		end
-		# correct orientations of inner components?
-		@assert all(isfinite.(inner)) "Inner boundaries must be finite"
-		for c in inner
-			if !isfinite(interior(c))
-				c = reverse(c)
-			end
-		end
-		new(outer,inner)
-	end
+    outer::Union{Nothing,AbstractJordan}
+    inner::AbstractVector
+    function ConnectedRegion{N}(outer,inner) where N
+        n = length(inner) + !isnothing(outer)
+        @assert N == n "Incorrect connectivity"
+        if !isnothing(outer)
+            # correct orientation of outer component?
+            isin = [isinside(point(c,0),outer) for c in inner ]
+            if all(.!isin)
+                outer = reverse(outer)
+            else
+                @assert all(isin) "Inner components appear to be crossing the outer boundary"
+            end
+        end
+        # correct orientations of inner components?
+        @assert all(isfinite.(inner)) "Inner boundaries must be finite"
+        for c in inner
+            if !isfinite(interior(c))
+                c = reverse(c)
+            end
+        end
+        new(outer,inner)
+    end
 end
 
 """
-	ConnectedRegion(outer,inner)
+    ConnectedRegion(outer,inner)
 Construct an open connected region by specifying its boundary components. The `outer` boundary could be `nothing` or a closed curve or path. The `inner` boundary should be a vector of one or more nonintersecting closed curves or paths. The defined region is interior to the outer boundary and exterior to all the components of the inner boundary, regardless of the orientations of the given curves.
 """
 function ConnectedRegion(outer,inner)
-	n = length(inner)
-	if isnothing(outer)
-		ExteriorRegion{n}(inner)
-	else
-		ConnectedRegion{n+1}(outer,inner)
-	end
+    n = length(inner)
+    if isnothing(outer)
+        ExteriorRegion{n}(inner)
+    else
+        ConnectedRegion{n+1}(outer,inner)
+    end
 end
 
 function in(z::Number,R::ConnectedRegion)
-	all( isoutside(z,c) for c in R.inner ) && isinside(z,R.outer)
+    all( isoutside(z,c) for c in R.inner ) && isinside(z,R.outer)
 end
 
 outerboundary(R::ConnectedRegion) = R.outer
@@ -189,48 +208,48 @@ innerboundary(R::ConnectedRegion) = R.inner
 #
 
 """
-	between(outer,inner)
+    between(outer,inner)
 Construct the region interior to the closed curve or path `outer` and interior to `inner`.
 """
 function between(outer::AbstractJordan,inner::AbstractJordan)
-	if isfinite(outer) && isinside(Inf,outer)
-		outer = reverse(outer)
-	end
-	if isfinite(inner) && isoutside(Inf,inner)
-		inner = reverse(inner)
-	end
-	ConnectedRegion{2}(outer,[inner])
+    if isfinite(outer) && isinside(Inf,outer)
+        outer = reverse(outer)
+    end
+    if isfinite(inner) && isoutside(Inf,inner)
+        inner = reverse(inner)
+    end
+    ConnectedRegion{2}(outer,[inner])
 end
 
 
 # Annulus
 
 """
-	(type) Annulus
+    (type) Annulus
 Representation of the region between two circles.
 """
 struct Annulus <: AbstractConnectedRegion{2}
-	outer::Circle
-	inner::Circle
-	function Annulus(outer::Circle, inner::Circle)
-		@assert(outer.center ≈ inner.center)
-		if isinside(Inf, outer)
-			outer = reverse(outer)
-		end
-		if isoutside(Inf, inner)
-			inner = reverse(inner)
-		end
-		new(outer, inner)
-	end
+    outer::Circle
+    inner::Circle
+    function Annulus(outer::Circle, inner::Circle)
+        @assert(outer.center ≈ inner.center)
+        if isinside(Inf, outer)
+            outer = reverse(outer)
+        end
+        if isoutside(Inf, inner)
+            inner = reverse(inner)
+        end
+        new(outer, inner)
+    end
 end
 """
-	Annulus(radouter,radinner)
-	Annulus(radouter,radinner,center)
+    Annulus(radouter,radinner)
+    Annulus(radouter,radinner,center)
 Construct a concentric annulus of outer radius `radouter` and inner radius `radinner` centered at `center`. If the center is not given, the origin is used.
 """
 function Annulus(outerrad::Real,innerrad::Real,center::Number=0)
-	@assert outerrad > innerrad > 0
-	Annulus(Circle(center,outerrad,true),Circle(center,innerrad,false))
+    @assert outerrad > innerrad > 0
+    Annulus(Circle(center,outerrad,true),Circle(center,innerrad,false))
 end
 
 modulus(A::Annulus) = A.inner.radius / A.outer.radius
@@ -240,6 +259,6 @@ in(z::Number,A::Annulus) = isinside(z,A.outer) && isoutside(z,A.inner)
 isfinite(::Annulus) = true
 
 function show(io::IO,::MIME"text/plain",R::Annulus)
-	print(io,"Annulus in the complex plane:\n")
-	print(io,"   centered at ",R.outer.center," with distances from ",R.inner.radius," to ",R.outer.radius)
+    print(io,"Annulus in the complex plane:\n")
+    print(io,"   centered at ",R.outer.center," with distances from ",R.inner.radius," to ",R.outer.radius)
 end
