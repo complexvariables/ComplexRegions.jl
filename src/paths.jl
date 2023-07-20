@@ -314,6 +314,8 @@ ClosedPath(c::AbstractCurve) = ClosedPath([c])
 ClosedPath(c::AbstractClosedPath) = c
 ClosedPath(p::Path;kw...) = ClosedPath(p.curve;kw...)
 
+Base.convert(::Type{ClosedPath}, c::AbstractClosedCurve) = ClosedPath([c])
+
 curves(p::ClosedPath) = p.curve
 arclength(p::ClosedPath) = sum(arclength(c) for c in p)
 (p::ClosedPath)(t) = point(p,t)

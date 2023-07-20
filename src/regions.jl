@@ -100,19 +100,8 @@ Base.:/(R::AbstractConnectedRegion,z::Number) = *(R,1/z)
 #/(z::Number,R::AbstractConnectedRegion) = z*inv(R)
 #inv(p::AbstractConnectedRegion) = typeof(R)([inv(c) for c in curves(p)])
 function show(io::IO, ::MIME"text/plain", R::AbstractConnectedRegion)
-    print(io,"Region in the complex plane with\n")
-    outer = outerboundary(R)
-    if !isnothing(outer)
-        print(io,"   outer boundary: ",outer, "\n")
-    end
-    inner = innerboundary(R)
-    if !isempty(inner)
-        print(io,"   inner boundary components: ")
-        foreach(inner) do curve
-            print(io, curve, "; ")
-        end
-        println(io,"\b\b")
-    end
+    no = isnothing(outerboundary(R)) ? "no" : ""
+    print(io,"Region in the complex plane with $no outer boundary and $(length(innerboundary(R))) inner boundary components")
 end
 
 function show(io::IO, R::AbstractConnectedRegion)
@@ -127,13 +116,13 @@ end
 # ExteriorRegion
 #
 struct ExteriorRegion{N} <: AbstractConnectedRegion{N}
-    inner::AbstractVector
-    function ExteriorRegion{N}(inner) where N
+    inner::Vector{ClosedPath}
+    function ExteriorRegion{N}(inner::AbstractVector) where N
         @assert N == length(inner) "Incorrect connectivity"
         @assert all(c isa AbstractJordan for c in inner) "Boundary components must be closed curves or paths"
         @assert all(isfinite.(inner)) "Inner boundaries must be finite"
         # Correct the orientations of inner components (region is on the left)
-        b = copy(inner)
+        b = ClosedPath.(copy(inner))
         for k in eachindex(b)
             if winding(b[k], get_one_inside(b[k])) > 0
                 b[k] = reverse(b[k])

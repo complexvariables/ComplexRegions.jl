@@ -29,7 +29,7 @@ curve_to_points(c::AbstractCurveOrPath) = z_to_point.(plotdata(c))
 convert_arguments(::PointBased, c::AbstractCurveOrPath) = (curve_to_points(c), )
 
 # Plot a compound boundary (i.e., from a generic ConnectedRegion)
-Compound = Tuple{Union{Nothing,AbstractCurveOrPath}, Vector{<:AbstractCurveOrPath}}
+Compound = Tuple{Union{Nothing,AbstractJordan}, Vector{<:AbstractJordan}}
 function plot!(plt::Combined{Any, S} where S<:Tuple{Compound})
     outer, inner = plt[1][]
     if !isnothing(outer)
