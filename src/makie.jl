@@ -3,16 +3,15 @@ const GB = Makie.GeometryBasics
 export complex_theme
 import .Makie
 using ColorSchemes
-using .Makie: PointBased, Poly, Lines, Point2f, Combined
+using .Makie: PointBased, Poly, Lines, Series, Point2f, Combined, with_theme
 import .Makie: convert_arguments, plottype, plot!
 
 complex_theme = Makie.Theme(
     Axis = (aspect = Makie.DataAspect(),),
-    linewidth = 5,
-    colormap = ColorSchemes.seaborn_colorblind,
-    palette = (patchcolor = ColorSchemes.seaborn_colorblind[1:10],),
-    patchcolor = ColorSchemes.seaborn_colorblind[1],
-    Poly = (strokecolor=:black, strokewidth=6),
+    Series = (linewidth = 4, color = ColorSchemes.seaborn_colorblind[1:10]),
+    Lines = (color = ColorSchemes.seaborn_colorblind[1], linewidth=4),
+    patchcolor = ColorSchemes.seaborn_colorblind[1],  # for regions
+    Poly = (strokecolor=:black, strokewidth=4),       # also for regions
     )
 
 # Allow plot of any complex vector
@@ -25,19 +24,19 @@ convert_arguments(::PointBased, z::AbstractVector{<:Complex}) = (z_to_point.(z),
 
 # Convert a pathlike object to a vector of points
 plottype(::AbstractCurveOrPath) = Lines
+plottype(::AbstractVector{<:AbstractCurveOrPath}) = Series
 curve_to_points(c::AbstractCurveOrPath) = z_to_point.(plotdata(c))
 convert_arguments(::PointBased, c::AbstractCurveOrPath) = (curve_to_points(c), )
 
 # Plot a compound boundary (i.e., from a generic ConnectedRegion)
 Compound = Tuple{Union{Nothing,AbstractJordan}, Vector{<:AbstractJordan}}
+# plottype(::Compound) = Series
 function plot!(plt::Combined{Any, S} where S<:Tuple{Compound})
     outer, inner = plt[1][]
     if !isnothing(outer)
         Makie.plot!(plt, outer)
     end
-    foreach(inner) do curve
-        Makie.plot!(plt, curve)
-    end
+    Makie.plot!(plt, inner)
     return plt
 end
 
