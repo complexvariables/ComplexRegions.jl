@@ -36,12 +36,17 @@ If `with_arg` is true, returns a tuple of vectors `t` and `z` such that `z[j]` i
 function discretize(p::AbstractCurve; ds=0.002, with_arg=false)
     lims = isfinite(p) ? (0, 1) : (0.05, 0.95)
     t, z = refine_discretization(p, lims, ds)
+    if isclosed(p)    # avoid duplicating first point
+        t = t[1:end-1]
+        z = z[1:end-1]
+    end
     return with_arg ? (t, z) : z
 end
 
 function discretize(p::AbstractPath; ds=0.002, with_arg=false)
     lims = isfinite(p) ? (0, length(p)) : (0.05, 0.95*length(p))
     t, z = refine_discretization(p, lims, ds)
+    # Ensure that vertices are included. (First point is first vertex.)
     v = vertices(p)[2:end]
     t = [t; 1:length(v)]
     sp = sortperm(t)
@@ -49,6 +54,10 @@ function discretize(p::AbstractPath; ds=0.002, with_arg=false)
     idx = findall(diff(t) .< 1e-14)
     deleteat!(t, idx)
     deleteat!(z, idx)
+    if isclosed(p)    # avoid duplicating first point
+        t = t[1:end-1]
+        z = z[1:end-1]
+    end
     return with_arg ? (t, z) : z
 end
 

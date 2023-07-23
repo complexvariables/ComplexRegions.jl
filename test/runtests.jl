@@ -322,10 +322,9 @@ end
     @test( all(h.(w).≈z) )
 end
 
-@testset "SC Regions"
+@testset "SC Regions" begin
     c = Circle(0, 1)
-    for c in (c, reverse(c))
-        for D  in (interior(c), !exterior(c))
+    for c in (c, reverse(c)), D  in (interior(c), !exterior(c))
         @test in(0, D)
         @test !in(Inf, D)
         @test in(Inf, !D)
