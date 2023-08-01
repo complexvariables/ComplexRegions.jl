@@ -114,9 +114,11 @@ Construct a `Curve` object from the complex-valued function `f` accepting an arg
 	Curve(f,df[,a,b])
 Construct a curve with point location and tangent given by the complex-valued functions `f` and `df`, respectively, optionally with given limits on the parameter.
 """
-Curve(f) = Curve(f,t->fdtangent(f,t))
-Curve(f,df,a::Real,b::Real) = Curve(t->f(scaleto(a,b,t)),t->df(scaleto(a,b,t)))
-Curve(f,a::Real,b::Real) = Curve(t->f(scaleto(a,b,t)))
+Curve(f) = Curve(f, t -> ForwardDiff.derivative(f,t))
+function Curve(f, df, a::Real, b::Real)
+    return Curve( t -> f(scaleto(a, b, t)), t -> df(scaleto(a, b, t)))
+end
+Curve(f, a::Real, b::Real) = Curve(t -> f(scaleto(a, b, t)))
 
 # Required methods
 point(C::Curve,t::Real) = C.point(t)

@@ -27,7 +27,7 @@ using Dierckx
 
 using Reexport
 @reexport using ComplexValues
-using LinearAlgebra,StaticArrays
+using LinearAlgebra, StaticArrays, ForwardDiff
 
 AnyComplex = Union{Complex{S},Polar{S},Spherical{S}} where {S<:AbstractFloat}
 
