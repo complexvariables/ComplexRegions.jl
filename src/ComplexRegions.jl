@@ -60,6 +60,9 @@ include("discretize.jl")
 export Möbius,Mobius
 include("mobius.jl")
 
+export Shapes
+include("shapes.jl")
+
 include("docs.jl")
 
 using Requires
