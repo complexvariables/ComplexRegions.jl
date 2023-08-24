@@ -32,7 +32,7 @@ function hypo(k::Integer)
 end
 
 function _squircle()
-    ε = 1e-12   # regularize infinite tangents
+    ε = 1e-6   # regularize infinite tangents
     z(t) = complex(sqrt(cospi(t/2)), sqrt(sinpi(t/2)))
     dz(t) = (π/4) * complex(-1 ./ (ε + sqrt(sinpi(t/2))), 1 ./ (ε + sqrt(cospi(t/2))))
     s = Curve(z, dz)
