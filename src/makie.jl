@@ -7,17 +7,12 @@ using .Makie: PointBased, Poly, Lines, Series, Point2f, Combined, with_theme
 import .Makie: convert_arguments, plottype, plot!
 
 complex_theme = Makie.Theme(
-    Axis = (aspect = Makie.DataAspect(),),
+    Axis = (autolimitaspect = 1,),
     Series = (linewidth = 4, color = ColorSchemes.seaborn_colorblind[1:10]),
     Lines = (color = ColorSchemes.seaborn_colorblind[1], linewidth=4),
     patchcolor = ColorSchemes.seaborn_colorblind[1],  # for regions
     Poly = (strokecolor=:black, strokewidth=4),       # also for regions
     )
-
-# Allow plot of any complex vector
-z_to_point(z::AnyComplex) = Point2f(reim(z)...)
-convert_arguments(::PointBased, z::AbstractVector{<:Complex}) = (z_to_point.(z), )
-
 #####
 ##### Curves and paths
 #####
