@@ -37,45 +37,6 @@ function fdtangent(z, t::Real)
     return τ
 end
 
-# Select points adaptively to make a smooth-appearing curve.
-function adaptpoints(point, utangent, a, b; depth=6, curvemax=0.05)
-    function refine(tl, tr, zl, zr, τl, τr, maxdz, d=depth)
-        dzkap = dist(τr, τl)  # approximately, the stepsize over radius of curvature
-        tm = (tl + tr) / 2
-        zm = point(tm)
-        τm = utangent(tm)
-        if d > 0 && (dzkap > curvemax || dist(zr, zl) > maxdz)
-            zl = refine(tl, tm, zl, zm, τl, τm, maxdz, d - 1)
-            zr = refine(tm, tr, zm, zr, τm, τr, maxdz, d - 1)
-            return [zl; zm; zr]
-        else
-            return zm
-        end
-    end
-
-    d = (b - a) / 4
-    tt = d * [0, 0.196, 0.41, 0.592, 0.806]   # avoid common symmetry points
-    t = [a .+ tt; a + d .+ tt; a + 2d .+ tt; a + 3d .+ tt; b]
-    z = point.(t)
-    τ = utangent.(t)
-
-    # on the Riemann sphere, use distance in R^3
-    if z[1] isa Spherical
-        dist = (u, v) -> norm(S2coord(u) - S2coord(v))
-    else
-        dist = (u, v) -> abs(u - v)
-    end
-    m = length(t)
-    scale = maximum(dist(z[i], z[j]) for i = 2:m-1, j = 2:m-1 if j > i)
-    zfinal = z[[1]]
-    for j = 1:length(t)-1
-        znew = refine(t[j], t[j+1], z[j], z[j+1], τ[j], τ[j+1], scale / 25)
-        append!(zfinal, znew)
-        push!(zfinal, z[j+1])
-    end
-    return zfinal
-end
-
 # Do adaptive integration to estimate the integral of `f` over [`a`,`b`] to desired
 # error tolerance `tol`.
 function intadapt(f,a,b,tol)
