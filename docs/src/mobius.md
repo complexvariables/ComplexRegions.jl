@@ -14,13 +14,13 @@ For convenience of typing on some keyboards, `Mobius` is an alias for `Möbius` 
 
 The package defines a `Möbius` type that can be constructed in a variety of ways:
 
-- `Möbius(a,b,c,d)`\
+- `Möbius(a, b, c, d)`\
 Specify the coefficients as in the formula above.
 - `Möbius(A)`\
 Specify the coefficients as the matrix $A=[a\;b;\;\,c\;d]$.
-- `Möbius(z,w)`\
-Construct the unique transformation that maps the three points `z[1],z[2],z[3]` to `w[1],w[2],w[3]`, respectively. Either vector of points may include `Inf`.
-- `Möbius(C1,C2)`\
+- `Möbius(z, w)`\
+Construct the unique transformation that maps the three points `z[1], z[2], z[3]` to `w[1], w[2], w[3]`, respectively. Either vector of points may include `Inf`.
+- `Möbius(C1, C2)`\
 Construct a transformation that maps the [Line](@ref) or [Circle](@ref) `C1` to the Line or Circle `C2`.
 
 ## Methods
@@ -28,9 +28,9 @@ Construct a transformation that maps the [Line](@ref) or [Circle](@ref) `C1` to 
 Suppose `f` is a value of type `Möbius`. Then `f(z)` evaluates the transformation at the number `z`. In addition, `f(C)`, where `C` is a Circle or Line, returns the Circle or Line that is the image of `C` under `f`. Similarly, `f(R)`, where `R` is an `AbstractDisk` or `AbstractHalfplane`, returns the appropriate type of image region. For example,
 
 ```@repl examples
-f = Möbius(Line(-1,1),Circle(0,1))
+f = Möbius(Line(-1, 1), Circle(0, 1))
 f(upperhalfplane)
-isapprox(ans,unitdisk)
+isapprox(ans, unitdisk)
 ```
 
 Two other methods are defined:

@@ -1,5 +1,5 @@
 import Pkg; Pkg.update("ComplexRegions")
-using Documenter, ComplexRegions, Plots
+using Documenter, ComplexRegions
 
 ENV["GKSwstype"] = "100"
 DocMeta.setdocmeta!(ComplexRegions, :DocTestSetup, :(using ComplexRegions); recursive=true)

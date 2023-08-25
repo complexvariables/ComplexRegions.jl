@@ -7,42 +7,32 @@ There are also methods for finding the intersections between curves and paths, a
 ## [Examples](@id examples_intersections)
 
 ```@setup examples
-using ComplexRegions,Plots
-default(linewidth=2,markersize=3,legend=:none)
+using ComplexRegions
 ```
 
 Circles and Arcs intersect at zero, one, or two points, or as an Arc.
 
 ```@repl examples
-c = Circle(0,1)
-a = Arc(1+1im,0,1-1im)
-intersect(c,a)
-b = Arc(1im,1,-1im)
-intersect(c,b)
+c = Circle(0, 1)
+a = Arc(1+1im, 0, 1-1im)
+intersect(c, a)
+b = Arc(1im, 1, -1im)
+intersect(c, b)
 ans ≈ b
 ```
 
 Segments and Lines intersect at zero or one point, or as a Line or Segment.
 
 ```@repl examples
-l = Line(1im,1+1im)
-s = Segment(-2,2+2im)
-intersect(l,s)
-intersect(l,s+2im)
-intersect(s,Segment(-4-1im,1im))
+l = Line(1im, 1+1im)
+s = Segment(-2, 2+2im)
+intersect(l, s)
+intersect(l, s + 2im)
+intersect(s,Segment(-4-1im, 1im))
 ```
-
-Here is the intersection of a polygon with a segment.
 
 ```@repl examples
-box = [1-1im,3-1im,3+1im];
-plus = Polygon([box;1im*box;-box;-1im*box])
-s = Segment(-3-2im,2+2im)
-z = intersect(plus,s)
-plot(plus);
-plot!(s);
-scatter!(Complex.(z))
-savefig("plus_intersect.svg"); nothing # hide
+ℓ = Line(1/2, 1/2+1im)  # line through 0.5 and 0.5+1i
+c = 1 / ℓ          # a circle
+intersect(ℓ, c)
 ```
-
-![intersection of polygon and segment](plus_intersect.svg)

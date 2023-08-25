@@ -18,7 +18,7 @@ In addition to the usual methods for a `ClosedPath`, the following are implement
 
 A `Polygon` is a closed path whose curve components are all of type `Ray` and `Segment`. In contrast to the usual notion of a polygon, the path may be unbounded. Construct a value by calling `Polygon(c)` with a vector or `AbstractPath` of curves of appropriate types; continuity and closure of the path are checked as necessary.
 
-An alternative construction is to provide a vector of vertices. In place of an infinite vertex, you can supply a tuple of the angles of the two rays that meet there. See the [Examples](@ref examples_polygons) below.
+An alternative construction is to provide a vector of vertices. In place of an infinite vertex, you can supply a tuple of the angles of the two rays that meet there. See the examples section below.
 
 In addition to the methods for the [Abstract interface](@ref interface_paths) and [CircularPolygon](@ref), the `Polygon` type offers
 
@@ -35,19 +35,21 @@ Two additional special polygon constructors are defined:
 | `rectangle(xlim,ylim)` or `rectangle(z1,z2)` |  Construct an axes-aligned rectangle.  |
 | `n_gon(n)` | Construct a regular n-gon with unit vertices. |
 
-# [Examples](@id examples_polygons)
+## Examples
 
 ```@setup 1
-using ComplexRegions,Plots
-default(linewidth=2,legend=:none)
+using ComplexRegions
 ```
 
 A big plus:
 
 ```@example 1
-box = [1-1im,3-1im,3+1im];
-plus = Polygon([box;1im*box;-box;-1im*box])
-plot(plus,color=:red)
+box = [1-1im, 3-1im, 3+1im]
+plus = Polygon([box; 1im*box; -box; -1im*box])
+
+using ComplexPlots, Plots
+default(linewidth=2,legend=false)
+plot(plus, color=:red)
 savefig("plus.svg"); nothing # hide
 ```
 
@@ -55,13 +57,13 @@ savefig("plus.svg"); nothing # hide
 
 A Koch snowflake:
 
-```@example1
+```@example 1
 v = vertices(n_gon(3));
-pattern = [1; (v.-v[1])/(v[1]-v[3])/3 .+ 2/3 ];
-koch(a,b) = b .+ (a-b)*pattern;
+pattern = [1; (v .- v[1]) / (v[1] - v[3])/3 .+ 2/3 ];
+koch(a,b) = b .+ (a - b) * pattern;
 for m = 1:3
 	@show n = length(v);
-	global v = vcat( [koch(v[k],v[mod(k,n)+1]) for k in 1:n]... );
+	global v = vcat( [koch(v[k], v[mod(k, n) + 1]) for k in 1:n]... );
 end
 plot(Polygon(v))
 savefig("snowflake.svg"); nothing # hide
@@ -70,25 +72,26 @@ savefig("snowflake.svg"); nothing # hide
 ![snowflake polygon](snowflake.svg)
 
 
-Infinite channel with a step:
+Infinite channel with a step, using tuples to specify the angles of rays going to infinity:
 
 ```@example 1
-p = Polygon([0,-1im,(0,0),1im,(pi,pi)])
+p = Polygon([0, -1im, (0,0), 1im, (pi,pi)])
 ```
 
 ```@example 1
-plot(p)
+plot(p, xlims=[-5,5], ylims=[-5,5])
 savefig("channel.svg"); nothing # hide
 ```
 
 ![channel polygon](channel.svg)
 
-Infinite polygons can seem quite strange sometimes:
+Infinite polygons can seem quite strange:
 
 ```@example 1
-probe1 = [1,0,1im,-1im,0];
-probe2 = exp(-1im*3π/4)*probe1 .- (3 + 2im);
-plot( Polygon([probe1...,(0,-3π/4),probe2...,(-3π/4,0)]) )
+probe1 = [1, 0, 1im, -1im, 0];
+probe2 = cispi(-3/4)*probe1 .- (3 + 2im);
+plot( Polygon([probe1...,(0, -3π/4), probe2..., (-3π/4, 0)]) )
+xlims!(-6, 6); ylims!(-6, 6)
 savefig("probes.svg"); nothing # hide
 ```
 

@@ -12,23 +12,23 @@ In addition, default implementations are given for the following methods.
 
 | Method | Description |
 |:-----|:-----|
-| `curve(P,k::Integer)`| `k`th curve of `P`.
+| `curve(P, k::Integer)`| `k`th curve of `P`.
 | `vertices(P)` | Vertices of `P` (the endpoints of the constituent curves) |
-| `vertex(P,k::Integer)`| `k`th vertex of `P`. |
+| `vertex(P, k::Integer)`| `k`th vertex of `P`. |
 | `length(P)`| Number of curves in the path. |
 | `isfinite(P)`| True if the path is bounded. |
-| `point(P,t::Real)` | Point on the path. |
-| `point(P,t::AbstractVector)`| Vectorization of `point`. |
-| `tangent(P,t::Real)` | Complex-valued tangent at a point. |
-| `unittangent(P,t::Real)`| Normalized tangent at a point. |
-| `normal(P,t::Real)`| Leftward-pointing unit normal at a point. |
+| `point(P, t::Real)` | Point on the path. |
+| `point(P, t::AbstractVector)`| Vectorization of `point`. |
+| `tangent(P, t::Real)` | Complex-valued tangent at a point. |
+| `unittangent(P, t::Real)`| Normalized tangent at a point. |
+| `normal(P, t::Real)`| Leftward-pointing unit normal at a point. |
 | `conj(P)`| Complex conjugate of the path. |
 | `reverse(P)`| Reverse the orientation of the path. |
 | `+,-,*,/`| Translate, rotate and scale a path. |
-| `isapprox(P1,P2)` | Determine whether two values represent the same path. |
+| `isapprox(P1, P2)` | Determine whether two values represent the same path. |
 | `arclength(P)` | Arc length of the path. |
-| `dist(z,P)` | Distance from a point to the path. |
-| `closest(z,P)`| Point on the path nearest to a given number. |
+| `dist(z, P)` | Distance from a point to the path. |
+| `closest(z, P)`| Point on the path nearest to a given number. |
 
 ### Iterator interface
 
@@ -41,17 +41,17 @@ The `AbstractClosedPath` subtype modifies a few of the implementations above:
 | Method | Description |
 |:-----|:-----|
 | `vertices(P)`| Only the unique vertices; i.e., does not duplicate the initial/final vertex. |
-| `curve(P,k)` | `k`th curve of the path in a circular/modulo sense. |
-| `vertex(P,k)`| `k`th vertex of the path in a circular/modulo sense. |
+| `curve(P, k)` | `k`th curve of the path in a circular/modulo sense. |
+| `vertex(P, k)`| `k`th vertex of the path in a circular/modulo sense. |
 | `point`, `tangent`, `unittangent`, `normal`| Use a circular/modulo interpretation of the parameter. |
 
 The `AbstractClosedPath` type also has default implementations for the following methods.
 
 | Method | Description |
 |:-----|:-----|
-| `winding(P,z)` | Winding number of `P` about `z`. |
-| `isinside(z,P)` | Detect whether `z` lies inside the path. |
-| `isoutside(z,C)` | Detect whether `z` lies outside the path. |
+| `winding(P, z)` | Winding number of `P` about `z`. |
+| `isinside(z, P)` | Detect whether `z` lies inside the path. |
+| `isoutside(z, C)` | Detect whether `z` lies outside the path. |
 
 ## Generic types
 
@@ -68,17 +68,20 @@ There are generic implementations of both of the abstract types described above.
 ## [Examples](@id examples_paths)
 
 ```@setup examples
-using ComplexRegions,Plots
-default(linewidth=2,legend=:none)
+using ComplexRegions
 ```
 
-Here is a "dog bone" path defined by arcs and segments.
+Here is a path defined by arcs and segments.
 ```@example examples
 a = Arc(-1,1,-1im)
-right = Path([4+1im+a,4-1im-1im*a])
-s = Segment(-3+1im,3+1im)
-p = ClosedPath([s,right...,-s,-right...])
-plot(exp(1im*pi/4)*p)
+right = Path([4 + 1im+a, 4-1im - 1im*a])
+s = Segment(-3+1im, 3+1im)
+p = ClosedPath([s, right..., -s, -right...])
+arclength(p)
+vertices(p)
+
+using ComplexPlots, Plots
+plot(cispi(1/4) * p, label="bone")
 savefig("bone.svg"); nothing # hide
 ```
 
