@@ -68,13 +68,6 @@ end
 
 isclosed(c::AbstractCurve) = isa(c, AbstractClosedCurve)
 
-"""
-	plotdata(C::AbstractCurve,n=501)
-
-Compute `n` points along the curve `C` suitable to make a plot of it.
-"""
-plotdata(C::AbstractCurve) = adaptpoints(t->point(C,t),t->unittangent(C,t),0,1)
-
 show(io::IO,C::AbstractCurve) = print(io,"Complex-valued $(typeof(C))")
 show(io::IO,::MIME"text/plain",C::AbstractCurve) = print(io,"Complex-valued $(typeof(C))")
 

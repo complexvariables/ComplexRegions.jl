@@ -154,6 +154,3 @@ end
 function show(io::IO,::MIME"text/plain",L::Line{T}) where {T}
 	print(io,"Line{$T} in the complex plane:\n   through (",L.base,") parallel to (",L.direction,")")
 end
-
-# In the plane (but not on the sphere), two points are enough to draw a line, and we want to avoid infinity.
-plotdata(L::Line{T}) where T<:Union{Complex,Polar} = point(L,[0.1,0.9])

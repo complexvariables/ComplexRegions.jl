@@ -155,6 +155,3 @@ function show(io::IO,::MIME"text/plain",R::Ray{T}) where {T}
 		print(io,"Ray from ",R.base," to ∞ at angle ",R.angle)
 	end
 end
-
-# in the plane, use two (finite) points for plotting
-plotdata(R::Ray{T}) where T<:Union{Complex,Polar} = R.reverse ? [R(0.3),R.base] : [R.base,R(0.7)]
