@@ -95,10 +95,3 @@ function enclosing_box(z::AbstractVector,expansion=2)
     ry = length(z) > 1 ? maximum(@. abs(imag(dz))) : max(1, abs(imag(zc)))
     return real(zc) .+ expansion * [-rx, rx], imag(zc) .+ expansion * [-ry, ry]
 end
-
-# indices of the closest pair of points from two lists
-function argclosest(z1,z2)
-    i1 = [argmin(abs.(z1 .- z)) for z in z2]
-    i2 = argmin(abs.(z2 .- z1[i1]))
-    return i1[i2], i2
-end
