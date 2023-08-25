@@ -21,7 +21,7 @@ makedocs(sitename="ComplexRegions.jl",
     )
 
 deploydocs(
-    repo = "github.com/complexvariables/ComplexRegions.jl.git"
+    repo = "github.com/complexvariables/ComplexRegions.jl.git",
 #    versions = ["v#.#"],
 #    make = nothing
     )
