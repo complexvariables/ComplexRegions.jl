@@ -7,7 +7,7 @@ function equidist!(t::AbstractVector, z::AbstractVector, p::AbstractCurveOrPath)
     return s[end]
 end
 
-function refine_discretization(p::AbstractCurveOrPath, lims::NTuple{2}, ds::Real)
+function refine_discretization(p::AbstractCurveOrPath, lims::AbstractVector, ds::Real)
     t = collect(range(lims[1], lims[2], 20))
     idx = [1]
     while length(idx) > 0
@@ -34,22 +34,26 @@ If `with_arg` is true, returns a tuple of vectors `t` and `z` such that `z[j]` i
 """
 
 function discretize(p::AbstractCurve; ds=0.002, with_arg=false)
-    lims = isfinite(p) ? (0, 1) : (0.05, 0.95)
+    lims = [0., 1.]
+    isinf(p(0)) && (lims[1] = 0.1)
+    isinf(p(1)) && (lims[2] = 0.9)
     t, z = refine_discretization(p, lims, ds)
      return with_arg ? (t, z) : z
 end
 
 function discretize(p::AbstractPath; ds=0.002, with_arg=false)
-    lims = isfinite(p) ? (0, length(p)) : (0.05, 0.95*length(p))
-    t, z = refine_discretization(p, lims, ds)
-    # Ensure that vertices are included. (First point is first vertex.)
-    v = vertices(p)[2:end]
-    t = [t; 1:length(v)]
-    sp = sortperm(t)
-    t, z = t[sp], [z; v][sp]
-    idx = findall(diff(t) .< 1e-14)
-    deleteat!(t, idx)
-    deleteat!(z, idx)
+    t = []
+    z = []
+    for n in 1:length(p)
+        T, Z = discretize(p[n]; ds, with_arg=true)
+        T .+= n - 1
+        if n > 1 && (T[1] == t[n-1][end])
+            T = T[2:end]
+            Z = Z[2:end]
+        end
+        append!(t, T)
+        append!(z, Z)
+    end
     return with_arg ? (t, z) : z
 end
 
