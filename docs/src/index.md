@@ -1,5 +1,9 @@
 # ComplexRegions
 
+```@setup examples
+using ComplexRegions
+```
+
 This package provides types and methods that are useful for working with curves and regions in the (extended) complex plane.
 
 **Note:** Starting in version 0.2, plot capabilities have been moved to the [`ComplexPlots`](https://complexvariables.github.io/ComplexPlots.jl/stable/) package. Some of these are still used here to illustrate the examples.
