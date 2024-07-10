@@ -24,6 +24,7 @@ end
 
 using Statistics
 using Dierckx
+using CircularArrays
 
 using Reexport
 @reexport using ComplexValues

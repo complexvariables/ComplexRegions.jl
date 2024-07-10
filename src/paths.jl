@@ -5,7 +5,7 @@ abstract type AbstractPath end
 	curves(P::AbstractPath)
 Return an array of the curves that make up the path `P`.
 """
-curves(p::AbstractPath) = @error "No curves() method defined for type $(typeof(p))"
+curves(p::AbstractPath)::AbstractVector = @error "No curves() method defined for type $(typeof(p))"
 
 # Default implementations
 """
@@ -265,21 +265,22 @@ isoutside(z::Number,P::AbstractClosedPath) = winding(P,z) == 0
 	(type) Path
 Generic implementation of an `AbstractPath`.
 """
-struct Path <: AbstractPath
-	curve
-	function Path(c::AbstractVector{T};tol::Real=DEFAULT[:tol]) where T<:AbstractCurve
+struct Path{T} <: AbstractPath where T<:AbstractCurve
+	curve::Vector{T}
+	function Path{T}(c::AbstractVector{T};tol::Real=DEFAULT[:tol]) where T<:AbstractCurve
 		n = length(c)
 		for k = 1:n-1
 			@assert isapprox(point(c[k],1.0),point(c[k+1],0.0),rtol=tol,atol=tol) "Curve endpoints do not match for pieces $(k) and $(k+1)"
 		end
-		new(c)
+		new{T}(c)
 	end
 end
 """
 	Path(c::AbstractVector; tol=<default>)
 Given a vector `c` of curves, construct a path. The path is checked for continuity (to tolerance `tol`) at the interior vertices.
 """
-Path(c::AbstractCurve) = Path([c])
+Path(c::AbstractVector{T}) where T<:AbstractCurve = Path{T}(c)
+Path(c::T) where T<:AbstractCurve = Path{T}([c])
 
 curves(p::Path) = p.curve
 """
@@ -294,13 +295,13 @@ arclength(p::Path) = sum(arclength(c) for c in p)
 	(type) ClosedPath
 Generic implementation of an `AbstractClosedPath`.
 """
-struct ClosedPath <: AbstractClosedPath
-	curve
-	function ClosedPath(p::AbstractVector{T};tol=DEFAULT[:tol]) where T<:AbstractCurve
-		q = Path(p)
+struct ClosedPath{T} <: AbstractClosedPath where T<:AbstractCurve
+	curve::Vector{T}
+	function ClosedPath{T}(p::AbstractVector{T};tol=DEFAULT[:tol]) where T<:AbstractCurve
+		q = Path{T}(p)
 		zi,zf = point(q,0),point(q,length(q))
 		@assert isapprox(zi,zf,rtol=tol,atol=tol) || (isinf(zi) && isinf(zf)) "Path endpoints do not match"
-		new(p)
+		new{T}(p)
 	end
 end
 """
@@ -308,7 +309,8 @@ end
 	ClosedPath(P::Path; tol=<default>)
 Given a vector `c` of curves, or an existing path, construct a closed path. The path is checked for continuity (to tolerance `tol`) at all of the vertices.
 """
-ClosedPath(c::AbstractCurve) = ClosedPath([c])
+ClosedPath(p::AbstractVector{T}) where T<:AbstractCurve = ClosedPath{T}(p)
+ClosedPath(c::T) where T<:AbstractCurve = ClosedPath{T}([c])
 ClosedPath(c::AbstractClosedPath) = c
 ClosedPath(p::Path;kw...) = ClosedPath(p.curve;kw...)
 
@@ -321,6 +323,7 @@ arclength(p::ClosedPath) = sum(arclength(c) for c in p)
 # Find a circle that fully encloses all the finite vertices and some points of a path.
 function enclosing_circle(p::AbstractPath, expansion=2)
 	z = discretize(p, ds=0.02)
+	@show z
 	return Circle(enclosing_circle(filter(isfinite,z), expansion)...)
 end
 

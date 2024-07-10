@@ -109,7 +109,7 @@ AbstractQuad = InteriorSimplyConnectedRegion{<:Rectangle}
 Construct the rectangle interior to `R`.
 """
 quad(R::Rectangle) = interior(R)
-unitquad = quad(Rectangle(0, [1, 1]))
+unitquad = quad(Rectangle(0.0, [1, 1]))
 function show(io::IO,::MIME"text/plain",R::AbstractQuad)
 	print(io,"Quad inside ",R.boundary)
 end

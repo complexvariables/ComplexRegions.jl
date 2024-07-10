@@ -2,7 +2,7 @@
 # abstract interfaces
 #
 
-abstract type AbstractCurve end
+abstract type AbstractCurve{T} end
 
 # Required methods
 """
@@ -94,9 +94,9 @@ isoutside(C::AbstractClosedCurve) = z -> isoutside(z, C)
 """
 (type) Smooth curve defined by an explicit function of a real paramerter in [0,1].
 """
-struct Curve <: AbstractCurve
-	point
-	tangent
+struct Curve{T} <: AbstractCurve{T}
+	point::T
+	tangent::T
 end
 
 """

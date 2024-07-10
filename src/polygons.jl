@@ -67,7 +67,7 @@ end
 Type for closed paths consisting entirely of arcs, segments, and rays.
 """
 struct CircularPolygon <: AbstractCircularPolygon
-	path
+	path::ClosedPath
 	function CircularPolygon(p::AbstractClosedPath)
 		# Continuity and closure have been checked to make a closed path
 		valid = isa.(curves(p),Union{Arc,Segment,Ray})
@@ -112,7 +112,7 @@ ispositive(p::CircularPolygon) = winding(0,1/p) < 0
 Type for closed paths consisting entirely of segments and rays.
 """
 struct Polygon <: AbstractPolygon
-	path
+	path::ClosedPath
 	function Polygon(p::AbstractClosedPath)
 		# Assumes continuity and closure have been checked previously
 		valid = isa.(curves(p),Union{Segment,Ray})
@@ -134,8 +134,13 @@ end
 
 """
 	Polygon(v::AbstractVector)
-Construct a polygon from a vector of its vertices. Each element of `v` should be either a finite vertex, or a tuple of two angles that indicate the angles of two rays incident to an infinite vertex: one "to" infinity, and a second "from" infinity.
+Construct a polygon from a vector of its vertices. Each element of `v` should be either a finite vertex, or a tuple of two numbers that indicate the angles of two rays incident to an infinite vertex: one "to" infinity, and a second "from" infinity.
 """
+function Polygon(v::AbstractVector{T}) where T<:Number
+	cv = CircularVector(v)
+	return Polygon([Segment(cv[k], cv[k+1]) for k in eachindex(cv)])
+end
+
 function Polygon(v::AbstractVector)
 	n = length(v)
 	p = Vector{Union{Segment,Ray}}(undef,n)
@@ -162,6 +167,7 @@ end
 
 # Required methods
 curves(p::Polygon) = curves(p.path)
+length(p::Polygon) = length(p.path)
 arclength(p::Polygon) = arclength(p.path)
 (p::Polygon)(t) = point(p.path,t)
 
@@ -263,18 +269,20 @@ ispositive(p::Polygon) = sum(angles(p)/pi .- 1) < 0
 
 ## Special polygon types and constructors
 
-struct Rectangle <: AbstractPolygon
-	center::Complex
-	radii::SVector{2}
-	rotation::Real   # angle about the center point
+struct Rectangle{T} <: AbstractPolygon
+	center::Complex{T}
+	radii::SVector{2, T}
+	rotation::T   # angle about the center point
 	polygon::Polygon
-	function Rectangle(center::Number=0, radii::AbstractVector=[1.0, 1.0], rotation::Real=0)
+	Rectangle(center::T, args...) where T<:Real = Rectangle(complex(center), args...)
+	function Rectangle(center::Complex{S}=0.0, radii::AbstractVector{T}=[-1.0, 1.0], rotation::U=0) where {S<:Real,T<:Real,U<:Real}
 		# rotation is in radians
 		@assert (length(radii) == 2) && all(radii .>= 0)
-		ρ = cis(rotation)
-		z = @. center + ρ * complex.(radii[1]*[-1,1,1,-1], radii[2]*[-1,-1,1,1])
+		R = promote_type(S,T,U)
+		ρ = cis(convert(R, rotation))
+		z = @. center + ρ * complex(R(radii[1])*[-1,1,1,-1], R(radii[2])*[-1,-1,1,1])
 		p = Polygon(z)
-		new(complex(center), radii, rotation, p)
+		new{R}(center, radii, rotation, p)
 	end
 end
 
