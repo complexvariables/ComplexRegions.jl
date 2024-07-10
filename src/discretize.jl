@@ -38,7 +38,7 @@ function discretize(p::AbstractCurve; ds=0.002, with_arg=false)
     isinf(p(0)) && (lims[1] = 0.1)
     isinf(p(1)) && (lims[2] = 0.9)
     t, z = refine_discretization(p, lims, ds)
-     return with_arg ? (t, z) : z
+    return with_arg ? (t, z) : z
 end
 
 function discretize(p::AbstractPath; ds=0.002, with_arg=false)
@@ -53,6 +53,9 @@ function discretize(p::AbstractPath; ds=0.002, with_arg=false)
         end
         append!(t, T)
         append!(z, Z)
+    end
+    if isclosed(p)
+        t, z = t[1:end-1], z[1:end-1]
     end
     return with_arg ? (t, z) : z
 end
