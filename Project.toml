@@ -1,7 +1,7 @@
 name = "ComplexRegions"
 uuid = "c64915e2-6c82-11e9-38e9-1f159a780463"
 authors = ["Toby Driscoll <driscoll@udel.edu>"]
-version = "0.2.0"
+version = "0.2.1"
 
 [deps]
 ComplexValues = "41a84b80-6cf2-11e9-379d-9df124847946"
