@@ -149,7 +149,7 @@ Construct a `ClosedCurve` object from the complex-valued function `point` accept
 	ClosedCurve(f,df[,a,b]; tol=<default>)
 Construct a closed curve with point location and tangent given by the complex-valued functions `f` and `df`, respectively, optionally with given limits on the parameter.
 """
-ClosedCurve(f,df=t->fdtangent(f,t);kw...) = ClosedCurve(Curve(f,df;kw...))
+ClosedCurve(f,df=t -> ForwardDiff.derivative(f,t);kw...) = ClosedCurve(Curve(f,df;kw...))
 ClosedCurve(f,a::Real,b::Real;kw...) = ClosedCurve(Curve(f,a,b;kw...))
 ClosedCurve(f,df,a::Real,b::Real;kw...) = ClosedCurve(Curve(f,df,a,b;kw...))
 
