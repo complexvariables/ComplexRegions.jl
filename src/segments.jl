@@ -20,14 +20,14 @@ end
 Consruct a segment that starts at value `a` and ends at `b`.
 """
 function Segment(a::Number, b::Number)
-	T = promote_type(real_type(a), real_type(b))
+	T = promote_type(real_type(float(a)), real_type(float(b)))
 	a, b = convert_real_type(T, a), convert_real_type(T, b)
 	Segment{T}(a, b)
 end
 
 # We want a real segment to have real values
 function Segment(a::T, b::S) where {T<:Real,S<:Real}
-	a, b = promote(a, b)
+	a, b = promote(float(a), b)
 	Segment{typeof(a)}(a, b)
 end
 
