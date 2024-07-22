@@ -26,11 +26,11 @@ end
 # Use 2nd order finite differences to approximate a tangent.
 function fdtangent(z, t::Real)
     ϵ = eps(typeof(float(t)))
-    ϵ3 = 0.5 * ϵ^(1 / 3)
+    ϵ3 = ϵ^(1 // 3) / 2
     if t < ϵ3
-        τ = (-1.5 * z(t) + 2 * z(t + ϵ3) - 0.5 * z(t + 2ϵ3)) / ϵ3
+        τ = (-3z(t) + 4z(t + ϵ3) - z(t + 2ϵ3)) / 2ϵ3
     elseif t > 1 - ϵ3
-        τ = (1.5 * z(t) - 2 * z(t - ϵ3) + 0.5 * z(t - 2ϵ3)) / ϵ3
+        τ = (3z(t) - 4z(t - ϵ3) + z(t - 2ϵ3)) / 2ϵ3
     else
         τ = (z(t + ϵ3) - z(t - ϵ3)) / (2ϵ3)
     end
