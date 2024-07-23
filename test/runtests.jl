@@ -3,53 +3,53 @@ CR = ComplexRegions
 
 using Test
 @testset "Utilities" begin
-    @test(CR.scaleto(1im, 3im, [0.5, 0.75]) ≈ [2.0im, 2.5im])
-    @test(CR.scalefrom(1im, 3im, [2im, 1im, 1.5im]) ≈ [0.5, 0, 0.25])
+    @test CR.scaleto(1im, 3im, [0.5, 0.75]) ≈ [2.0im, 2.5im]
+    @test CR.scalefrom(1im, 3im, [2im, 1im, 1.5im]) ≈ [0.5, 0, 0.25]
     x = CR.realroots(3, 16, 1)
-    @test(all(@. abs(3x^2 + 16x + 1) < 1e-12))
+    @test all(@. abs(3x^2 + 16x + 1) < 1e-12)
     z = 2im .+ 3 * exp.(2im * pi * [0.8, 0.1, 0.25])
-    @test(CR.isccw(z...))
-    @test(CR.intadapt(exp, 0, 4, 1e-13) ≈ (exp(4) - 1))
+    @test CR.isccw(z...)
+    @test CR.intadapt(exp, 0, 4, 1e-13) ≈ (exp(4) - 1)
     z = t -> cis(t)
-    @test(CR.fdtangent(z, 0) ≈ 1im)
-    @test(CR.fdtangent(z, 1) ≈ 1im * exp(1im))
-    @test(CR.fdtangent(z, 0.2) ≈ 1im * cis(0.2))
+    @test CR.fdtangent(z, 0) ≈ 1im
+    @test CR.fdtangent(z, 1) ≈ 1im * exp(1im)
+    @test CR.fdtangent(z, 0.2) ≈ 1im * cis(0.2)
 end
 
 @testset "Curves using $T" for T in (Float64, BigFloat)
     f = t -> 2 * cos(t) + 1im * sin(t)
-    @test(Curve(f, -1, 1) isa Curve)
-    @test(point(Curve{T}(f, -1, 1), 1//2) ≈ f(0))
+    @test Curve(f, -1, 1) isa Curve
+    @test point(Curve{T}(f, -1, 1), 1//2) ≈ f(0)
     f = t -> 2 * cospi(t) + 3im * sinpi(t)
     c = ClosedCurve{T}(f, 0, 2)
-    @test(point(5 - 3im * c, 1//8) ≈ 5 - 3im * f(T(1) / 4))
-    @test(angle(normal(c, 3//4)) ≈ T(π) / 2)
+    @test point(5 - 3im * c, 1//8) ≈ 5 - 3im * f(T(1) / 4)
+    @test angle(normal(c, 3//4)) ≈ T(π) / 2
 end
 
 @testset "Circles in $T" for T in (Float64, BigFloat)
     c = Circle(Spherical{T}(1 - 1im), sqrt(T(2)))
-    @test(arclength(c) ≈ 2 * sqrt(T(2)) * T(pi))
-    @test(dist(-1 + 1im, c) ≈ sqrt(T(2)))
-    @test(closest(1 + 4im, c) ≈ 1 + 1im * (sqrt(T(2)) - 1))
-    @test(isinside(1.5 - 1im, c) && isoutside(3//2 + 1im, reverse(c)))
-    @test(isinf(reflect(c.center, c)))
-    @test(reflect(reflect(-1 + 2im, c), c) ≈ -1 + 2im)
-    @test(all(mod(abs(arg(c, c(t)) - t), 1) < 1e-11 for t in 0:1//10:1))
-    @test(angle(unittangent(c, 1//8)) ≈ 3T(π)/4)
-    @test(abs(tangent(c, T(1//8))) ≈ 2T(π) * sqrt(T(2)))
+    @test arclength(c) ≈ 2 * sqrt(T(2)) * T(pi)
+    @test dist(-1 + 1im, c) ≈ sqrt(T(2))
+    @test closest(1 + 4im, c) ≈ 1 + 1im * (sqrt(T(2)) - 1)
+    @test isinside(1.5 - 1im, c) && isoutside(3//2 + 1im, reverse(c))
+    @test isinf(reflect(c.center, c))
+    @test reflect(reflect(-1 + 2im, c), c) ≈ -1 + 2im
+    @test all(mod(abs(arg(c, c(t)) - t), 1) < 1e-11 for t in 0:1//10:1)
+    @test angle(unittangent(c, 1//8)) ≈ 3T(π)/4
+    @test abs(tangent(c, T(1//8))) ≈ 2T(π) * sqrt(T(2))
     τ = tangent(c, T(1//5))
-    @test(isapprox(τ, CR.fdtangent(c, T(1//5)), rtol=sqrt(eps(T))))
+    @test isapprox(τ, CR.fdtangent(c, T(1//5)), rtol=sqrt(eps(T)))
 
     c = Circle(1 - 1im, sqrt(2))
-    @test(point(c, 0.25) ≈ complex(1, sqrt(2) - 1))
-    @test(2 / c isa Line)
+    @test point(c, 0.25) ≈ complex(1, sqrt(2) - 1)
+    @test 2 / c isa Line
     c = Circle(1.0f0, -1im, 0)
-    @test(c.radius ≈ 1 / sqrt(2.0f0))
+    @test c.radius ≈ 1 / sqrt(2.0f0)
     c = Circle(1, -1im, false)
-    @test(all(mod(abs(arg(c, c(t)) - t), 1) < 1e-11 for t in 0:0.1:1))
+    @test all(mod(abs(arg(c, c(t)) - t), 1) < 1e-11 for t in 0:0.1:1)
     zz = point(5im - c / 3im, 0.23)
-    @test(abs(zz - (5im - c.center / 3im)) ≈ c.radius / 3)
-    @test(Circle(1 + 3im, Polar(1 - 1im), 1.0) isa Line)
+    @test abs(zz - (5im - c.center / 3im)) ≈ c.radius / 3
+    @test Circle(1 + 3im, Polar(1 - 1im), 1.0) isa Line
 end
 
 @testset "Arcs in $T" for T in (Float64, BigFloat)
@@ -203,7 +203,7 @@ end
     S = Segment(1, 1im)
     A = Arc(1im, -1 + 0.5im, -1)
     P = Path([S, A, -S])
-    @test(all(point(P, [0, 1, 1.5, 2.5, 3]) .≈ [S(0), S(1), A(0.5), -S(0.5), -S(1)]))
+    @test all(point(P, [0, 1, 1.5, 2.5, 3]) .≈ [S(0), S(1), A(0.5), -S(0.5), -S(1)])
     Q = 1 - 3im * P
     @test(Q(1.5) ≈ 1 - 3im * A(0.5))
 

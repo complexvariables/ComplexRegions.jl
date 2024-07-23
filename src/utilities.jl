@@ -1,6 +1,8 @@
 # Scale from/to [0,1].
-scalefrom(a, b, t) = @. (t - a) / (b - a)
-scaleto(a, b, t) = @. a + t * (b - a)
+scalefrom(a::Number, b::Number, t) = @. (t - a) / (b - a)
+scalefrom(T::Type, a, b, t) = scalefrom(convert_real_type(T, a), convert_real_type(T, b), T(t))
+scaleto(a::Number, b::Number, t) = @. a + t * (b - a)
+scaleto(T::Type, a, b, t) = scaleto(convert_real_type(T, a), convert_real_type(T, b), T(t))
 
 # Unique real roots of a quadratic.
 function realroots(a, b, c)
