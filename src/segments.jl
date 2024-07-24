@@ -63,7 +63,7 @@ Base.:*(S::Segment, z::Number) = Segment(S.za * z, S.zb * z)
 Invert the segment `S` through the origin. In general the inverse is an `Arc`, though the result is a `Segment` if `S` would pass through the origin when extended.
 """
 function inv(S::Segment)
-    w = 1 ./ point(S, SVector(T(0), T(1) / 2, T(1)))
+    w = 1 ./ point(S, SVector(0, 1//2, 1))
     return Arc(w...)
 end
 
