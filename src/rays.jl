@@ -59,7 +59,7 @@ function arg(R::Ray, z::Number)
     return R.reverse ? 1 - t : t
 end
 
-function unittangent(R::Ray{T}, ::Real) where {T}
+function unittangent(R::Ray{T}, t::Real=0) where {T}
     τ = cis(R.angle)
     R.reverse ? -τ : τ
 end
