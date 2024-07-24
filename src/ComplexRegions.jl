@@ -49,11 +49,11 @@ export point, arclength, slope, dist, closest, isleft, isright, reflect, tangent
 export Curve, ClosedCurve, Circle, Line, Arc, Segment, Ray
 include("curves.jl")
 
-# export Path, ClosedPath, Polygon, polygon, CircularPolygon
-# export curve, curves, vertex, vertices, side, sides, isfinite, sign, angle, angles, winding, ispositive, Rectangle, rectangle, n_gon
-# include("paths.jl")
+export Path, ClosedPath, Polygon, polygon, CircularPolygon
+export curve, curves, vertex, vertices, side, sides, isfinite, sign, angle, angles, winding, ispositive, Rectangle, rectangle, n_gon
+include("paths.jl")
 
-# const AbstractCurveOrPath = Union{AbstractCurve,AbstractPath}
+const AbstractCurveOrPath = Union{AbstractCurve,AbstractPath}
 
 # export SimplyConnectedRegion, ConnectedRegion, ExteriorRegion, disk, unitdisk, Annulus, PolygonalRegion
 # export halfplane, upperhalfplane, lowerhalfplane, lefthalfplane, righthalfplane
@@ -62,8 +62,8 @@ include("curves.jl")
 # include("regions.jl")
 # include("simplyconnected.jl")
 
-# export discretize
-# include("discretize.jl")
+export discretize
+include("discretize.jl")
 
 # export Möbius,Mobius
 # include("mobius.jl")

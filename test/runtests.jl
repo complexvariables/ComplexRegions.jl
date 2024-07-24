@@ -199,89 +199,95 @@ end
     end
 end
 
-@testset "Paths" begin
-    S = Segment(1, 1im)
-    A = Arc(1im, -1 + 0.5im, -1)
+@testset "Paths in $T" for T in (Float64, BigFloat)
+    S = Segment{T}(1, 1im)
+    A = Arc(1im, -T(1) + 0.5im, -1)
     P = Path([S, A, -S])
     @test all(point(P, [0, 1, 1.5, 2.5, 3]) .≈ [S(0), S(1), A(0.5), -S(0.5), -S(1)])
     Q = 1 - 3im * P
-    @test(Q(1.5) ≈ 1 - 3im * A(0.5))
+    @test Q(1.5) ≈ 1 - 3im * A(0.5)
 
-    p = Path([Arc(-1, -0.4 - 0.4im, -1im), Arc(-1im, 0.4 - 0.4im, 1), Arc(1, 0.4 + 0.4im, 1im)])
-    @test(angles(p)[2:3] ≈ 0.78121408739537 * [1, 1])
+    z = (T(2) + 2im) / 5
+    p = Path([Arc(-1, -z, -1im), Arc(-1im, conj(z), 1), Arc(1, z, 1im)])
+    θ = angles(p)
+    @test θ[2] ≈ 0.78121408739537 rtol=1e-13
+    @test θ[2] ≈ θ[3]
+    p = ClosedPath([curves(p); Arc(1im, -conj(z), -1)])
+    θ = angles(p)
+    @test all(θ[1:3] .≈ θ[2:4])
 
     P = ClosedPath([S, 1im * S, -S, -1im * S])
-    @test(vertex(P, 3) ≈ -1)
-    @test(arclength(P) ≈ 4 * sqrt(2))
-    @test(isa(reverse(P), ClosedPath))
-    @test(all(point(P, [0, 1, 1.25, 2.5, 3, 4]) .≈ [S(0), S(1), 1im * S(0.25), -S(0.5), -S(1), S(0)]))
+    @test vertex(P, 3) ≈ -1
+    @test arclength(P) ≈ 4 * sqrt(T(2))
+    @test isa(reverse(P), ClosedPath)
+    @test all(point(P, [0, 1, 5//4, 2.5, 3, 4]) .≈ [S(0), S(1), 1im * S(1//4), -S(0.5), -S(1), S(0)])
 
-    p = ClosedPath([curves(p); Arc(1im, -0.4 + 0.4im, -1)])
-    @test(all(angles(p) .≈ 0.78121408739537))
-
+    P = ClosedPath([S, 1im * S, Arc(-T(1),-2 - 1im, 1)])
+    @test 2 * angles(P)[2] ≈ π
 end
 
-@testset "Polygons" begin
-    s = Segment(2, 2im)
+@testset "Polygons in $T" for T in (Float64, BigFloat)
+    s = Segment{T}(2, 2im)
     p = Polygon([s, 1im * s, -s, -1im * s])
-    @test arclength(p) ≈ 8 * sqrt(2)
-    @test angle(normal(p, 1.1 + length(p))) ≈ -π / 4
-    @test winding(p, -0.4 + 0.5im) == 1
-    @test winding(reverse(p), -0.4 + 0.5im) == -1
-    @test winding(p, -4 - 0.5im) == 0
-    @test all(angles(p) .≈ 0.5 * pi)
+    @test arclength(p) ≈ 8 * sqrt(T(2))
+    @test -4*angle(normal(p, 1.1 + length(p))) ≈ π
+    z = (-T(4) + 5im) / 10
+    @test winding(p, z) == 1
+    @test winding(reverse(p), z) == -1
+    @test winding(p, -T(4) - 0.5im) == 0
+    @test all(2angles(p) .≈ pi)
     @test ispositive(p)
     @test !ispositive(reverse(p))
 
-    p = Polygon([4, 4 + 3im, 3im, -2im, 6 - 2im, 6])
+    p = Polygon([T(4), 4 + 3im, 3im, -2im, 6 - 2im, 6])
     @test arclength(p) ≈ (3 + 4 + 5 + 6 + 2 + 2)
     @test tangent(p, 2.3 - length(p)) ≈ -5im
-    @test winding(p, 5 - im) == 1
+    @test winding(p, 5 - 1im) == 1
     @test winding(p, -1) == 0
     @test sum(angles(p)) ≈ 4pi
 
-    p = CircularPolygon([Arc(1, 2 + 1im, 1im), Segment(1im, -1), Arc(-1, -0.5im, -1im), Segment(-1im, 1)])
-    @test(all(winding(p, z) == 1 for z in [1 + 0.5im, 1.7 + 1im, 0, -1 + 0.05 * cispi(1 / 5), -1im + 0.05 * cispi(0.3)]))
-    @test(all(winding(p, z) == 0 for z in [-0.999im, 0.001 - 1im, -0.999, -1.001, 1.001, 1.999im]))
+    p = CircularPolygon([Arc(T(1), 2 + 1im, 1im), Segment{T}(1im, -1), Arc(-T(1), -0.5im, -1im), Segment{T}(-1im, 1)])
+    @test all(winding(p, z) == 1 for z in [1 + 0.5im, 1.7 + 1im, 0, -1 + 0.05 * cispi(1 / 5), -1im + 0.05 * cispi(0.3)])
+    @test all(winding(p, z) == 0 for z in [-0.999im, 0.001 - 1im, -0.999, -1.001, 1.001, 1.999im])
 
-    r = Rectangle(2.0, [1, 3], π / 2)
+    r = Rectangle(T(2), [1, 3], T(π) / 2)
     @test arclength(r) ≈ 16
     @test all(abs.(imag(vertices(r))) .≈ 1)
     @test mean(real(vertices(r))) ≈ 2
-    @test all(angles(r) .≈ π / 2)
+    @test all(2angles(r) .≈ π )
     @test convert(Polygon, r) ≈ r.polygon
-    @test point(r, 0.33) ≈ r.polygon(0.33)
-    @test r(0.33) ≈ r.polygon(0.33)
+    @test point(r, 1//3) ≈ r.polygon(1//3)
+    @test r(1//3) ≈ r.polygon(1//3)
     @test inv(r) ≈ inv(r.polygon)
 
-    for r in (rectangle(-2im, 3 + 4im), rectangle([0, 3], [-2, 4]))
+    for r in (rectangle(-2im, T(3) + 4im), rectangle([0, T(3)], [-2, 4]))
         @test arclength(r) ≈ 18
         @test all(extrema(r)[1] .≈ (0, 3))
         @test all(extrema(r)[2] .≈ (-2, 4))
     end
 end
 
-@testset "Unbounded polygons" begin
-    p = Polygon([5, 4 + 3im, 3im, -2im, 6 - 2im, (-pi / 2, 0)])
+@testset "Unbounded polygons in $T" for T in (Float64, BigFloat)
+    p = Polygon([T(5), 4 + 3im, 3im, -2im, 6 - 2im, (-T(pi) / 2, 0)])
     a = angles(p) / pi
     @test(a[6] ≈ -0.5)
     @test(sum(a .- 1) ≈ -2)
 
-    p = Polygon([(pi / 2, pi / 2), 5, 4 + 3im, 3im, -2im, 6 - 2im])
+    p = Polygon([(T(pi) / 2, T(pi) / 2), T(5), 4 + 3im, 3im, -2im, 6 - 2im])
     a = angles(p) / pi
-    @test(abs(a[1]) < 1e-10)
+    @test(abs(a[1]) < tolerance(T))
     @test(sum(a .- 1) ≈ -2)
     @test(all(winding(p, z) == 1 for z in [1 + 2im, 5 - 1im, 5.5 + 6im]))
     @test(all(winding(p, z) == 0 for z in [-3im, 3 + 5im, 5.5 - 6im]))
 
-    p = Polygon([(-pi / 2, pi / 2), 7, 4 + 3im, 3im, -2im, 6 - 2im])
+    p = Polygon([(-T(pi) / 2, T(pi) / 2), T(7), 4 + 3im, 3im, -2im, 6 - 2im])
     a = angles(p) / pi
     @test(a[1] ≈ -1)
     @test(sum(a .- 1) ≈ -2)
     @test(all(winding(p, z) == 1 for z in [4, 7 - 2im, 9]))
     @test(all(winding(p, z) == 0 for z in [4 + 4im, 6 + 2im, 4 - 3im]))
 
-    p = Polygon([4 + 3im, 7, (0, 0), 6 - 2im, -2im, 3im])
+    p = Polygon([4 + 3im, T(7), (0, 0), 6 - 2im, -2im, 3im])
     a = angles(p) / pi
     @test(a[3] ≈ -2)
     @test(sum(a .- 1) ≈ -2)
