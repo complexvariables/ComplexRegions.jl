@@ -119,7 +119,7 @@ function intersect(c1::Circle{S}, c2::Circle{T}; tol=tolerance(S,T)) where {S,T}
     z1, z2 = c1.center, c2.center
     delta = z2 - z1
     d = abs(delta)
-    if abs(d) < tol
+    if d < tol*max(r1, r2)
         if isapprox(r1, r2, rtol=tol, atol=tol)
             return c1
         else
@@ -159,16 +159,18 @@ intersect(r::Ray, c::Circle; kw...) = intersect(c, r; kw...)
 function intersect(c::Circle{S}, r::Ray{T}; tol=tolerance(S,T)) where {S,T}
     # probably not the most efficient way
     z = intersect(c, Line(r.base, direction=cis(r.angle)); tol)
+    scale = maximum(abs, z)
     d = [dist(z, r) for z in z]
-    return z[d.<=tol]
+    return z[d .<= scale*tol]
 end
 
 intersect(s::Segment, c::Circle; kw...) = intersect(c, s; kw...)
 function intersect(c::Circle{S}, s::Segment{T}; tol=tolerance(S,T)) where {S,T}
     # probably not the most efficient way
     z = intersect(c, Line(s.za, s.zb), tol=tol)
+    scale = maximum(abs, z)
     d = [dist(z, s) for z in z]
-    return z[d.<=tol]
+    return z[d .<= scale*tol]
 end
 
 function intersect(a1::Arc{S}, a2::Arc{T}; tol=tolerance(S,T)) where {S,T}
