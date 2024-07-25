@@ -320,24 +320,24 @@ end
     @test count(isnan, Z) == 1536
 end
 
-@testset "Möbius" begin
-    z = [0, 1, 2 + 2im]
-    w = [Inf, -1im, -1]
+@testset "Möbius in $T" for T in (Float64, BigFloat)
+    z = [T(0), 1, 2 + 2im]
+    w = [Inf, -1im, -T(1)]
     f = Möbius(z, w)
-    @test(all(f.(z) .≈ w))
+    @test all(@. f(z) ≈ w)
     g = inv(f)
-    @test(all(g.(w) .≈ z))
+    @test all(@. g(w) ≈ z)
     c = Circle(z...)
     l = Line(w[2], w[3])
-    @test(f(c) ≈ l && g(l) ≈ c)
+    @test f(c) ≈ l && g(l) ≈ c
     d = exterior(c)
     h = halfplane(l)
-    @test(f(d) ≈ !h && g(h) ≈ !d)
-    @test(f(!d) ≈ h && g(!h) ≈ d)
-    f = Möbius([2, 3 + im, -5], z)
-    g = Möbius(w, [2, 3 + im, -5])
+    @test f(d) ≈ !h && g(h) ≈ !d
+    @test f(!d) ≈ h && g(!h) ≈ d
+    f = Möbius([T(2), 3 + im, -5], z)
+    g = Möbius(w, [T(2), 3 + im, -5])
     h = f ∘ g
-    @test(all(h.(w) .≈ z))
+    @test all(@. h(w) ≈ z)
 end
 
 @testset "SC Regions in $T" for T in (Float64, BigFloat)

@@ -65,12 +65,12 @@ include("simplyconnected.jl")
 export discretize
 include("discretize.jl")
 
-# export Möbius,Mobius
-# include("mobius.jl")
+export Möbius,Mobius
+include("mobius.jl")
 
-# export Shapes
-# include("shapes.jl")
+export Shapes
+include("shapes.jl")
 
-# include("docs.jl")
+include("docs.jl")
 
 end # module
