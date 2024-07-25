@@ -68,11 +68,17 @@ Type for closed paths consisting entirely of arcs, segments, and rays.
 """
 struct CircularPolygon{T} <: AbstractCircularPolygon{T}
     path::ClosedPath{T}
-    function CircularPolygon{T}(p::AbstractClosedPath{T}) where {T}
+    function CircularPolygon{T}(p::ClosedPath{T}) where {T}
         # Continuity and closure have been checked to make a closed path
         valid = isa.(curves(p), Union{Arc, Segment, Ray})
         @assert all(valid) "All sides must be an Arc, Segment, or Ray"
         new(p)
+    end
+    function CircularPolygon{T}(p::AbstractVector{<:AbstractCurve{T}}; kw...) where {T}
+        return CircularPolygon{T}(ClosedPath(p; kw...))
+    end
+    function CircularPolygon{T}(p::AbstractCurve{T}; kw...) where {T}
+        return CircularPolygon{T}(ClosedPath([p]; kw...))
     end
 end
 
@@ -85,6 +91,9 @@ Construct a circular polygon from a (possibly closed) path, or from a vector of 
 CircularPolygon(p::AbstractPath{T}; kw...) where {T} = CircularPolygon{T}(ClosedPath{T}(p; kw...))
 function CircularPolygon(p::AbstractVector{<:AbstractCurve{T}}; kw...) where {T}
     CircularPolygon{T}(ClosedPath(p; kw...))
+end
+function CircularPolygon(p::AbstractCurve{T}; kw...) where {T}
+    return CircularPolygon{T}(ClosedPath([p]; kw...))
 end
 
 # Required methods

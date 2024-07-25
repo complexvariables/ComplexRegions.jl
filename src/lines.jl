@@ -6,8 +6,8 @@
 Each `Line` type is parameterized according to the common type of its complex input arguments.
 """
 struct Line{T} <: AbstractClosedCurve{T}
-    base::AnyComplex{T}
-    direction::AnyComplex{T}
+    base::Union{T,AnyComplex{T}}
+    direction::Union{T,AnyComplex{T}}
     Line{T}(a, b) where {T} = new(convert_real_type(T, a), sign(convert_real_type(T, b - a)))
 end
 """
