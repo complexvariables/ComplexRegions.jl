@@ -63,8 +63,8 @@ Discretize a path or curve at `n` points, roughly equidistributed by arc length.
 
 Returns a tuple of vectors `t` and `z` such that `z[j]` is the point on the curve at parameter value `t[j]`.
 """
-function discretize(p::AbstractClosedCurve, n::Integer)
-    t = isfinite(p) ? range(0, 1, n+1) : range(0.05, 0.95, n+1)
+function discretize(p::AbstractClosedCurve{T}, n::Integer) where T
+    t = isfinite(p) ? range(T(0), T(1), n+1) : range(T(1)/20, T(19)/20, n+1)
     t = collect(t)
     z = p.(t)
     equidist!(t, z, p)
@@ -72,8 +72,8 @@ function discretize(p::AbstractClosedCurve, n::Integer)
     return t[1:end-1], z[1:end-1]
 end
 
-function discretize(p::AbstractCurve, n::Integer)
-    t = isfinite(p) ? range(0, 1, n) : range(0.05, 0.95, n)
+function discretize(p::AbstractCurve{T}, n::Integer) where T
+    t = isfinite(p) ? range(T(0), T(1), n+1) : range(T(1)/20, T(19)/20, n+1)
     t = collect(t)
     z = p.(t)
     equidist!(t, z, p)
@@ -81,10 +81,10 @@ function discretize(p::AbstractCurve, n::Integer)
     return t, z
 end
 
-function discretize(p::AbstractCurveOrPath, n::Integer)
+function discretize(p::AbstractPath{T}, n::Integer) where T
     m = length(p)
     isclosed(p) && (n += 1)
-    t = isfinite(p) ? range(0, m, n) : range(0.05, 0.95m, n)
+    t = isfinite(p) ? range(T(0), T(m), n) : range(T(1)/20, T(19m)/20, n)
     t = collect(t)
     z = p.(t)
     equidist!(t, z, p)
