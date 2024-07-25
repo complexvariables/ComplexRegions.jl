@@ -53,6 +53,7 @@ function Base.convert(::Type{Arc{T}}, L::Arc{S}) where {T,S}
 	return Arc{T}(convert_real_type(T, L.circle), convert_real_type(T, L.start), convert_real_type(T, L.delta))
 end
 convert_real_type(::Type{T}, L::Arc{S}) where {T<:Real,S} = convert(Arc{T}, L)
+Base.promote_rule(::Type{<:Arc{T}}, ::Type{<:Arc{S}}) where {T,S} = Arc{promote_type(T,S)}
 
 # Required methods
 function point(A::Arc, t::Real)

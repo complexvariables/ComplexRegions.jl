@@ -98,9 +98,9 @@ isinside(C::AbstractClosedCurve) = z -> isinside(z, C)
 isoutside(z::Number, C::AbstractClosedCurve) = winding(C, z) == 0
 isoutside(C::AbstractClosedCurve) = z -> isoutside(z, C)
 
-#
+##################
 # generic Curve
-#
+##################
 
 """
 (type) Smooth curve defined by an explicit function of a real paramerter in [0,1].
@@ -146,6 +146,7 @@ function Curve(f::Function, df::Function, a::Real, b::Real)
 end
 
 convert_real_type(T::Type{<:Real}, C::Curve{S}) where S = Curve{T}(C.point, C.tangent)
+Base.promote_rule(::Type{<:Curve{T}}, ::Type{<:Curve{S}}) where {T,S} = Curve{promote_type(T,S)}
 
 # Required methods
 point(C::Curve{T}, t::Real) where T = C.point(T(t))
@@ -206,6 +207,9 @@ Base.:+(C::ClosedCurve, z::Number) = ClosedCurve(C.curve + z)
 Base.:-(C::ClosedCurve) = ClosedCurve(-C.curve)
 Base.:*(C::ClosedCurve, z::Number) = ClosedCurve(C.curve * z)
 Base.inv(C::ClosedCurve) = ClosedCurve(inv(C.curve))
+
+convert_real_type(T::Type{<:Real}, C::ClosedCurve{S}) where S = ClosedCurve{T}(C.point, C.tangent)
+Base.promote_rule(::Type{<:ClosedCurve{T}}, ::Type{<:ClosedCurve{S}}) where {T,S} = ClosedCurve{promote_type(T,S)}
 
 include("lines.jl")
 include("rays.jl")

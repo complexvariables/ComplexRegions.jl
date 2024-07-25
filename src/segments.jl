@@ -35,6 +35,7 @@ function Base.convert(::Type{Segment{T}}, L::Segment{S}) where {T,S}
 	return Segment{T}(convert_real_type(T, L.za), convert_real_type(T, L.zb))
 end
 convert_real_type(::Type{T}, L::Segment{S}) where {T<:Real,S} = convert(Segment{T}, L)
+Base.promote_rule(::Type{<:Segment{T}}, ::Type{<:Segment{S}}) where {T,S} = Segment{promote_type(T,S)}
 
 # Required methods
 arclength(S::Segment) = abs(S.zb - S.za)

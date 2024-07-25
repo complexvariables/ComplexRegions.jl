@@ -26,6 +26,7 @@ function Base.convert(::Type{Ray{T}}, R::Ray{S}) where {T,S}
 	return Ray{T}(convert_real_type(T, R.base), convert_real_type(T, R.angle), R.reverse)
 end
 convert_real_type(::Type{T}, R::Ray{S}) where {T<:Real,S} = convert(Ray{T}, R)
+Base.promote_rule(::Type{<:Ray{T}}, ::Type{<:Ray{S}}) where {T,S} = Ray{promote_type(T,S)}
 
 # Required methods
 arclength(::Ray) = Inf

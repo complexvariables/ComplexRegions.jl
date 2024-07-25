@@ -52,6 +52,7 @@ function Base.convert(::Type{Circle{T}}, C::Circle{S}) where {T,S}
 	return Circle{T}(convert_real_type(T, C.center), convert(T, C.radius), C.ccw)
 end
 convert_real_type(::Type{T}, C::Circle{S}) where {T<:Real,S} = convert(Circle{T}, C)
+Base.promote_rule(::Type{<:Circle{T}}, ::Type{<:Circle{S}}) where {T,S} = Circle{promote_type(T,S)}
 
 # Required methods
 function point(C::Circle, t::Real)
