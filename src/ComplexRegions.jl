@@ -53,14 +53,14 @@ export Path, ClosedPath, Polygon, polygon, CircularPolygon
 export curve, curves, vertex, vertices, side, sides, isfinite, sign, angle, angles, winding, ispositive, Rectangle, rectangle, n_gon
 include("paths.jl")
 
-const AbstractCurveOrPath = Union{AbstractCurve,AbstractPath}
+const AbstractCurveOrPath{T} = Union{AbstractCurve{T},AbstractPath{T}}
 
-# export SimplyConnectedRegion, ConnectedRegion, ExteriorRegion, disk, unitdisk, Annulus, PolygonalRegion
-# export halfplane, upperhalfplane, lowerhalfplane, lefthalfplane, righthalfplane
-# export RegionIntersection, RegionUnion
-# export region, interior, exterior, between, boundary, innerboundary, outerboundary, modulus
-# include("regions.jl")
-# include("simplyconnected.jl")
+export SimplyConnectedRegion, ConnectedRegion, ExteriorRegion, disk, unitdisk, Annulus, PolygonalRegion
+export halfplane, upperhalfplane, lowerhalfplane, lefthalfplane, righthalfplane
+export RegionIntersection, RegionUnion
+export region, interior, exterior, between, boundary, innerboundary, outerboundary, modulus
+include("regions.jl")
+include("simplyconnected.jl")
 
 export discretize
 include("discretize.jl")

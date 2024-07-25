@@ -106,103 +106,104 @@ function discretize(p::AbstractPath{T}, n::Integer) where T
     return t, z
 end
 
-# """
-#     discretize(P::SimplyConnectedRegion, n=600)
-# Create an `n`×`n` grid of points on `P`. Points lying outside of `P` have a value of `NaN`.
+"""
+    discretize(P::SimplyConnectedRegion, n=600)
+Create an `n`×`n` grid of points on `P`. Points lying outside of `P` have a value of `NaN`.
 
-# If `P` is an exterior region, the points lie in a box a bit larger than the bounding box of `P`.
+If `P` is an exterior region, the points lie in a box a bit larger than the bounding box of `P`.
 
-# If keyword argument `limits` is specified, it must be a vector or tuple `(xmin, xmax, ymin, ymax)` specifying the limits of the grid.
-# """
-# function discretize(
-#     P::InteriorSimplyConnectedRegion, n=600;
-#     limits=nothing,
-#     )
-#     @assert (isfinite(P) || !isnothing(limits)) "Unbounded region must have limits specified"
-#     # Get boundary points for determining interiority.
-#     z = discretize(boundary(P), 2n)[2]
-#     if isnothing(limits)
-#         xlims, ylims = extrema(real(z)), extrema(imag(z))
-#     else
-#         xlims, ylims = Tuple(limits[1:2]), Tuple(limits[3:4])
-#     end
-#     # This function selects only inside points:
-#     point(x,y) = wind(complex(x,y), z) != 0 ? complex(x,y) : NaN
-#     return discretize(xlims, ylims, n, point)
-# end
+If keyword argument `limits` is specified, it must be a vector or tuple `(xmin, xmax, ymin, ymax)` specifying the limits of the grid.
+"""
+function discretize(
+    P::InteriorSimplyConnectedRegion{T,S}, n=600;
+    limits=nothing,
+    ) where {T,S}
+    @assert (isfinite(P) || !isnothing(limits)) "Unbounded region must have limits specified"
+    # Get boundary points for determining interiority.
+    _, z = discretize(boundary(P), 2n)
+    if isnothing(limits)
+        xlims, ylims = extrema(real(z)), extrema(imag(z))
+    else
+        xlims, ylims = Tuple(limits[1:2]), Tuple(limits[3:4])
+    end
+    # This function selects only inside points:
+    point(x,y) = wind(complex(x,y), z) != 0 ? complex(x,y) : NaN
+    return discretize(xlims, ylims, n, point)
+end
 
-# function discretize(
-#     P::ExteriorSimplyConnectedRegion, n=600;
-#     limits=nothing,
-#     )
-#     # Get boundary points for determining interiority.
-#     z = discretize(boundary(P), 2n)[2]
+function discretize(
+    P::ExteriorSimplyConnectedRegion, n=600;
+    limits=nothing,
+    )
+    # Get boundary points for determining interiority.
+    T, z = discretize(boundary(P), 2n)
 
-#     if isnothing(limits)
-#         # Enlarge a bit to get an enclosing box.
-#         zc = mean(z)
-#         r = max(maximum(real(z .- zc)), maximum(imag(z .- zc)))
-#         # zz = zc .+ 2.5*complex(r, r)
-#         # xlims, ylims = extrema(real(zz)), extrema(imag(zz))
-#         xlims = (real(zc) - 2r, real(zc) + 2r)
-#         ylims = (imag(zc) - 2r, imag(zc) + 2r)
-#     else
-#         xlims, ylims = Tuple(limits[1:2]), Tuple(limits[3:4])
-#     end
+    if isnothing(limits)
+        # Enlarge a bit to get an enclosing box.
+        zc = mean(z)
+        zzc = z .- zc
+        r = max(maximum(real(zzc)), maximum(imag(zzc)))
+        # zz = zc .+ 2.5*complex(r, r)
+        # xlims, ylims = extrema(real(zz)), extrema(imag(zz))
+        xlims = (real(zc) - 2r, real(zc) + 2r)
+        ylims = (imag(zc) - 2r, imag(zc) + 2r)
+    else
+        xlims, ylims = Tuple(limits[1:2]), Tuple(limits[3:4])
+    end
 
-#     # This function selects only outside points:
-#     point(x,y) = wind(complex(x,y), z) == 0 ? complex(x,y) : NaN
-#     return discretize(xlims, ylims, n, point)
-# end
+    # This function selects only outside points:
+    point(x,y) = wind(complex(x,y), z) == 0 ? complex(x,y) : NaN
+    return discretize(xlims, ylims, n, point)
+end
 
-# function discretize(
-#     P::AbstractConnectedRegion, n=600;
-#     limits=nothing,
-#     )
-#     # Get boundary points for determining interiority.
-#     outer = outerboundary(P)
-#     zo = isnothing(outer) ? nothing : discretize(outer, 2n)[2]
-#     if isnothing(limits)
-#         xlims, ylims = extrema(real(zo)), extrema(imag(zo))
-#     else
-#         xlims, ylims = Tuple(limits[1:2]), Tuple(limits[3:4])
-#     end
-#     zi = map(p -> discretize(p, 2n)[2], innerboundary(P))
+function discretize(
+    P::AbstractConnectedRegion, n=600;
+    limits=nothing,
+    )
+    # Get boundary points for determining interiority.
+    outer = outerboundary(P)
+    zo = isnothing(outer) ? nothing : discretize(outer, 2n)[2]
+    if isnothing(limits)
+        xlims, ylims = extrema(real(zo)), extrema(imag(zo))
+    else
+        xlims, ylims = Tuple(limits[1:2]), Tuple(limits[3:4])
+    end
+    zi = map(p -> discretize(p, 2n)[2], innerboundary(P))
 
-#     # This function selects only inside points:
-#     function point(x, y)
-#         z = complex(x, y)
-#         if !isnothing(zo) && (wind(z, zo) == 0)
-#             return NaN
-#         else
-#             for c in zi
-#                 if wind(z, c) != 0
-#                     return NaN
-#                 end
-#             end
-#             return z
-#         end
-#     end
+    # This function selects only inside points:
+    function point(x, y)
+        z = complex(x, y)
+        if !isnothing(zo) && (wind(z, zo) == 0)
+            return NaN
+        else
+            for c in zi
+                if wind(z, c) != 0
+                    return NaN
+                end
+            end
+            return z
+        end
+    end
 
-#     return discretize(xlims, ylims, n, point)
-# end
+    return discretize(xlims, ylims, n, point)
+end
 
-# # FIXME: kludgy
-# function discretize(E::ExteriorRegion, n::Integer=600)
-#     xlims = (Inf, -Inf)
-#     ylims = (Inf, -Inf)
-#     for c in innerboundary(E)
-#         z = discretize(c, ds=0.01)
-#         xx, yy = extrema(real(z)), extrema(imag(z))
-#         xlims = min(xlims[1], xx[1]), max(xlims[2], xx[2])
-#         ylims = min(ylims[1], yy[1]), max(ylims[2], yy[2])
-#     end
-#     r = max( xlims[2] - xlims[1], ylims[2] - ylims[1] ) / 2
-#     r *= 1.33
-#     xlims = mean(xlims) .+ (-r, r)
-#     ylims = mean(ylims) .+ (-r, r)
-#     return discretize(ConnectedRegion(nothing, E.inner), n, limits=(xlims..., ylims...))
-# end
+# FIXME: kludgy
+function discretize(E::ExteriorRegion, n::Integer=600)
+    xlims = (Inf, -Inf)
+    ylims = (Inf, -Inf)
+    for c in innerboundary(E)
+        z = discretize(c, ds=0.01)
+        xx, yy = extrema(real(z)), extrema(imag(z))
+        xlims = min(xlims[1], xx[1]), max(xlims[2], xx[2])
+        ylims = min(ylims[1], yy[1]), max(ylims[2], yy[2])
+    end
+    r = max( xlims[2] - xlims[1], ylims[2] - ylims[1] ) / 2
+    r *= 4//3
+    xlims = mean(xlims) .+ (-r, r)
+    ylims = mean(ylims) .+ (-r, r)
+    return discretize(ConnectedRegion(nothing, E.inner), n, limits=(xlims..., ylims...))
+end
 
 # Utility function for the main calls.
 function discretize(xlims::NTuple{2}, ylims::NTuple{2}, n::Int, selector::Function)

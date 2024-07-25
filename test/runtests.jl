@@ -293,7 +293,7 @@ end
     @test(sum(a .- 1) ≈ -2)
 end
 
-@testset "Discretization" begin
+@testset "Discretization in $T" for T in (Float64, BigFloat)
     p = Polygon([T(4), 4 + 3im, 3im, -2im, 6 - 2im, 6])
     t, z = discretize(p, 200)
     @test eltype(t) == T
@@ -312,12 +312,12 @@ end
     @test z ≈ c.(t) atol = CR.tolerance(T)
     @test all(abs.(z .- 1im) .≈ 2)
 
-    Z = discretize(interior(p), 300)
-    @test size(Z) == (300, 300)
-    @test count(isnan.(Z)) == 18000
-    Z = discretize(exterior(p), 400, limits=[-5, 10, -8, 7])
-    @test size(Z) == (400, 400)
-    @test count(isnan.(Z)) == 17040
+    Z = discretize(interior(p), 100)
+    @test size(Z) == (100, 100)
+    @test count(isnan, Z) == 1981
+    Z = discretize(exterior(p), 120, limits=[-5, 10, -8, 7])
+    @test size(Z) == (120, 120)
+    @test count(isnan, Z) == 1536
 end
 
 @testset "Möbius" begin
@@ -340,15 +340,15 @@ end
     @test(all(h.(w) .≈ z))
 end
 
-@testset "SC Regions" begin
-    c = Circle(0, 1)
+@testset "SC Regions in $T" for T in (Float64, BigFloat)
+    c = Circle{T}(0, 1)
     for c in (c, reverse(c)), D in (interior(c), !exterior(c))
         @test in(0, D)
         @test !in(Inf, D)
         @test in(Inf, !D)
         @test !in(0, !D)
     end
-    el = Line(0, 1)
+    el = Line{T}(0, 1)
     for H in (interior(el), !exterior(el))
         @test in(1im, H)
         @test !in(-1im, H)
