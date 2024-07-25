@@ -8,7 +8,11 @@ struct Circle{T} <: AbstractClosedCurve{T}
     center::AnyComplex{T}
     radius::T
     ccw::Bool
-	Circle{T}(z, r, ccw=true) where {T} = new(convert_real_type(T, z), T(r), ccw)
+	function Circle{T}(z, r, ccw=true) where {T}
+		Tz = complex(convert_real_type(T, z))
+		Tr = convert(T, r)
+		return new(Tz, Tr, ccw)
+	end
 end
 """
 	Circle(zc, r, ccw=true)
