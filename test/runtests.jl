@@ -53,7 +53,7 @@ end
 end
 
 @testset "Arcs in $T" for T in (Float64, BigFloat)
-    check(u, v) = isapprox(u, v, rtol=tolerance(T), atol=tolerance(T))
+    check(u, v) = isapprox(u, v, rtol=CR.tolerance(T), atol=CR.tolerance(T))
     a = Arc(cispi.([T(1) / 2, T(1) / 5, T(0)])...)
     zz = 1 / sqrt(T(2)) * (T(1) + 1im)
     @test check(point(a, T(1)/2) , zz)
@@ -78,7 +78,7 @@ end
 end
 
 @testset "Lines in $T" for T in (Float64, BigFloat)
-    check(u, v) = isapprox(u, v, rtol=tolerance(T), atol=tolerance(T))
+    check(u, v) = isapprox(u, v, rtol=CR.tolerance(T), atol=CR.tolerance(T))
     @test Line(1, 5) isa Line
     l = Line(T(1)*1im, direction=1 + 2im)
     @test isleft(2im, l) && !isleft(0, l)
@@ -97,7 +97,7 @@ end
 end
 
 @testset "Segments in $T" for T in (Float64, BigFloat)
-    check(u, v) = isapprox(u, v, rtol=tolerance(T), atol=tolerance(T))
+    check(u, v) = isapprox(u, v, rtol=CR.tolerance(T), atol=CR.tolerance(T))
     s = Segment(1, T(3) + 5im)
     @test isleft(-1, s) && !isleft(2, s)
     zz = 2 + T(5)*1im / 2
@@ -113,7 +113,7 @@ end
 end
 
 @testset "Rays in $T" for T in (Float64, BigFloat)
-    check(u, v) = isapprox(u, v, rtol=50tolerance(T), atol=50tolerance(T))
+    check(u, v) = isapprox(u, v, rtol=50CR.tolerance(T), atol=50CR.tolerance(T))
     s = Ray(Polar(2, 0), T(pi) / 2)
     @test isinf(arclength(s))
     @test isleft(-1im, s) && !isleft(-1im, reverse(s))
@@ -149,7 +149,7 @@ end
     @test any(@. z ≈ 1 + 2im)
     @test isempty(intersect(Line(T(1), direction=1im), Line(-T(2), direction=1im)))
     l = Line(T(2), direction=3 + 1im)
-    @test intersect(l, l + 100tolerance(T)) ≈ l
+    @test intersect(l, l + 100CR.tolerance(T)) ≈ l
 
     z = intersect(Segment(0, 1), Segment(T(2)/5 - 1im, T(7//10) + 2im))
     @test any(@. z ≈ 0.5)
@@ -275,7 +275,7 @@ end
 
     p = Polygon([(T(pi) / 2, T(pi) / 2), T(5), 4 + 3im, 3im, -2im, 6 - 2im])
     a = angles(p) / pi
-    @test(abs(a[1]) < tolerance(T))
+    @test(abs(a[1]) < CR.tolerance(T))
     @test(sum(a .- 1) ≈ -2)
     @test(all(winding(p, z) == 1 for z in [1 + 2im, 5 - 1im, 5.5 + 6im]))
     @test(all(winding(p, z) == 0 for z in [-3im, 3 + 5im, 5.5 - 6im]))
@@ -294,19 +294,23 @@ end
 end
 
 @testset "Discretization" begin
-    p = Polygon([4, 4 + 3im, 3im, -2im, 6 - 2im, 6])
+    p = Polygon([T(4), 4 + 3im, 3im, -2im, 6 - 2im, 6])
     t, z = discretize(p, 200)
+    @test eltype(t) == T
+    @test real_type(first(z)) == T
     @test length(t) == 200
-    @test all(abs.(z .- p(t)) .< 1e-10)
+    @test all(abs.(z .- p(t)) .< CR.tolerance(T))
     dz = abs.(diff(z))
-    @test mean(dz) ≈ 0.1100035321168
-    @test median(dz) ≈ 0.109297108752856
+    @test mean(dz) ≈   0.1100035321168 rtol=max(1e-12,CR.tolerance(T))
+    @test median(dz) ≈ 0.1092971087529 rtol=max(1e-12,CR.tolerance(T))
 
-    c = Circle(1im, 2.0)
+    c = Circle{T}(1im, 2)
     t, z = discretize(c, 200)
     @test length(t) == 200
-    @test z ≈ c.(t) atol = 1e-10
-    @test all(abs.(z .- 1im) .≈ 2.0)
+    @test eltype(t) == T
+    @test real_type(first(z)) == T
+    @test z ≈ c.(t) atol = CR.tolerance(T)
+    @test all(abs.(z .- 1im) .≈ 2)
 
     Z = discretize(interior(p), 300)
     @test size(Z) == (300, 300)
