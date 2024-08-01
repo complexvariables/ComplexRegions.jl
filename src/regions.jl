@@ -122,7 +122,7 @@ end
 ########################
 
 struct ExteriorRegion{N,T} <: AbstractConnectedRegion{N,T}
-    inner::SVector{N,AbstractJordan{T}}
+    inner::Vector{<:AbstractJordan{T}}
     function ExteriorRegion{N,T}(inner::AbstractVector) where {N,T}
         @assert N == length(inner) "Incorrect connectivity"
         @assert all(c isa AbstractJordan{T} for c in inner) "Boundary components must be closed curves or paths"
@@ -138,8 +138,13 @@ struct ExteriorRegion{N,T} <: AbstractConnectedRegion{N,T}
     end
 end
 
-function ExteriorRegion(inner::AbstractVector{<:AbstractJordan{T}}) where T
-    return ExteriorRegion{length(inner),T}(inner)
+function ExteriorRegion(inner::AbstractVector)
+    try
+        T = promote_type(real_type.(inner)...)
+        return ExteriorRegion{length(inner),T}(convert(Vector{AbstractJordan{T}}, inner))
+    catch
+        @error "Could not promote the types of the inner boundaries"
+    end
 end
 
 in(z::Number, R::ExteriorRegion) = all(isoutside(z, c) for c in R.inner)
@@ -156,7 +161,7 @@ Representation of a `N`-connected region in the extended complex plane.
 """
 struct ConnectedRegion{N,T} <: AbstractConnectedRegion{N,T}
     outer::Union{Nothing,AbstractJordan{T}}
-    inner::SVector{N,AbstractJordan{T}}
+    inner::Vector{AbstractJordan{T}}
     function ConnectedRegion{N,T}(outer, inner) where {N,T}
         n = length(inner) + !isnothing(outer)
         @assert N == n "Incorrect connectivity"
