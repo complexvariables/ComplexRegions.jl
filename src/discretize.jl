@@ -33,26 +33,26 @@ Discretize a path or curve, with points roughly equidistributed by arc length an
 If `with_arg` is true, returns a tuple of vectors `t` and `z` such that `z[j]` is the point on the curve at parameter value `t[j]`. Otherwise, returns only `z`.
 """
 
-function discretize(p::AbstractCurve; ds=0.002, with_arg=false)
-    lims = [0., 1.]
-    isinf(p(0)) && (lims[1] = 0.1)
-    isinf(p(1)) && (lims[2] = 0.9)
+function discretize(p::AbstractCurve{T}; ds=0.002, with_arg=false) where T
+    lims = [T(0), T(1)]
+    isinf(p(0)) && (lims[1] = T(1)/10)
+    isinf(p(1)) && (lims[2] = T(9)/10)
     t, z = refine_discretization(p, lims, ds)
     return with_arg ? (t, z) : z
 end
 
-function discretize(p::AbstractPath; ds=0.002, with_arg=false)
-    t = []
-    z = []
+function discretize(p::AbstractPath{T}; ds=0.002, with_arg=false) where T
+    t = T[]
+    z = typeof(complex(p(T(1)/37)))[]
     for n in 1:length(p)
-        T, Z = discretize(p[n]; ds, with_arg=true)
-        T .+= n - 1
+        tt, zz = discretize(p[n]; ds, with_arg=true)
+        tt .+= n - 1
         if n > 1 && (T[1] == t[n-1][end])
-            T = T[2:end]
-            Z = Z[2:end]
+            tt = tt[2:end]
+            zz = zz[2:end]
         end
-        append!(t, T)
-        append!(z, Z)
+        append!(t, tt)
+        append!(z, zz)
     end
     if isclosed(p)
         t, z = t[1:end-1], z[1:end-1]
@@ -66,8 +66,8 @@ Discretize a path or curve at `n` points, roughly equidistributed by arc length.
 
 Returns a tuple of vectors `t` and `z` such that `z[j]` is the point on the curve at parameter value `t[j]`.
 """
-function discretize(p::AbstractClosedCurve, n::Integer)
-    t = isfinite(p) ? range(0, 1, n+1) : range(0.05, 0.95, n+1)
+function discretize(p::AbstractClosedCurve{T}, n::Integer) where T
+    t = isfinite(p) ? range(T(0), T(1), n+1) : range(T(1)/20, T(19)/20, n+1)
     t = collect(t)
     z = p.(t)
     equidist!(t, z, p)
@@ -75,8 +75,8 @@ function discretize(p::AbstractClosedCurve, n::Integer)
     return t[1:end-1], z[1:end-1]
 end
 
-function discretize(p::AbstractCurve, n::Integer)
-    t = isfinite(p) ? range(0, 1, n) : range(0.05, 0.95, n)
+function discretize(p::AbstractCurve{T}, n::Integer) where T
+    t = isfinite(p) ? range(T(0), T(1), n+1) : range(T(1)/20, T(19)/20, n+1)
     t = collect(t)
     z = p.(t)
     equidist!(t, z, p)
@@ -84,10 +84,10 @@ function discretize(p::AbstractCurve, n::Integer)
     return t, z
 end
 
-function discretize(p::AbstractCurveOrPath, n::Integer)
+function discretize(p::AbstractPath{T}, n::Integer) where T
     m = length(p)
     isclosed(p) && (n += 1)
-    t = isfinite(p) ? range(0, m, n) : range(0.05, 0.95m, n)
+    t = isfinite(p) ? range(T(0), T(m), n) : range(T(1)/20, T(19m)/20, n)
     t = collect(t)
     z = p.(t)
     equidist!(t, z, p)
@@ -118,12 +118,12 @@ If `P` is an exterior region, the points lie in a box a bit larger than the boun
 If keyword argument `limits` is specified, it must be a vector or tuple `(xmin, xmax, ymin, ymax)` specifying the limits of the grid.
 """
 function discretize(
-    P::InteriorSimplyConnectedRegion, n=600;
+    P::InteriorSimplyConnectedRegion{T,S}, n=600;
     limits=nothing,
-    )
+    ) where {T,S}
     @assert (isfinite(P) || !isnothing(limits)) "Unbounded region must have limits specified"
     # Get boundary points for determining interiority.
-    z = discretize(boundary(P), 2n)[2]
+    _, z = discretize(boundary(P), 2n)
     if isnothing(limits)
         xlims, ylims = extrema(real(z)), extrema(imag(z))
     else
@@ -139,12 +139,13 @@ function discretize(
     limits=nothing,
     )
     # Get boundary points for determining interiority.
-    z = discretize(boundary(P), 2n)[2]
+    T, z = discretize(boundary(P), 2n)
 
     if isnothing(limits)
         # Enlarge a bit to get an enclosing box.
         zc = mean(z)
-        r = max(maximum(real(z .- zc)), maximum(imag(z .- zc)))
+        zzc = z .- zc
+        r = max(maximum(real(zzc)), maximum(imag(zzc)))
         # zz = zc .+ 2.5*complex(r, r)
         # xlims, ylims = extrema(real(zz)), extrema(imag(zz))
         xlims = (real(zc) - 2r, real(zc) + 2r)
@@ -201,7 +202,7 @@ function discretize(E::ExteriorRegion, n::Integer=600)
         ylims = min(ylims[1], yy[1]), max(ylims[2], yy[2])
     end
     r = max( xlims[2] - xlims[1], ylims[2] - ylims[1] ) / 2
-    r *= 1.33
+    r *= 4//3
     xlims = mean(xlims) .+ (-r, r)
     ylims = mean(ylims) .+ (-r, r)
     return discretize(ConnectedRegion(nothing, E.inner), n, limits=(xlims..., ylims...))
@@ -220,7 +221,6 @@ function discretize(xlims::NTuple{2}, ylims::NTuple{2}, n::Int, selector::Functi
     end
     return Z
 end
-
 
 # Fully discrete form of the winding number; faster than more precise versions
 function wind(z0::Number, z::AbstractVector)

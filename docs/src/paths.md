@@ -4,7 +4,9 @@ A **path** is a sequence of curves that compose a continuous complex-valued path
 
 ## [Abstract interface](@id interface_paths)
 
-Every `AbstractPath` type is expected to provide the following method. (Here `P` is any value of type `AbstractPath`.)
+### AbstractPath
+
+Every `AbstractPath` type is expected to provide the following method:
 
 - `curves(P)`: Return an array of the curves constituting `P`.
 
@@ -30,7 +32,7 @@ In addition, default implementations are given for the following methods.
 | `dist(z, P)` | Distance from a point to the path. |
 | `closest(z, P)`| Point on the path nearest to a given number. |
 
-### Iterator interface
+#### Iterator interface
 
 The `AbstractPath` type implements the `eltype`, `length`, `getindex`, and `iterate` methods of the standard Julia iterator interface. Therefore, clauses such as `for c in P` will iterate over the curves in `P` for loops, comprehensions, and generators.
 
@@ -45,7 +47,7 @@ The `AbstractClosedPath` subtype modifies a few of the implementations above:
 | `vertex(P, k)`| `k`th vertex of the path in a circular/modulo sense. |
 | `point`, `tangent`, `unittangent`, `normal`| Use a circular/modulo interpretation of the parameter. |
 
-The `AbstractClosedPath` type also has default implementations for the following methods.
+The `AbstractClosedPath` type also has default implementations for the following methods:
 
 | Method | Description |
 |:-----|:-----|
@@ -73,7 +75,7 @@ using ComplexRegions
 
 Here is a path defined by arcs and segments.
 ```@example examples
-a = Arc(-1,1,-1im)
+a = Arc(-1, 1, -1im)
 right = Path([4 + 1im+a, 4-1im - 1im*a])
 s = Segment(-3+1im, 3+1im)
 p = ClosedPath([s, right..., -s, -right...])

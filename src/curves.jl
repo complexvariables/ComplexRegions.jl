@@ -2,129 +2,170 @@
 # abstract interfaces
 #
 
-abstract type AbstractCurve end
+abstract type AbstractCurve{T} <: Function end
 
 # Required methods
 """
 	point(C::AbstractCurve,t::Real)
 Find the point on curve `C` at parameter value `t`, which should lie in the interval [0,1].
 """
-point(c::AbstractCurve,t::Real) = @error "No point() method defined for type $(typeof(c))"
+point(c::AbstractCurve, ::Real) = @error "No point() method defined for type $(typeof(c))"
 
 """
 	tangent(C::AbstractCurve,t::Real)
 Find the complex number representing the tangent to curve `C` at parameter value `t` in [0,1].
 """
-tangent(C::AbstractCurve,t::Real) = @error "No tangent() method defined for type $(typeof(C))"
+tangent(C::AbstractCurve, ::Real) = @error "No tangent() method defined for type $(typeof(C))"
 
-reverse(C::AbstractCurve) = @error "No reverse() method defined for type $(typeof(C))"
+Base.reverse(C::AbstractCurve) = @error "No reverse() method defined for type $(typeof(C))"
 
 """
 	isfinite(C::AbstractCurve)
 Return `true` if the curve is bounded in the complex plane (i.e., does not pass through infinity).
 """
-isfinite(C::AbstractCurve) = @error "No isfinite() method defined for type $(typeof(C))"
+Base.isfinite(C::AbstractCurve) = @error "No isfinite() method defined for type $(typeof(C))"
 Base.isreal(::AbstractCurve) = false  # unless detected otherwise
 
-conj(C::AbstractCurve) = @error "No conj() method defined for type $(typeof(C))"
-Base.:+(C::AbstractCurve,z::Number) = @error "No addition method defined for type $(typeof(C))"
+Base.conj(C::AbstractCurve) = @error "No conj() method defined for type $(typeof(C))"
+Base.:+(C::AbstractCurve, z::Number) = @error "No addition method defined for type $(typeof(C))"
 Base.:-(C::AbstractCurve) = @error "No negation method defined for type $(typeof(C))"
-Base.:*(C::AbstractCurve,z::Number) = @error "No multiplication method defined for type $(typeof(C))"
-inv(C::AbstractCurve) = @error "No inversion method defined for type $(typeof(C))"
+Base.:*(C::AbstractCurve, z::Number) = @error "No multiplication method defined for type $(typeof(C))"
+Base.inv(C::AbstractCurve) = @error "No inversion method defined for type $(typeof(C))"
 
 # Default implementations
 Base.length(::AbstractCurve) = 1  # length of parameter interval
+real_type(::AbstractCurve{T}) where T = T
 
 """
-	point(C::AbstractCurve,t::AbstractArray)
+	point(C::AbstractCurve, t::AbstractArray)
 
 Vectorize the `point` function for curve `C`.
 """
-point(c::AbstractCurve,t::AbstractArray{T}) where T<:Real = [point(c,t) for t in t]
+point(c::AbstractCurve, t::AbstractArray{T}) where {T<:Real} = [point(c, t) for t in t]
+
+# callable by name
+(c::AbstractCurve)(t::Real) = point(c, t)
 
 """
-	unittangent(C::AbstractCurve,t::Real)
+	unittangent(C::AbstractCurve, t::Real)
 Find the complex number representing the unit tangent to curve `C` at parameter value `t` in [0,1]. For Lines, Segments, and Rays, the `t` argument is optional.
 """
-unittangent(C::AbstractCurve,t::Real) = sign(tangent(C,t))
+unittangent(C::AbstractCurve, t::Real) = sign(tangent(C, t))
 
 """
 	normal(C::AbstractCurve,t::Real)
 Find the unit complex number in the direction of the leftward-pointing normal to curve `C` at parameter value `t` in [0,1].
 """
-normal(c::AbstractCurve,t::Real) = 1im*unittangent(c,t)
+normal(c::AbstractCurve, t::Real) = 1im * unittangent(c, t)
 
-Base.:+(z::Number,C::AbstractCurve) = +(C,z)
-Base.:-(C::AbstractCurve,z::Number) = C + (-z)
-Base.:-(z::Number,C::AbstractCurve) = z + (-C)
-Base.:*(z::Number,C::AbstractCurve) = *(C,z)
-Base.:/(C::AbstractCurve,z::Number) = C*(1/z)
-Base.:/(z::Number,C::AbstractCurve) = z*inv(C)
+# Concrete types must define C + z, C * z, and inv(C) only.
+Base.:+(z::Number, C::AbstractCurve) = C + z
+Base.:-(C::AbstractCurve, z::Number) = C + (-z)
+Base.:-(z::Number, C::AbstractCurve) = z + (-C)
+Base.:*(z::Number, C::AbstractCurve) = C * z
+Base.:/(C::AbstractCurve, z::Number) = C * (1 / z)
+Base.:/(z::Number, C::AbstractCurve) = z * inv(C)
 
-function arclength(C::AbstractCurve,part=[0,1])
-	f = t -> abs(tangent(C,t))
-	intadapt(f,part...,DEFAULT[:tol])
+function arclength(C::AbstractCurve{T}, part=[0, 1]) where T
+    f = t -> abs(tangent(C, T(t)))
+    intadapt(f, part..., tolerance(T))
 end
 
 isclosed(c::AbstractCurve) = isa(c, AbstractClosedCurve)
 
-show(io::IO,C::AbstractCurve) = print(io,"Complex-valued $(typeof(C))")
-show(io::IO,::MIME"text/plain",C::AbstractCurve) = print(io,"Complex-valued $(typeof(C))")
+Base.show(io::IO, C::AbstractCurve) = print(io, "Complex-valued $(typeof(C))")
+Base.show(io::IO, ::MIME"text/plain", C::AbstractCurve) = print(io, "Complex-valued $(typeof(C))")
 
 # AbstractClosedCurve
-abstract type AbstractClosedCurve <: AbstractCurve end
+abstract type AbstractClosedCurve{T} <: AbstractCurve{T} end
 
 # Default implementations
-function winding(C::AbstractClosedCurve,z::Number)
-	# Integrate around the curve
-	f = t -> imag(tangent(C,t)/(point(C,t)-z))
-	w = intadapt(f,0,1,1e-4)
-	return round(Int,w/(2π))
+function winding(C::AbstractClosedCurve{T}, z::Number) where T
+	Tz = convert_real_type(T, z)
+    # Integrate around the curve
+    f = t -> imag(tangent(C, T(t)) / (point(C, T(t)) - Tz))
+    try
+		w = intadapt(f, 0, 1, 1e-4)
+    	return round(Int, w / (2π))
+	catch
+		@error "Unable to determine winding number at $(z)"
+	end
 end
+winding(C::AbstractClosedCurve) = z -> winding(C, z)
 
 isinside(z::Number, C::AbstractClosedCurve) = winding(C, z) != 0
 isinside(C::AbstractClosedCurve) = z -> isinside(z, C)
 isoutside(z::Number, C::AbstractClosedCurve) = winding(C, z) == 0
 isoutside(C::AbstractClosedCurve) = z -> isoutside(z, C)
 
-#
+##################
 # generic Curve
-#
+##################
 
 """
 (type) Smooth curve defined by an explicit function of a real paramerter in [0,1].
 """
-struct Curve <: AbstractCurve
-	point
-	tangent
+struct Curve{T} <: AbstractCurve{T}
+    point::Function
+    tangent::Function
 end
 
 """
 	Curve(f)
-	Curve(f,a,b)
+	Curve(f, a, b)
 Construct a `Curve` object from the complex-valued function `f` accepting an argument in the interval [0,1]. If `a` and `b` are given, they are the limits of the parameter in the call to the supplied `f`. However, the resulting object will be defined on [0,1], which is internally scaled to [a,b].
 
-	Curve(f,df[,a,b])
+	Curve(f, df[, a, b])
 Construct a curve with point location and tangent given by the complex-valued functions `f` and `df`, respectively, optionally with given limits on the parameter.
 """
-Curve(f) = Curve(f, t -> ForwardDiff.derivative(f,t))
-function Curve(f, df, a::Real, b::Real)
-    return Curve( t -> f(scaleto(a, b, t)), t -> df(scaleto(a, b, t)))
+
+Curve{T}(f::Function, a::Real, b::Real) where T = Curve{T}(f, t -> ForwardDiff.derivative(f, T(t)), a, b)
+function Curve{T}(f::Function, df::Function, a::Real, b::Real) where T<:AbstractFloat
+    return Curve{T}(t -> f(scaleto(T, a, b, t)), t -> df(scaleto(T, a, b, t)) / (b - a))
 end
-Curve(f, a::Real, b::Real) = Curve(t -> f(scaleto(a, b, t)))
+
+# Constructors that try to determine underlying Real type automatically
+function Curve(f::Function, df::Function=nothing)
+	T = real_type(float(f(0.1234)))
+	# didn't know T at call time, so manually handle default argument for df
+	if isnothing(df)
+		return Curve{T}(f, t -> ForwardDiff.derivative(f, T(t)))
+	else
+		return Curve{T}(f, df)
+	end
+end
+
+function Curve(f::Function, a::Real, b::Real)
+	T = promote_type(real_type(float(a)), real_type(float(b)))
+	Curve{T}(f, t -> ForwardDiff.derivative(f, T(t)), T(a), T(b))
+end
+
+function Curve(f::Function, df::Function, a::Real, b::Real)
+	T = promote_type(real_type(float(a)), real_type(float(b)))
+	Curve{T}(f, df, T(a), T(b))
+end
+
+convert_real_type(T::Type{<:Real}, C::Curve{S}) where S = Curve{T}(C.point, C.tangent)
+Base.promote_rule(::Type{<:Curve{T}}, ::Type{<:Curve{S}}) where {T,S} = Curve{promote_type(T,S)}
 
 # Required methods
-point(C::Curve,t::Real) = C.point(t)
-(C::Curve)(t::Real) = point(C,t)
-tangent(C::Curve,t::Real) = C.tangent(t)
-conj(C::Curve) = Curve(t->conj(C.point(t)))
-reverse(C::Curve) = Curve(t->C.point(1-t))
-isfinite(C::Curve) = true
+point(C::Curve{T}, t::Real) where T = C.point(T(t))
+tangent(C::Curve{T}, t::Real) where T = C.tangent(T(t))
+Base.conj(C::Curve{T}) where T = Curve{T}(t -> conj(C.point(t)), t -> conj(C.tangent(t)))
+Base.reverse(C::Curve{T}) where T = Curve{T}(t -> C.point(1 - T(t)), t -> -C.tangent(1 - T(t)))
+Base.isfinite(C::Curve) = true    # unbounded curves must be explicitly typed
 
-Base.:+(C::Curve,z::Number) = Curve(t->C.point(t)+z,C.tangent)
-Base.:-(C::Curve) = Curve(t->-C.point(t),t->-C.tangent(t))
-Base.:*(C::Curve,z::Number) = Curve(t->C.point(t)*z,t->C.tangent(t)*z)
-inv(C::Curve) = Curve(t->1/C.point(t),t->-C.tangent(t)/C.point(t)^2)
+function Base.:+(C::Curve{T}, z::Number) where T
+	return Curve{T}(t -> C.point(t) + convert_real_type(T, z), C.tangent)
+end
+
+function Base.:*(C::Curve{T}, z::Number) where T
+	Tz = convert_real_type(T, z)
+	return Curve{T}(t -> C.point(t) * Tz, t -> C.tangent(t) * Tz)
+end
+
+Base.:-(C::Curve{T}) where T = Curve{T}(t -> -C.point(t), t -> -C.tangent(t))
+Base.inv(C::Curve{T}) where T = Curve{T}(t -> 1 / C.point(t), t -> -C.tangent(t) / C.point(t)^2)
 
 #
 # generic ClosedCurve
@@ -133,12 +174,13 @@ inv(C::Curve) = Curve(t->1/C.point(t),t->-C.tangent(t)/C.point(t)^2)
 """
 (type) Smooth closed curve defined by an explicit function of a real paramerter in [0,1].
 """
-struct ClosedCurve <: AbstractClosedCurve
-	curve::Curve
-	function ClosedCurve(c::Curve;tol=DEFAULT[:tol])
-		@assert isapprox(point(c,0),point(c,1);rtol=tol,atol=tol) "Curve does not close"
-		new(c)
-	end
+struct ClosedCurve{T} <: AbstractClosedCurve{T}
+    curve::Curve{T}
+    function ClosedCurve{T}(c::Curve; tol=tolerance(T)) where T<:AbstractFloat
+        @assert isapprox(point(c, T(0)), point(c, T(1)); rtol=tol, atol=tol) "Curve does not close"
+        new(convert_real_type(T, c))
+    end
+	ClosedCurve{T}(f::Function, args...) where T = ClosedCurve{T}(Curve{T}(f, args...))
 end
 
 """
@@ -153,16 +195,24 @@ ClosedCurve(f,df=t -> ForwardDiff.derivative(f,t);kw...) = ClosedCurve(Curve(f,d
 ClosedCurve(f,a::Real,b::Real;kw...) = ClosedCurve(Curve(f,a,b;kw...))
 ClosedCurve(f,df,a::Real,b::Real;kw...) = ClosedCurve(Curve(f,df,a,b;kw...))
 
-point(C::ClosedCurve,t::Real) = point(C.curve,t)
-(C::ClosedCurve)(t::Real) = point(C.curve,t)
-tangent(C::ClosedCurve,t::Real) = tangent(C.curve,t)
-conj(C::ClosedCurve) = ClosedCurve(conj(C.curve))
-reverse(C::ClosedCurve) = ClosedCurve(reverse(C.curve))
-isfinite(C::ClosedCurve) = isfinite(C.curve)
-Base.:+(C::ClosedCurve,z::Number) = ClosedCurve(C.curve+z)
+ClosedCurve(c::Curve{T}, args...) where T = ClosedCurve{T}(c, args...)
+function ClosedCurve(f::Function, args...)
+	c = Curve(f, args...)
+	return ClosedCurve{real_type(c)}(c)
+end
+
+point(C::ClosedCurve, t::Real) = point(C.curve, t)
+tangent(C::ClosedCurve, t::Real) = tangent(C.curve, t)
+Base.conj(C::ClosedCurve) = ClosedCurve(conj(C.curve))
+Base.reverse(C::ClosedCurve) = ClosedCurve(reverse(C.curve))
+Base.isfinite(C::ClosedCurve) = isfinite(C.curve)
+Base.:+(C::ClosedCurve, z::Number) = ClosedCurve(C.curve + z)
 Base.:-(C::ClosedCurve) = ClosedCurve(-C.curve)
-Base.:*(C::ClosedCurve,z::Number) = ClosedCurve(C.curve*z)
-inv(C::ClosedCurve) = ClosedCurve(inv(C.curve))
+Base.:*(C::ClosedCurve, z::Number) = ClosedCurve(C.curve * z)
+Base.inv(C::ClosedCurve) = ClosedCurve(inv(C.curve))
+
+convert_real_type(T::Type{<:Real}, C::ClosedCurve{S}) where S = ClosedCurve{T}(C.point, C.tangent)
+Base.promote_rule(::Type{<:ClosedCurve{T}}, ::Type{<:ClosedCurve{S}}) where {T,S} = ClosedCurve{promote_type(T,S)}
 
 include("lines.jl")
 include("rays.jl")

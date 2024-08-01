@@ -103,7 +103,7 @@ savefig("bone-region.svg"); nothing # hide
 
 ![dog-bone region](bone-region.svg)
 
-Inspired by the Swiss flag?
+Are you inspired by the Swiss flag?
 
 ```@example examples
 box = [1-1im, 3-1im, 3+1im];

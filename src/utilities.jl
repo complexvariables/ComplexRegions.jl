@@ -1,6 +1,8 @@
 # Scale from/to [0,1].
-scalefrom(a, b, t) = @. (t - a) / (b - a)
-scaleto(a, b, t) = @. a + t * (b - a)
+scalefrom(a::Number, b::Number, t) = @. (t - a) / (b - a)
+scalefrom(T::Type, a, b, t) = scalefrom(convert_real_type(T, a), convert_real_type(T, b), T(t))
+scaleto(a::Number, b::Number, t) = @. a + t * (b - a)
+scaleto(T::Type, a, b, t) = scaleto(convert_real_type(T, a), convert_real_type(T, b), T(t))
 
 # Unique real roots of a quadratic.
 function realroots(a, b, c)
@@ -26,11 +28,11 @@ end
 # Use 2nd order finite differences to approximate a tangent.
 function fdtangent(z, t::Real)
     ϵ = eps(typeof(float(t)))
-    ϵ3 = 0.5 * ϵ^(1 / 3)
+    ϵ3 = ϵ^(1 // 3) / 2
     if t < ϵ3
-        τ = (-1.5 * z(t) + 2 * z(t + ϵ3) - 0.5 * z(t + 2ϵ3)) / ϵ3
+        τ = (-3z(t) + 4z(t + ϵ3) - z(t + 2ϵ3)) / 2ϵ3
     elseif t > 1 - ϵ3
-        τ = (1.5 * z(t) - 2 * z(t - ϵ3) + 0.5 * z(t - 2ϵ3)) / ϵ3
+        τ = (3z(t) - 4z(t - ϵ3) + z(t - 2ϵ3)) / 2ϵ3
     else
         τ = (z(t + ϵ3) - z(t - ϵ3)) / (2ϵ3)
     end
@@ -80,7 +82,7 @@ function intadapt(f,a,b,tol)
     return Q
 end
 
-function enclosing_circle(z::AbstractVector, expansion=2)
+function enclosing_circle(z::AbstractVector{<:Number}, expansion=2)
     xa, xb = extrema(real(z))
     ya, yb = extrema(imag(z))
     zc = complex((xa + xb) / 2, (ya + yb) / 2)
@@ -88,7 +90,7 @@ function enclosing_circle(z::AbstractVector, expansion=2)
     return zc, expansion * R
 end
 
-function enclosing_box(z::AbstractVector,expansion=2)
+function enclosing_box(z::AbstractVector{<:Number},expansion=2)
     zc = sum(z) / length(z)
     dz = z .- zc
     rx = length(z) > 1 ? maximum(@. abs(real(dz))) : max(1, abs(real(zc)))
