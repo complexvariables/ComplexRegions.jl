@@ -30,7 +30,7 @@ makedocs(sitename="ComplexRegions.jl",
 
 deploydocs(
     repo = "github.com/complexvariables/ComplexRegions.jl",
-    devbranch = "main",
+    devbranch = "master",
 #    versions = ["v#.#"],
 #    make = nothing
     )
