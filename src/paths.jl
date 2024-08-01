@@ -291,6 +291,14 @@ end
 Given a vector `c` of curves, construct a path. The path is checked for continuity (to tolerance `tol`) at the interior vertices.
 """
 Path(c::AbstractVector{<:AbstractCurve{T}}) where {T} = Path{T}(c)
+function Path(p::AbstractVector)
+    try
+        T = promote_type(real_type.(p)...)
+        return Path{T}(convert(Vector{Curve{T}}, p))
+    catch
+        @error "Vector must contain Curves"
+    end
+end
 Path(c::AbstractCurve{T}) where {T} = Path{T}([c])
 
 curves(p::Path) = p.curve
@@ -324,6 +332,14 @@ end
 Given a vector `c` of curves, or an existing path, construct a closed path. The path is checked for continuity (to tolerance `tol`) at all of the vertices.
 """
 ClosedPath(p::AbstractVector{<:AbstractCurve{T}}) where {T} = ClosedPath{T}(p)
+function ClosedPath(p::AbstractVector)
+    try
+        T = promote_type(real_type.(p)...)
+        return ClosedPath{T}(convert(Vector{Curve{T}}, p))
+    catch
+        @error "Vector must contain Curves"
+    end
+end
 ClosedPath(c::AbstractCurve{T}) where {T} = ClosedPath{T}([c])
 ClosedPath(c::AbstractClosedPath{T}) where {T} = c
 ClosedPath(p::Path; kw...) = ClosedPath(p.curve; kw...)
