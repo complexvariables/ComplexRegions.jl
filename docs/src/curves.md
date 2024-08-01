@@ -4,6 +4,7 @@ A **curve** is meant to be a smooth, non-self-intersecting curve in the extended
 
 ## [Abstract interface](@id interface_curves)
 
+### AbstractCurve
 Every `AbstractCurve` type is expected to implement the following methods. (Here `C` represents a value of type `AbstractCurve` and `z` is a number.)
 
 | Method | Description |
@@ -28,7 +29,9 @@ There are also default implementations of the following methods:
 | `normal(C, t::Real)`| Unit (leftward) normal to `C` at `t`.|
 | `arclength(C)`| Arc length of `C`.|
 
-There is also an `AbstractClosedCurve` subtype that is used to distinguish curves that close. It provides default implementations of the following methods.
+### AbstractClosedCurve
+
+The `AbstractClosedCurve` subtype is used to signify that the starting and ending points of the curve are (approximately) identical. In addition to the methods of `AbstractCurve`, it provides the following:
 
 | Method | Description |
 |:-----|:-----|
@@ -46,7 +49,7 @@ By default, a tangent to `C` is computed when needed using a simple finite diffe
 
 ### ClosedCurve
 
-A `ClosedCurve` implements `AbstractClosedCurve` and is similar to a `Curve`, but the parameterization is checked against $f(0)\approx f(1)$ (or $f(b)\approx f(a)$), up to a tolerance that is the [global default](@ref global_defaults) if not specified.
+A `ClosedCurve` implements `AbstractClosedCurve` and is similar to a `Curve`, but the parameterization is checked against $f(0)\approx f(1)$ (or $f(b)\approx f(a)$), up to a tolerance.
 
 ## [Specific subtypes](@id subtypes_curves)
 
