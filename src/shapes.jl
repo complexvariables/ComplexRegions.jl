@@ -2,6 +2,7 @@ module Shapes
 using ComplexRegions
 export star, triangle, square, cross, ellipse, hypo, circle, squircle, spiral
 
+circle = ComplexRegions.Circle(0., 1.)
 triangle = 1im * n_gon(3) / sqrt(3)
 square = Polygon([-1-1im, 1-1im, 1+1im, -1+1im])
 
@@ -9,17 +10,23 @@ p = transpose(vertices(n_gon(5)))
 star = Polygon( vec([p; cis(0.2π)*p/2]) )
 star = 1im * star / vertex(star, 3)
 
+"""
+    Shapes.ellipse(a, b)
+Create an ellipse with semiaxes `a` and `b`.
+"""
 function ellipse(a, b)
     r = t -> a*cospi(2t) + b*1im*sinpi(2t)
     dr = t -> 2π * (-a*sinpi(2t) + b*1im*cospi(2t))
     return ClosedCurve(r ,dr)
 end
-circle = ComplexRegions.Circle(0., 1.)
 
 v = [-3-1im, -1-1im, -1-3im]
 cross = Polygon([v; 1im*v; -v; -1im*v] / 3)
 
-# Hypocycloids
+"""
+    Shapes.hypo(k)
+Create a hypocycloid with `k` cusps.
+"""
 function hypo(k::Integer)
     p = Curve[]
     z(t) = complex((k-1)*cospi(t) + cospi((k-1)*t), (k-1)*sinpi(t) - sinpi((k-1)*t))
@@ -38,6 +45,11 @@ function _squircle()
     s = Curve(z, dz)
     return ClosedPath([s, -conj(reverse(s)), -s, conj(reverse(s))])
 end
+
+"""
+    Shapes.squircle
+Create a squircle whose sides are given by ``\\sqrt{|\\cos(\\theta)|} + i\\sqrt{|\\sin(\\theta)|}``.
+"""
 squircle = _squircle()
 
 """
