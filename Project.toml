@@ -1,7 +1,7 @@
 name = "ComplexRegions"
 uuid = "c64915e2-6c82-11e9-38e9-1f159a780463"
 authors = ["Toby Driscoll <driscoll@udel.edu>"]
-version = "0.2.2"
+version = "0.3.0"
 
 [deps]
 CircularArrays = "7a955b69-7140-5f4e-a0ed-f168c5e2e749"
