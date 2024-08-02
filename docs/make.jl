@@ -11,7 +11,7 @@ makedocs(sitename="ComplexRegions.jl",
         assets=String[],
     ),
     authors = "Toby Driscoll <driscoll@udel.edu>",
-    repo="https://github.com/complexvariables/ComplexRegions.jl/blob/{commit}{path}#{line}",
+    repo=Remotes.GitHub("complexvariables","ComplexRegions.jl"),
     pages = [
         "Introduction" => "index.md",
         "Curves" => "curves.md",
@@ -29,7 +29,7 @@ makedocs(sitename="ComplexRegions.jl",
     )
 
 deploydocs(
-    repo = "github.com/complexvariables/ComplexRegions.jl",
+    repo = Remotes.GitHub("complexvariables","ComplexRegions.jl"),
     devbranch = "master",
 #    versions = ["v#.#"],
 #    make = nothing
