@@ -1,11 +1,5 @@
 const AbstractSimplyConnectedRegion{T,S} = AbstractConnectedRegion{1,T}
 
-"""
-	(type) SimplyConnectedRegion
-Representation of a simply connected region in the extended complex plane.
-	SimplyConnectedRegion(p::Union{AbstractClosedCurve,AbstractClosedPath})
-Construct an open simply connected region by specifying its boundary. The region is "to the left" of the orientation of the boundary.
-"""
 struct InteriorSimplyConnectedRegion{T,S} <: AbstractSimplyConnectedRegion{T} where S<:AbstractJordan{T}
     boundary::S
 end
@@ -14,6 +8,10 @@ struct ExteriorSimplyConnectedRegion{T,S} <: AbstractSimplyConnectedRegion{T} wh
     boundary::S
 end
 
+"""
+	(type) SimplyConnectedRegion
+Representation of a simply connected region in the extended complex plane.
+"""
 const SimplyConnectedRegion{T,S} = Union{InteriorSimplyConnectedRegion{T,S},ExteriorSimplyConnectedRegion{T,S}}
 
 """

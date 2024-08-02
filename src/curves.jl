@@ -34,6 +34,11 @@ Base.inv(C::AbstractCurve) = @error "No inversion method defined for type $(type
 
 # Default implementations
 Base.length(::AbstractCurve) = 1  # length of parameter interval
+
+"""
+	real_type(::AbstractCurve)
+Return the type of the real part of the curve's point function.
+"""
 real_type(::AbstractCurve{T}) where T = T
 
 """
@@ -145,7 +150,11 @@ function Curve(f::Function, df::Function, a::Real, b::Real)
 	Curve{T}(f, df, T(a), T(b))
 end
 
-convert_real_type(T::Type{<:Real}, C::Curve{S}) where S = Curve{T}(C.point, C.tangent)
+"""
+	convert_real_type(T::Type{<:AbstractFloat}, ::Union{Curve{S},ClosedCurve{S}})
+Convert the floating-point type of the point and tangent functions of a `Curve` or `ClosedCurve` object.
+"""
+convert_real_type(T::Type{<:AbstractFloat}, C::Curve{S}) where S = Curve{T}(C.point, C.tangent)
 Base.promote_rule(::Type{<:Curve{T}}, ::Type{<:Curve{S}}) where {T,S} = Curve{promote_type(T,S)}
 
 # Required methods

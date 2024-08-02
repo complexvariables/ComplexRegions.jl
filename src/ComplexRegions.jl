@@ -13,6 +13,8 @@ AnyComplex{S} = Union{Complex{S},Polar{S},Spherical{S}} where {S<:AbstractFloat}
 tolerance(S::Type{<:AbstractFloat}, T::Type{<:AbstractFloat}=S) = 100max(eps(S),eps(T))
 
 import ComplexValues: real_type
+# The following is more convenient than convert(Polar{T}, ::Polar{S}), etc.,
+# because it doesn't require specifying the complex type
 convert_real_type(T::Type{<:Real}, z::Complex{S}) where S = Complex{T}(z)
 convert_real_type(T::Type{<:Real}, z::Polar{S}) where S = Polar{T}(z)
 convert_real_type(T::Type{<:Real}, z::Spherical{S}) where S = Spherical{T}(z)

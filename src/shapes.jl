@@ -2,13 +2,13 @@ module Shapes
 using ComplexRegions
 export star, triangle, square, cross, ellipse, hypo, circle, squircle, spiral
 
-circle = ComplexRegions.Circle(0., 1.)
-triangle = 1im * n_gon(3) / sqrt(3)
-square = Polygon([-1-1im, 1-1im, 1+1im, -1+1im])
+const circle = ComplexRegions.Circle(0., 1.)
+const triangle = 1im * n_gon(3) / sqrt(3)
+const square = Polygon([-1-1im, 1-1im, 1+1im, -1+1im])
 
 p = transpose(vertices(n_gon(5)))
-star = Polygon( vec([p; cis(0.2π)*p/2]) )
-star = 1im * star / vertex(star, 3)
+_star = Polygon( vec([p; cis(0.2π)*p/2]) )
+const star = 1im * _star / vertex(_star, 3)
 
 """
     Shapes.ellipse(a, b)
@@ -21,7 +21,7 @@ function ellipse(a, b)
 end
 
 v = [-3-1im, -1-1im, -1-3im]
-cross = Polygon([v; 1im*v; -v; -1im*v] / 3)
+const cross = Polygon([v; 1im*v; -v; -1im*v] / 3)
 
 """
     Shapes.hypo(k)
@@ -50,7 +50,7 @@ end
     Shapes.squircle
 Create a squircle whose sides are given by ``\\sqrt{|\\cos(\\theta)|} + i\\sqrt{|\\sin(\\theta)|}``.
 """
-squircle = _squircle()
+const squircle = _squircle()
 
 """
     spiral(n, w=0.5)

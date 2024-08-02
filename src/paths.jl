@@ -51,6 +51,10 @@ Return `true` if the path is entirely on the real axis.
 """
 Base.isreal(p::AbstractPath) = all(isreal(s) for s in curves(p))
 
+"""
+	real_type(::AbstractPath)
+Return the type of the real part of the curve's point function.
+"""
 real_type(::AbstractPath{T}) where T = T
 
 # iteration interface
@@ -308,6 +312,10 @@ Compute the arclength of the path `P`.
 """
 arclength(p::Path) = sum(arclength(c) for c in p)
 
+"""
+	convert_real_type(T::Type{<:AbstractFloat}, Union{Path{S},ClosedPath{S}})
+Convert the floating-point type of the point and tangent functions of a `Path` or `ClosedPath` object.
+"""
 function convert_real_type(T::Type{<:Real}, P::Path{S}) where S
     return Path{T}(convert_real_type.(Ref(T), curves(P)))
 end

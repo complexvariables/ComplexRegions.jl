@@ -11,16 +11,16 @@ Order   = [:type]
 ## Exported functions
 
 ```@autodocs
-Modules = [ComplexRegions]
+Modules = [ComplexRegions, ComplexRegions.Shapes]
 Private = false
-Order   = [:function]
+Order   = [:function, :constant]
 ```
 
-## Other functions
+## Others
 
 ```@autodocs
 Modules = [ComplexRegions]
 Private = true
 Public = false
-Order   = [:function]
+Order   = [:function, :constant, :type]
 ```
