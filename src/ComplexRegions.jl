@@ -1,26 +1,4 @@
 module ComplexRegions
-DEFAULT = Dict(:tol=>1e-12)
-"""
-	ComplexRegions.default()
-Return a dictionary of global default settings for the ComplexRegions package.
-
-	ComplexRegions.default(key=value)
-Change a global default setting in the running instance of the ComplexRegions package.
-"""
-function default(;kw...)
-	if isempty(kw)
-		return DEFAULT
-	end
-	for (sym,val) in kw
-		if !haskey(DEFAULT,sym)
-			@error "Unrecognized default setting `$sym`"
-		else
-			DEFAULT[sym] = val
-			@info "Default value of `$sym` set to $val."
-		end
-	end
-	return nothing
-end
 
 using Statistics
 using Dierckx

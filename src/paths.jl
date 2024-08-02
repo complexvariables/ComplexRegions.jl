@@ -160,11 +160,11 @@ Base.:/(z::Number, p::AbstractPath) = z * inv(p)
 inv(p::AbstractPath) = typeof(p)([inv(c) for c in curves(p)])
 
 """
-	isapprox(P1::AbstractPath,R2::AbstractPath; tol=<default>)
+	isapprox(P1::AbstractPath,R2::AbstractPath)
 	P1 ≈ P2       (type "\\approx" followed by tab key)
 Determine whether `P1` and `P2` represent the same path, up to tolerance `tol`, irrespective of the parameterization of its curves.
 """
-function isapprox(P1::AbstractPath, P2::AbstractPath; tol=DEFAULT[:tol])
+function isapprox(P1::AbstractPath, P2::AbstractPath)
     if length(P1) != length(P2)
         return false
     else
