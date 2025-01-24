@@ -130,7 +130,10 @@ function Curve{T}(f::Function, df::Function, a::Real, b::Real) where T<:Abstract
 end
 
 # Constructors that try to determine underlying Real type automatically
-function Curve(f::Function, df::Function=nothing)
+function Curve(
+	f::Function,
+	df::Union{Function,Nothing}=nothing,
+	)
 	T = real_type(float(f(0.1234)))
 	# didn't know T at call time, so manually handle default argument for df
 	if isnothing(df)
