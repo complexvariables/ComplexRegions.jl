@@ -368,7 +368,7 @@ function enclosing_circle(p::AbstractPath, expansion=2)
 end
 
 function enclosing_circle(p::AbstractVector{<:AbstractPath}, expansion=2)
-    z = []
+    z = typeof(first(p)(0.0123))[]
     map(p) do p
         z = vcat(z, discretize(p, ds=0.02))
     end
