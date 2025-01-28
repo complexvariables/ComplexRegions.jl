@@ -195,9 +195,9 @@ function ConnectedRegion(
                         ) where T
     n = length(inner)
     if isnothing(outer)
-        ExteriorRegion{n}(inner)
+        ExteriorRegion{n,T}(inner)
     else
-        ConnectedRegion{n + 1}(outer, inner)
+        ConnectedRegion{n + 1,T}(outer, inner)
     end
 end
 
