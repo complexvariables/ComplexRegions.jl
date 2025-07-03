@@ -83,6 +83,13 @@ Plots.@recipe function f(R::ExteriorSimplyConnectedRegion)
     between(C,P)
 end
 
+# indices of the closest pair of points from two lists
+function argclosest(z1, z2)
+    i1 = [argmin(abs.(z1 .- z)) for z in z2]
+    i2 = argmin(abs.(z2 .- z1[i1]))
+    return i1[i2], i2
+end
+
 Plots.@recipe function f(R::Union{ConnectedRegion,ExteriorRegion})
     p0 = outerboundary(R)
     p1 = innerboundary(R)
