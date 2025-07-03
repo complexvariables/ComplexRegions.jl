@@ -162,4 +162,4 @@ function Base.show(io::IO, ::MIME"text/plain", L::Line{T}) where {T}
 end
 
 # Two points are enough to draw a line (though not on the sphere), and we want to avoid infinity.
-plotdata(L::Line{T}) where T<:Union{Complex,Polar} = point(L, [0.1, 0.9])
+plotdata(L::Line) = point(L, [0.1, 0.9])

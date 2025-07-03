@@ -145,4 +145,4 @@ function show(io::IO, ::MIME"text/plain", S::Segment{T}) where {T}
     print(io, "Segment{$T} in the complex plane:\n   from (", point(S, 0), ") to (", point(S, 1), ")")
 end
 
-plotdata(S::Segment{T}) where T<:Union{Complex,Polar} = [S.za, S.zb]
+plotdata(S::Segment) = [S.za, S.zb]

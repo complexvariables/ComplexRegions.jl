@@ -23,7 +23,7 @@ Makie.convert_arguments(::PointBased, z::AbstractVector{<:Complex}) = (z_to_poin
 # Convert a pathlike object to a vector of points
 Makie.plottype(::AbstractCurveOrPath) = Lines
 Makie.plottype(::AbstractVector{<:AbstractCurveOrPath}) = Series
-curve_to_points(c::AbstractCurveOrPath) = z_to_point.(complex(ComplexRegions.plotdata(c)))
+curve_to_points(c::AbstractCurveOrPath) = z_to_point.(complex(plotdata(c)))
 Makie.convert_arguments(::PointBased, c::AbstractCurveOrPath) = (curve_to_points(c), )
 
 # Plot a compound boundary (e.g., from a generic ConnectedRegion)
