@@ -375,4 +375,6 @@ function enclosing_circle(p::AbstractVector{<:AbstractPath}, expansion=2)
     return Circle(enclosing_circle(filter(isfinite, z), expansion)...)
 end
 
+plotdata(P::ComplexRegions.AbstractPath) = vcat(plotdata.(P)...)
+
 include("polygons.jl")
