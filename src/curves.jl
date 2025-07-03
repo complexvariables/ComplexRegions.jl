@@ -188,7 +188,6 @@ Base.inv(C::Curve{T}) where T = Curve{T}(t -> 1 / C.point(t), t -> -C.tangent(t)
 Compute points along the curve `C` suitable to make a nice plot of it.
 """
 plotdata(C::ComplexRegions.AbstractCurve) = adaptpoints(t -> point(C,t), t -> unittangent(C,t), 0, 1)
-plotdata(C::ComplexRegions.AbstractCurve, n::Integer=501) = point(C, range(0, 1, n))
 
 #
 # generic ClosedCurve
