@@ -88,6 +88,7 @@ using ComplexRegions
 ```
 
 Here is a "dog bone" region.
+
 ```@example examples
 a = Arc(-1,1,-1im);
 right = Path([4+1im+a,4-1im-1im*a]);
@@ -95,25 +96,19 @@ s = Segment(-3+1im,3+1im);
 p = ClosedPath([s,right...,-s,-right...]);
 r = interior(exp(1im*pi/4)*p)
 
-using ComplexPlots, Plots
-default(linewidth=2,legend=:none)
+using  Plots
+default(linewidth=2, legend=:none)
 plot(r)
-savefig("bone-region.svg"); nothing # hide
 ```
 
-![dog-bone region](bone-region.svg)
-
-Are you inspired by the Swiss flag?
+I don't know much about Switzerland, but the flag is a big plus!
 
 ```@example examples
 box = [1-1im, 3-1im, 3+1im];
 plus = Polygon([box; 1im*box; -box; -1im*box]);
 r = between(rectangle(-6-4im, 6+4im), plus)
 plot(r, color=:red, linewidth=0)
-savefig("swiss.svg"); nothing # hide
 ```
-
-![Swiss flag](swiss.svg)
 
 A multiply-connected exterior region:
 
@@ -122,7 +117,4 @@ c = Circle(0, 1)
 t = n_gon(3)
 s = n_gon(4)
 plot( ExteriorRegion([c, 3+s, 6+t]) )
-savefig("triple.svg"); nothing # hide
 ```
-
-![3-connected region](triple.svg)

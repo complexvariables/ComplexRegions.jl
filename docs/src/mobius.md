@@ -10,18 +10,20 @@ $$f(z)=\frac{az+b}{cz+d}.$$
 
 Among other notable properties, they map circles and lines to other circles and lines.
 
-For convenience of typing on some keyboards, `Mobius` is an alias for `Möbius` in the package.
+::: tip Alternate spelling
+
+For convenience of typing on some keyboards, `Mobius` is defined as an alias for `Möbius`.
+
+:::
 
 The package defines a `Möbius` type that can be constructed in a variety of ways:
 
-- `Möbius(a, b, c, d)`\
-Specify the coefficients as in the formula above.
-- `Möbius(A)`\
-Specify the coefficients as the matrix $A=[a\;b;\;\,c\;d]$.
-- `Möbius(z, w)`\
-Construct the unique transformation that maps the three points `z[1], z[2], z[3]` to `w[1], w[2], w[3]`, respectively. Either vector of points may include `Inf`.
-- `Möbius(C1, C2)`\
-Construct a transformation that maps the [Line](@ref) or [Circle](@ref) `C1` to the Line or Circle `C2`.
+| Construction | Description |
+| :----------- | :---------- |
+| `Möbius(a, b, c, d)` | Specify the coefficients as in the formula above. |
+| `Möbius(A)` | Specify the coefficients as the matrix $A=[a\;b;\;\,c\;d]$. |
+| `Möbius(z, w)` | Construct the unique transformation that maps the three points `z[1], z[2], z[3]` to `w[1], w[2], w[3]`, respectively. Either vector of points may include `Inf`. |
+| `Möbius(C1, C2)` | Construct a transformation that maps the [Line](@ref) or [Circle](@ref) `C1` to the Line or Circle `C2`. |
 
 ## Methods
 
@@ -35,7 +37,5 @@ isapprox(ans, unitdisk)
 
 Two other methods are defined:
 
-- `inv(f)`\
-Construct the inverse transformation.
-- `f∘g` (type "\circ" followed by tab key)\
-Construct the composed map, $z \mapsto f(g(z))$.
+- `inv(f)` Construct the inverse transformation.
+- `f∘g` (type "\circ" followed by Tab key) Construct the composed map, $z \mapsto f(g(z))$.

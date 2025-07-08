@@ -1,6 +1,6 @@
 # Paths
 
-A **path** is a sequence of curves that compose a continuous complex-valued path.
+A **path** is a sequence of `AbstractCurve` values that compose a continuous, complex-valued path. A path with $n$ components is parameterized over the interval $[0, n]$, with the first component covering $[0, 1]$, the second covering $[1, 2]$, and so on. The path is checked for continuity at construction time.
 
 ## [Abstract interface](@id interface_paths)
 
@@ -10,7 +10,7 @@ Every `AbstractPath` type is expected to provide the following method:
 
 - `curves(P)`: Return an array of the curves constituting `P`.
 
-In addition, default implementations are given for the following methods.
+Default implementations are given for the following methods.
 
 | Method | Description |
 |:-----|:-----|
@@ -32,9 +32,11 @@ In addition, default implementations are given for the following methods.
 | `dist(z, P)` | Distance from a point to the path. |
 | `closest(z, P)`| Point on the path nearest to a given number. |
 
-#### Iterator interface
+::: tip Iterator interface
 
 The `AbstractPath` type implements the `eltype`, `length`, `getindex`, and `iterate` methods of the standard Julia iterator interface. Therefore, clauses such as `for c in P` will iterate over the curves in `P` for loops, comprehensions, and generators.
+
+:::
 
 ### AbstractClosedPath
 
@@ -61,11 +63,11 @@ There are generic implementations of both of the abstract types described above.
 
 ### Path
 
-`Path` implements the `AbstractPath` type. A path is created by calling `Path(c)`, where `c` is a vector of curves subtyped from `AbstractCurve`. The constructor tests the endpoints of the given curves for continuity up to a selectable tolerance.
+`Path` generically implements the `AbstractPath` type. A path is created by calling `Path(c)`, where `c` is a vector of curves subtyped from `AbstractCurve`. The constructor tests the endpoints of the given curves for continuity up to a selectable tolerance.
 
 ### ClosedPath
 
-`ClosedPath` implements the `AbstractClosedPath` type. Its chief difference from the `Path` type is that the constructor also checks whether the initial and final points coincide (up to tolerance). As a subtype of `AbstractClosedPath`, this type also inherits the use of circular/modulo addressing for curve selection and parameterization.
+`ClosedPath` generically implements the `AbstractClosedPath` type. Its chief difference from the `Path` type is that the constructor also checks whether the initial and final points coincide (up to tolerance). As a subtype of `AbstractClosedPath`, this type also inherits the use of circular/modulo addressing for curve selection and parameterization.
 
 ## [Examples](@id examples_paths)
 
@@ -74,17 +76,11 @@ using ComplexRegions
 ```
 
 Here is a path defined by arcs and segments.
-```@example examples
+
+```@repl examples
 a = Arc(-1, 1, -1im)
 right = Path([4 + 1im+a, 4-1im - 1im*a])
 s = Segment(-3+1im, 3+1im)
 p = ClosedPath([s, right..., -s, -right...])
-arclength(p)
-vertices(p)
-
-using ComplexPlots, Plots
-plot(cispi(1/4) * p, label="bone")
-savefig("bone.svg"); nothing # hide
+arclength(p), vertices(p)
 ```
-
-![dog-bone path](bone.svg)

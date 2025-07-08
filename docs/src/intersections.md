@@ -28,11 +28,11 @@ l = Line(1im, 1+1im)
 s = Segment(-2, 2+2im)
 intersect(l, s)
 intersect(l, s + 2im)
-intersect(s,Segment(-4-1im, 1im))
+intersect(s, Segment(-4-1im, 1im))
 ```
 
 ```@repl examples
-ℓ = Line(1/2, 1/2+1im)  # line through 0.5 and 0.5+1i
-c = 1 / ℓ          # a circle
+ℓ = Line(1/2, 1/2+1im)    # line through 0.5 and 0.5+1i
+c = 1 / ℓ    # a circle
 intersect(ℓ, c)
 ```

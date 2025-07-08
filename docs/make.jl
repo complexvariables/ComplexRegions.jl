@@ -1,17 +1,18 @@
-import Pkg; Pkg.update("ComplexRegions")
-using Documenter, ComplexRegions
+import Pkg; Pkg.update()
+using DocumenterVitepress, Documenter
+using ComplexRegions
 
 ENV["GKSwstype"] = "100"
 DocMeta.setdocmeta!(ComplexRegions, :DocTestSetup, :(using ComplexRegions); recursive=true)
-makedocs(sitename="ComplexRegions.jl",
-    format = Documenter.HTML(;
-        prettyurls=get(ENV, "CI", "false") == "true",
-        canonical="https://complexvariables.github.io/ComplexRegions.jl",
-        edit_link="main",
-        assets=String[],
+
+makedocs(;
+    modules = [ComplexRegions],
+    repo = Remotes.GitHub("complexvariables", "ComplexRegions.jl"),
+    authors = "Toby Driscoll <driscoll@udel.edu>, and contributors",
+    sitename = "ComplexRegions.jl",
+    format = DocumenterVitepress.MarkdownVitepress(
+        repo = "https://github.com/complexvariables/ComplexRegions.jl",
     ),
-    authors = "Toby Driscoll <driscoll@udel.edu>",
-    repo=Remotes.GitHub("complexvariables","ComplexRegions.jl"),
     pages = [
         "Introduction" => "index.md",
         "Curves" => "curves.md",
@@ -22,13 +23,15 @@ makedocs(sitename="ComplexRegions.jl",
         "Number types" => "numbers.md",
         "Möbius" => "mobius.md",
         "Shapes" => "shapes.md",
+        "Plotting in Makie" => "makie.md",
         "API Reference" => "api.md"
-		],
-	modules = [ComplexRegions],
-    doctest = true
-    )
+    ],
+)
 
-deploydocs(
+DocumenterVitepress.deploydocs(;
     repo = "github.com/complexvariables/ComplexRegions.jl",
+    target = "build", # this is where Vitepress stores its output
     devbranch = "master",
-    )
+    branch = "gh-pages",
+    push_preview = true,
+)

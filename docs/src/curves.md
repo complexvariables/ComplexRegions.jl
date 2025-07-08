@@ -1,11 +1,14 @@
 # Curves
 
-A **curve** is meant to be a smooth, non-self-intersecting curve in the extended complex plane. There is a generic [Curve](@ref) type that requires you to specify an explicit parameterization; it is *not* checked for smoothness or even continuity.
+A **curve** is meant to be a smooth, non-self-intersecting curve in the extended complex plane. The curve parameter is a real number in the range $[0,1]$ that is used to traverse the curve.
+
+All curve types are parameterized by a base floating-point type, such as Float64, that is the numeric type of the curve parameter as well as (possibly complexified) its points.
 
 ## [Abstract interface](@id interface_curves)
 
 ### AbstractCurve
-Every `AbstractCurve` type is expected to implement the following methods. (Here `C` represents a value of type `AbstractCurve` and `z` is a number.)
+
+Every realization of `AbstractCurve` is expected to implement the following methods. (Here `C` represents a value of type `AbstractCurve` and `z` is a number.)
 
 | Method | Description |
 |:-----|:-----|
@@ -43,71 +46,71 @@ The `AbstractClosedCurve` subtype is used to signify that the starting and endin
 
 ### Curve
 
-A `Curve` represents an implementation of `AbstractCurve` that requires only an explicit parameterization of the curve. Given the (bounded) complex-valued function $f$ defined on $[0,1]$, then `C=Curve(f)` represents the curve $z=f(t)$. If $f$ is defined on $[a,b]$ instead, then `C=Curve(f,a,b)` is appropriate, but all future work with `C` uses the standard interval $[0,1]$ for the parameter. All `Curve` values are expected to be finite; i.e., `isfinite(C)` will always be true.
+A `Curve` represents an implementation of `AbstractCurve` that requires only an explicit parameterization of the curve. Given the (bounded) complex-valued function $f$ defined on $[0,1]$, then `Curve(f)` represents the curve $z=f(t)$. If $f$ is defined on $[a,b]$ instead, then `Curve(f,a,b)` is appropriate, but all future work with the curve object uses the standard interval $[0,1]$ for the parameter. All `Curve` values are expected to be finite; i.e., `isfinite(C)` will always be true.
 
-By default, a tangent to `C` is computed when needed using a simple finite difference, resulting in less precision than the representation of the points on `C` (particularly near the endpoints). If an accurate function `df` is available for the complex-valued tangent $z'(t)$, it can be used via `Curve(f,df)` or `Curve(f,df,a,b)`.
+By default, a tangent to the curve is computed when needed using automatic differentiation. If a function `df` is available for the complex-valued tangent $z'(t)$, it can be supplied via `Curve(f, df)`.
 
 ### ClosedCurve
 
-A `ClosedCurve` implements `AbstractClosedCurve` and is similar to a `Curve`, but the parameterization is checked against $f(0)\approx f(1)$ (or $f(b)\approx f(a)$), up to a tolerance.
+A `ClosedCurve` implements `AbstractClosedCurve` and is similar to a `Curve`, but at construction the parameterization is checked for $f(0) \approx f(1)$, up to a tolerance.
 
 ## [Specific subtypes](@id subtypes_curves)
 
-The following important particular types of curves are provided, together with appropriate particular methods. All of them provide the syntax `C(t)` as equivalent to `point(C,t)`.
-
-Each type below is parameterized; e.g., `Line{T}`, where `T` is either a native `Complex` type, or a `Polar` or `Spherical` type from `ComplexValues`. Points on the curve have the type `T`, which mainly affects how they are plotted. You can convert the value type, so for example, `Spherical(C)` will be plotted on the Riemann sphere.
+The following particular types of curves are provided. The default floating-point type is `Float64`, but you can specify another type explicitly, as in `Line{Float32}(0, 1im)` or `Segment(BigFloat(0), 1)`.
 
 In addition to the minimal methods set by the `AbstractCurve` definition above, each of these types provides the following methods. (`C` is a value of one of these types, and `z` is a number.)
 
 | Method | Description |
 |:-----|:-----|
-| `arg(C, z)`| Parameter value of a given point on the curve. |
+| `arg(C, z)`| Curve parameter value of a given point on the curve. |
 | `isapprox(C1, C2)`| Determine whether two values represent the same curve.  |
-| `isleft(z, C)`, `isright(z, C)`| Determine whether a point lies "to the left" or "to the right" of a line, ray, or segment cin its given orientation. |
+| `isleft(z, C)`, `isright(z, C)`| Determine whether a point lies "to the left" or "to the right" of a line, ray, or segment in its given orientation. |
 | `dist(z, C)` | Distance from a point to the curve. |
 | `closest(z, C)`| Point on the curve nearest to a given number. |
 
 ### Line
 
-Use `L=Line(a, b)` to create a line through the values $a$ and $b$. Given a point `p` on the line and a complex `s` whose complex sign gives the direction of the line, another syntax is `Line(p, direction=s)`. Finally, with a point `p` on the line and the angle `θ` of the line, use `Line(p, angle=θ)`.
+Like other curves, a line is parameterized over $[0,1]$, with `L(0)` and `L(1)` both being infinity. 
 
-Like other curves, a line is parameterized over $[0,1]$, with `L(0)` and `L(1)` both being infinity. Use `reflect(z, L)` to find the reflection of a point `z` across line `L`.
+- `Line(a, b)` creates the line through the values $a$ and $b$.
+- `Line(p, direction=s)` creates a line through the point `p` in the direction of the complex number `s`.
+- `Line(p, angle=θ)` creates a line through the point `p` at the angle `θ`.
+
+Use `reflect(z, L)` to find the reflection of a point `z` across line `L`.
 
 ### Ray
 
-Use `Ray(z, θ)` to construct a ray starting at `z` and extending to infinity at the angle `θ`. Use `Ray(z, θ, true)` to reverse the ray, so it extends from infinity to `z`.
+- `Ray(z, θ)` constructs a ray starting at `z` and extending to infinity at the angle `θ`.
+- `Ray(z, θ, true)` constructs a ray starting at infinity and extending to `z` at the angle `θ`.
 
 ### Segment
 
-`Segment(a, b)` constructs the line segment from `a` to `b`.
+- `Segment(a, b)` constructs the line segment from `a` to `b`.
 
 ### Circle
 
-`Circle(z, r)` constructs a circle centered at `z` with radius `r`, oriented counterclockwise (positively). Use`Circle(z,r,false)` to make the circle with clockwise orientation.
-
-`Circle(a, b, c)` constructs the circle through the points `a`, `b`, and `c`. The ordering of the points determines the orientation of the circle. If the points are collinear, a `Line` is returned instead.
+- `Circle(z, r)` constructs a circle centered at `z` with radius `r`, oriented counterclockwise.
+- `Circle(z, r, false)` constructs the circle with clockwise orientation.
+- `Circle(a, b, c)` constructs the circle through the points `a`, `b`, and `c`. The ordering of the points determines the orientation of the circle. If the points are collinear, a `Line` is returned instead.
 
 Use `reflect(z, C)` to reflect a point `z` through the circle `C`.
 
 ### Arc
 
-`Arc(a, b, c)` constructs the circular arc through the given three points. If the points are collinear, a `Segment` is returned.
-
-Given a Circle `C`, the syntax `Arc(C, start, delta)` constructs an arc from `C` starting at the given `start` value and extending an amount `delta`. These latter values are expressed as fractions of a full rotation starting from the real axis. If `delta` is negative, it effectively reverses the orientation of `C`.
+- `Arc(a, b, c)` constructs the circular arc through the given three points. If the points are collinear, a `Segment` is returned.
+- `Arc(C, start, Δ)` constructs an arc from a `Circle` `C`, starting at the given `start` value and extending an amount `Δ`. The values are expressed as fractions of a full rotation starting from the real axis.
 
 ## Examples
-
-Some examples:
 
 ```@setup examples
 using ComplexRegions
 ```
 
 ```@repl examples
-ℓ = Line(1/2, 1/2+1im)  # line through 0.5 and 0.5+1i
-c = 1 / ℓ              # a circle
+ℓ = Line(1/2, 1/2+1im)    # line through 0.5 and 0.5+1i
+c = 1 / ℓ    # a circle
 winding(c, 1.5), winding(c, -1)
 tangent(c, 0.75)
-reflect(-1, c)          # reflection of a point through the circle
+reflect(-1, c)
 2c - 2
 ```

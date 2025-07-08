@@ -5,7 +5,7 @@
 using ComplexRegions
 ```
 
-The package is designed to work with complex numbers in different formats, including the native `Complex` type and the `Polar` and `Spherical` types from the [`ComplexValues`](https://github.com/complexvariables/ComplexValues.jl) package. The package re-exports these types, so you can use them directly.
+The package is designed to work with complex numbers in different formats, including the native `Complex` type and the `Polar` and `Spherical` types from the [ComplexValues](https://github.com/complexvariables/ComplexValues.jl) package. The package re-exports these types, so you can use them directly.
 
 ```@example examples
 seg = Segment(0, Polar(3, π/4))
@@ -15,8 +15,6 @@ point(seg, (0:4)/4)
 ```@example examples
 Complex.(ans)
 ```
-
-*(The following feature was added most recently and may have rough edges. Please report any issues.)*
 
 In addition, the package supports different floating-point types underlying any of the complex number types. This means you can use `BigFloats` or [`DoubleFloats`](https://github.com/JuliaMath/DoubleFloats.jl) to get higher precision.
 
