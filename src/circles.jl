@@ -136,6 +136,8 @@ function reflect(z::Number, C::Circle)
     ζ == 0 ? convert(typeof(float(z)), Inf) : C.center + C.radius^2 / conj(ζ)
 end
 
+unitcircle = Circle(0, 1)
+
 function show(io::IO, C::Circle)
     orient = C.ccw ? "ccw" : "cw"
     print(IOContext(io, :compact => true), "Circle(", C.center, ",", C.radius, ",", orient, ")")
