@@ -140,6 +140,7 @@ end
 sign(R::Ray) = unittangent(R)
 
 # Display methods
+# COV_EXCL_START
 function show(io::IO, R::Ray{T}) where {T}
     print(IOContext(io, :compact => true), "Ray(", R.base, ",", R.angle, ",", R.reverse, ")")
 end
@@ -151,6 +152,7 @@ function show(io::IO, ::MIME"text/plain", R::Ray{T}) where {T}
         print(io, "Ray from ", R.base, " to ∞ at angle ", R.angle)
     end
 end
+# COV_EXCL_END
 
 # in the plane, use two (finite) points for plotting
 plotdata(R::Ray) = R.reverse ? [R(0.3), R.base] : [R.base, R(0.7)]

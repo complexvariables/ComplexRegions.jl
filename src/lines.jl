@@ -153,6 +153,7 @@ function reflect(z::Number, L::Line)
     L.base + L.direction * conj(ζ / L.direction)
 end
 
+# COV_EXCL_START
 function Base.show(io::IO, L::Line)
     print(IOContext(io, :compact => true), "Line(...", L(0.5), "...", L((sqrt(5) - 1) / 2), "...)")
 end
@@ -160,6 +161,7 @@ end
 function Base.show(io::IO, ::MIME"text/plain", L::Line{T}) where {T}
     print(io, "Line{$T} in the complex plane:\n   through (", L.base, ") parallel to (", L.direction, ")")
 end
+# COV_EXCL_END
 
 # Two points are enough to draw a line (though not on the sphere), and we want to avoid infinity.
 plotdata(L::Line) = point(L, [0.1, 0.9])

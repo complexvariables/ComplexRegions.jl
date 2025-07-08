@@ -104,6 +104,7 @@ Base.:/(R::AbstractConnectedRegion, z::Number) = *(R, 1 / z)
 #/(z::Number,R::AbstractConnectedRegion) = z*inv(R)
 #inv(p::AbstractConnectedRegion) = typeof(R)([inv(c) for c in curves(p)])
 
+# COV_EXCL_START
 function show(io::IO, ::MIME"text/plain", R::AbstractConnectedRegion)
     no = isnothing(outerboundary(R)) ? "no" : ""
     print(io, "Region in the complex plane with $no outer boundary and $(length(innerboundary(R))) inner boundary components")
@@ -112,6 +113,7 @@ end
 function show(io::IO, R::AbstractConnectedRegion)
     print(io, "Region in the complex plane")
 end
+# COV_EXCL_END
 
 #
 # concrete implementations
@@ -270,7 +272,9 @@ outerboundary(A::Annulus) = A.outer
 in(z::Number, A::Annulus) = isinside(z, A.outer) && isoutside(z, A.inner)
 isfinite(::Annulus) = true
 
+# COV_EXCL_START
 function show(io::IO, ::MIME"text/plain", R::Annulus)
     print(io, "Annulus in the complex plane:\n")
     print(io, "   centered at ", R.outer.center, " with distances from ", R.inner.radius, " to ", R.outer.radius)
 end
+# COV_EXCL_END

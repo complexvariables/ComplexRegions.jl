@@ -78,8 +78,10 @@ end
 
 isclosed(c::AbstractCurve) = isa(c, AbstractClosedCurve)
 
+# COV_EXCL_START
 Base.show(io::IO, C::AbstractCurve) = print(io, "Complex-valued $(typeof(C))")
 Base.show(io::IO, ::MIME"text/plain", C::AbstractCurve) = print(io, "Complex-valued $(typeof(C))")
+# COV_EXCL_END
 
 # By default, curves are not equal to one another, but curves of the same type can override this.
 isapprox(::AbstractCurve, ::AbstractCurve; kw...) = false

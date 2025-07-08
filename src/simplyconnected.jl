@@ -106,10 +106,13 @@ Construct the disk with the given `center` and `radius`.
 """
 disk(center::Number, radius::Real) = interior(Circle(center, radius))
 unitdisk = disk(complex(0.0), 1.0)
+
+# COV_EXCL_START
 function show(io::IO, ::MIME"text/plain", R::AbstractDisk)
     side = in(Inf, R) ? "exterior" : "interior"
     print(io, "Disk $side to:\n   ", R.boundary)
 end
+# COV_EXCL_END
 
 # quads
 AbstractQuad{T} = InteriorSimplyConnectedRegion{T,Rectangle{T}}
@@ -119,9 +122,12 @@ Construct the rectangle interior to `R`.
 """
 quad(R::Rectangle) = interior(R)
 unitquad = quad(Rectangle(0.0, [1, 1]))
+
+# COV_EXCL_START
 function show(io::IO, ::MIME"text/plain", R::AbstractQuad)
     print(io, "Quad inside ", R.boundary)
 end
+# COV_EXCL_END
 
 # half-planes
 AbstractHalfplane{T} = SimplyConnectedRegion{T,Line{T}}

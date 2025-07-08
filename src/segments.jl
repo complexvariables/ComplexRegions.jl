@@ -137,6 +137,7 @@ Reflect the value `z` across the extension of segment `S` to a line. (For reflec
 reflect(z::Number, S::Segment) = reflect(z, Line(S.za, S.zb))
 
 # Display methods
+# COV_EXCL_START
 function show(io::IO, S::Segment{T}) where {T}
     print(IOContext(io, :compact => true), "Segment(", point(S, 0), ",", point(S, 1), ")")
 end
@@ -144,5 +145,6 @@ end
 function show(io::IO, ::MIME"text/plain", S::Segment{T}) where {T}
     print(io, "Segment{$T} in the complex plane:\n   from (", point(S, 0), ") to (", point(S, 1), ")")
 end
+# COV_EXCL_END
 
 plotdata(S::Segment) = [S.za, S.zb]

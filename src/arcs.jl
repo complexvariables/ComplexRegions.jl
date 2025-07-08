@@ -161,6 +161,7 @@ function closest(z::Number, A::Arc)
     end
 end
 
+# COV_EXCL_START
 function show(io::IO, A::Arc{T}) where {T}
     print(IOContext(io, :compact => true), "Arc(", A(0.0), "...", A(1.0), ")")
 end
@@ -168,3 +169,4 @@ end
 function show(io::IO, ::MIME"text/plain", A::Arc{T}) where {T}
     print(io, "Arc{$T} in the complex plane:\n   fraction ", A.delta, " of (", A.circle, ") starting at ", A.start)
 end
+# COV_EXCL_END

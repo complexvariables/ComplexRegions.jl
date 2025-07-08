@@ -1,12 +1,15 @@
 abstract type AbstractCircularPolygon{T} <: AbstractClosedPath{T} end
 abstract type AbstractPolygon{T} <: AbstractCircularPolygon{T} end
 
+# COV_EXCL_START
 function show(io::IO, P::AbstractCircularPolygon)
     print(IOContext(io, :compact => true), typeof(P), " with ", length(P), " sides")
 end
+
 function show(io::IO, ::MIME"text/plain", P::AbstractCircularPolygon)
     print(io, typeof(P), " with ", length(P), " sides")
 end
+# COV_EXCL_END
 
 # Other methods
 sides(p::AbstractCircularPolygon) = curves(p)
@@ -188,6 +191,7 @@ arclength(p::Polygon) = arclength(p.path)
 inv(p::Polygon) = CircularPolygon([inv(c) for c in curves(p)])
 
 # Display methods
+# COV_EXCL_START
 function show(io::IO, ::MIME"text/plain", P::Polygon)
     print(io, "Polygon with ", length(P), " vertices:")
     for (v, a) in zip(vertices(P), angles(P))
@@ -196,6 +200,7 @@ function show(io::IO, ::MIME"text/plain", P::Polygon)
         print(io, ", interior angle ", a / pi, "π")
     end
 end
+# COV_EXCL_END
 
 # Other methods
 Base.convert(::Type{ClosedPath}, p::Polygon) = p.path
@@ -304,6 +309,7 @@ struct Rectangle{T} <: AbstractPolygon{T}
     end
 end
 
+# COV_EXCL_START
 function Base.show(io::IO, ::MIME"text/plain", R::Rectangle)
     print(io, "Rectangle with center $(R.center), dimensions $(2R.radii[1]) × $(2R.radii[2]), rotation $(R.rotation/π)π")
 end
@@ -311,6 +317,7 @@ end
 function Base.show(io::IO, R::Rectangle)
     print(io, "$(2R.radii[1]) × $(2R.radii[2]) Rectangle")
 end
+# COV_EXCL_END
 
 # converters
 Base.convert(::Type{Polygon}, r::Rectangle) = r.polygon

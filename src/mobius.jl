@@ -141,6 +141,7 @@ end
 # Display
 #
 
+# COV_EXCL_START
 function show(io::IO, f::Möbius)
     a, b, c, d = f.coeff
     print(IOContext(io, :compact => true), "Möbius map z --> (($a)*z + $b) / (($c)*z + $d)")
@@ -153,3 +154,4 @@ function show(io::IO, ::MIME"text/plain", f::Möbius)
     hline = reduce(*, fill("–", max(length(numer), length(denom))))
     print(io, "Möbius transformation:\n\n   ", numer, "\n   ", hline, "\n   ", denom)
 end
+# COV_EXCL_END

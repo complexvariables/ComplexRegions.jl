@@ -198,14 +198,17 @@ intersect(P::AbstractPath, C::AbstractCurve) = ∪([intersect(s, C) for s in cur
 intersect(C::AbstractCurve, P::AbstractPath) = intersect(P, C)
 intersect(P1::AbstractPath, P2::AbstractPath) = ∪([intersect(P1, s) for s in curves(P2)]...)
 
+# COV_EXCL_START
 function show(io::IO, P::AbstractPath)
     str = length(P) == 1 ? " curve" : " curves"
     print(IOContext(io, :compact => true), typeof(P), " with ", length(P), str)
 end
+
 function show(io::IO, ::MIME"text/plain", P::AbstractPath)
     str = length(P) == 1 ? " curve" : " curves"
     print(io, typeof(P), " with ", length(P), str)
 end
+# COV_EXCL_END
 
 ###############
 # ClosedPath

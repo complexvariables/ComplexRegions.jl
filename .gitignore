@@ -4,3 +4,4 @@ Manifest.toml
 .vscode
 .DS_Store
 docs/node_modules/
+*.cov
