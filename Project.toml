@@ -13,13 +13,22 @@ Reexport = "189a3867-3050-52da-a836-e630ba90ab69"
 StaticArrays = "90137ffa-7385-5640-81b9-e52037218182"
 Statistics = "10745b16-79ce-11e8-11f9-7d13ad32a3b2"
 
+[weakdeps]
+Makie = "ee78f7c6-11fb-53f2-987a-cfe4a2b5a57a"
+Plots = "91a5bcdd-55d7-5caf-9e0b-520d859cae80"
+
+[extensions]
+ComplexRegionsMakieExt = "Makie"
+ComplexRegionsPlotsExt = "Plots"
+
 [compat]
-Dierckx = "0.5"
-ForwardDiff = "1"
-Reexport = "1"
-StaticArrays = "1"
 CircularArrays = "1"
 ComplexValues = "0.3"
+Dierckx = "0.5"
+ForwardDiff = "1"
+Plots = "1"
+Reexport = "1"
+StaticArrays = "1"
 Statistics = "1"
 julia = "1"
 
@@ -29,11 +38,3 @@ Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
 
 [targets]
 test = ["Test", "Statistics"]
-
-[weakdeps]
-Makie = "ee78f7c6-11fb-53f2-987a-cfe4a2b5a57a"
-Plots = "91a5bcdd-55d7-5caf-9e0b-520d859cae80"
-
-[extensions]
-ComplexRegionsMakieExt = "Makie"
-ComplexRegionsPlotsExt = "Plots"
