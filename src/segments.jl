@@ -145,6 +145,6 @@ end
 function show(io::IO, ::MIME"text/plain", S::Segment{T}) where {T}
     print(io, "Segment{$T} in the complex plane:\n   from (", point(S, 0), ") to (", point(S, 1), ")")
 end
-# COV_EXCL_END
+# COV_EXCL_STOP
 
 plotdata(S::Segment) = [S.za, S.zb]

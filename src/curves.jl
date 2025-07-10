@@ -4,6 +4,7 @@
 
 abstract type AbstractCurve{T} <: Function end
 
+# COV_EXCL_START
 # Required methods
 """
 	point(C::AbstractCurve,t::Real)
@@ -31,6 +32,7 @@ Base.:+(C::AbstractCurve, z::Number) = @error "No addition method defined for ty
 Base.:-(C::AbstractCurve) = @error "No negation method defined for type $(typeof(C))"
 Base.:*(C::AbstractCurve, z::Number) = @error "No multiplication method defined for type $(typeof(C))"
 Base.inv(C::AbstractCurve) = @error "No inversion method defined for type $(typeof(C))"
+# COV_EXCL_STOP
 
 # Default implementations
 Base.length(::AbstractCurve) = 1  # length of parameter interval
@@ -81,7 +83,7 @@ isclosed(c::AbstractCurve) = isa(c, AbstractClosedCurve)
 # COV_EXCL_START
 Base.show(io::IO, C::AbstractCurve) = print(io, "Complex-valued $(typeof(C))")
 Base.show(io::IO, ::MIME"text/plain", C::AbstractCurve) = print(io, "Complex-valued $(typeof(C))")
-# COV_EXCL_END
+# COV_EXCL_STOP
 
 # By default, curves are not equal to one another, but curves of the same type can override this.
 isapprox(::AbstractCurve, ::AbstractCurve; kw...) = false

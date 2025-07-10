@@ -20,6 +20,7 @@ end
 
 abstract type AbstractRegion{T} end
 
+# COV_EXCL_START
 # Required methods
 boundary(R::AbstractRegion) = @error "No boundary() method defined for type $(typeof(R))"
 
@@ -36,6 +37,7 @@ in(R::AbstractRegion; kw...) = z -> in(z, R; kw...)
 Return `true` if the region is bounded in the complex plane.
 """
 isfinite(R::AbstractRegion) = @error "No isfinite() method defined for type $(typeof(R))"
+# COV_EXCL_STOP
 
 # Default implementations
 
@@ -113,7 +115,7 @@ end
 function show(io::IO, R::AbstractConnectedRegion)
     print(io, "Region in the complex plane")
 end
-# COV_EXCL_END
+# COV_EXCL_STOP
 
 #
 # concrete implementations
@@ -277,4 +279,4 @@ function show(io::IO, ::MIME"text/plain", R::Annulus)
     print(io, "Annulus in the complex plane:\n")
     print(io, "   centered at ", R.outer.center, " with distances from ", R.inner.radius, " to ", R.outer.radius)
 end
-# COV_EXCL_END
+# COV_EXCL_STOP

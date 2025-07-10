@@ -152,7 +152,7 @@ function show(io::IO, ::MIME"text/plain", R::Ray{T}) where {T}
         print(io, "Ray from ", R.base, " to ∞ at angle ", R.angle)
     end
 end
-# COV_EXCL_END
+# COV_EXCL_STOP
 
 # in the plane, use two (finite) points for plotting
 plotdata(R::Ray) = R.reverse ? [R(0.3), R.base] : [R.base, R(0.7)]

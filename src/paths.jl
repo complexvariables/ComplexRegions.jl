@@ -1,12 +1,14 @@
 abstract type AbstractPath{T} end
 const PathLike{T} = Union{AbstractPath{T},AbstractVector{<:AbstractCurve{T}}}
 
+#COV_EXCL_START
 # Required methods
 """
 	curves(P::AbstractPath)
 Return an array of the curves that make up the path `P`.
 """
 curves(p::AbstractPath)::AbstractVector = @error "No curves() method defined for type $(typeof(p))"
+# COV_EXCL_STOP
 
 # Default implementations
 """
@@ -208,7 +210,7 @@ function show(io::IO, ::MIME"text/plain", P::AbstractPath)
     str = length(P) == 1 ? " curve" : " curves"
     print(io, typeof(P), " with ", length(P), str)
 end
-# COV_EXCL_END
+# COV_EXCL_STOP
 
 ###############
 # ClosedPath

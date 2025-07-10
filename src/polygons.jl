@@ -9,7 +9,7 @@ end
 function show(io::IO, ::MIME"text/plain", P::AbstractCircularPolygon)
     print(io, typeof(P), " with ", length(P), " sides")
 end
-# COV_EXCL_END
+# COV_EXCL_STOP
 
 # Other methods
 sides(p::AbstractCircularPolygon) = curves(p)
@@ -200,7 +200,7 @@ function show(io::IO, ::MIME"text/plain", P::Polygon)
         print(io, ", interior angle ", a / pi, "π")
     end
 end
-# COV_EXCL_END
+# COV_EXCL_STOP
 
 # Other methods
 Base.convert(::Type{ClosedPath}, p::Polygon) = p.path
@@ -317,7 +317,7 @@ end
 function Base.show(io::IO, R::Rectangle)
     print(io, "$(2R.radii[1]) × $(2R.radii[2]) Rectangle")
 end
-# COV_EXCL_END
+# COV_EXCL_STOP
 
 # converters
 Base.convert(::Type{Polygon}, r::Rectangle) = r.polygon

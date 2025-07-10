@@ -32,7 +32,7 @@ Construct the `Möbius` map that transforms the points `z[k]` to `w[k]` for k=1,
 Values of `Inf` are permitted in both vectors.
 """
 function Möbius(source::AbstractVector, image::AbstractVector)
-    # finds the coeffs of map from (0,1,Inf) to given points
+    # finds the coeffs of map from (0, 1, Inf) to given points
     function standard(x, y, z)
         if isinf(x)
             return z, y - z, 1, 0
@@ -154,4 +154,4 @@ function show(io::IO, ::MIME"text/plain", f::Möbius)
     hline = reduce(*, fill("–", max(length(numer), length(denom))))
     print(io, "Möbius transformation:\n\n   ", numer, "\n   ", hline, "\n   ", denom)
 end
-# COV_EXCL_END
+# COV_EXCL_STOP

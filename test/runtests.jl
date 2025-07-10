@@ -1,6 +1,7 @@
 using ComplexRegions, Statistics
 CR = ComplexRegions
-
+check(u::Number, v::Number, T::Type=real_type(float(u))) = isapprox(u, v, rtol=50CR.tolerance(T), atol=50CR.tolerance(T))
+check(u::AbstractArray, v::AbstractArray) = all(check(u, v) for (u, v) in zip(u, v))
 using Test
 @testset "Utilities" begin
     @test CR.scaleto(1im, 3im, [0.5, 0.75]) ≈ [2.0im, 2.5im]
@@ -17,13 +18,24 @@ using Test
 end
 
 @testset "Curves using $T" for T in (Float64, BigFloat)
-    f = t -> 2 * cos(t) + 1im * sin(t)
-    @test Curve(f, -1, 1) isa Curve
-    @test point(Curve{T}(f, -1, 1), 1//2) ≈ f(0)
-    f = t -> 2 * cospi(t) + 3im * sinpi(t)
-    c = ClosedCurve{T}(f, 0, 2)
-    @test point(5 - 3im * c, 1//8) ≈ 5 - 3im * f(T(1) / 4)
-    @test angle(normal(c, 3//4)) ≈ T(π) / 2
+    f = t -> 2cospi(t) + 1im*sinpi(t)
+    arc = Curve{T}(f, -1, 0)
+    @test arc isa Curve
+    @test check(point(arc, 1//2), f(-1//2))
+    @test check(point(conj(arc), 1//2), conj(f(-1//2)))
+    @test check(point(inv(arc), 1//2), 1 / f(-1//2))
+    arc = Curve(f)
+    @test isfinite(arc)
+    @test check(point(arc, 1//2), f(1//2))
+    @test check(point(reverse(arc), 1//4), f(3//4))
+    ellipse = ClosedCurve{T}(f, 0, 2)
+    @test check(point(5 - 3im * ellipse, 1//8), 5 - 3im * f(T(1) / 4))
+    @test check(point(conj(ellipse), 1//2), conj(f(1)))
+    @test check(point(inv(ellipse), 1//2), 1 / f(1))
+    @test check(angle(normal(ellipse, 3//4)), T(π) / 2)
+    @test isapprox(arclength(ellipse), 9.6884482205476761984285031963918294, rtol=1e-10)
+    @test winding(ellipse, 1 + 0.1im) == 1
+    @test winding(ellipse)(1 - 2im) == 0
 end
 
 @testset "Circles in $T" for T in (Float64, BigFloat)
@@ -32,11 +44,16 @@ end
     @test dist(-1 + 1im, c) ≈ sqrt(T(2))
     @test closest(1 + 4im, c) ≈ 1 + 1im * (sqrt(T(2)) - 1)
     @test isinside(1.5 - 1im, c) && isoutside(3//2 + 1im, reverse(c))
+    @test !isinside(c)(2) && !isoutside(c)(-1//2*1im + 1)
     @test isinf(reflect(c.center, c))
     @test reflect(reflect(-1 + 2im, c), c) ≈ -1 + 2im
     @test all(mod(abs(arg(c, c(t)) - t), 1) < 1e-11 for t in 0:1//10:1)
     @test angle(unittangent(c, 1//8)) ≈ 3T(π)/4
     @test abs(tangent(c, T(1//8))) ≈ 2T(π) * sqrt(T(2))
+    @test ispositive(c)
+    @test length(c) == 1
+    @test !ispositive(conj(c))
+    @test !isapprox(c, Line(T(0), 1))
     τ = tangent(c, T(1//5))
     @test isapprox(τ, CR.fdtangent(c, T(1//5)), rtol=sqrt(eps(T)))
 
@@ -53,7 +70,6 @@ end
 end
 
 @testset "Arcs in $T" for T in (Float64, BigFloat)
-    check(u, v) = isapprox(u, v, rtol=CR.tolerance(T), atol=CR.tolerance(T))
     a = Arc(cispi.([T(1) / 2, T(1) / 5, T(0)])...)
     zz = 1 / sqrt(T(2)) * (T(1) + 1im)
     @test check(point(a, T(1)/2) , zz)
@@ -63,25 +79,45 @@ end
     @test check(angle(unittangent(a, T(1)/2)), -T(π)/4)
     a = (a - 2) / 1im
     @test all(check(arg(a, a(t)), t) for t in (0:T(10))/10)
+    @test inv(inv(a)) ≈ a
 
     b = Arc(-1im, 1im, -T(1))
     @test check(point(b, T(2) / 3), 1im)
     @test check(point(T(1)/10 - 3im * b, T(2) / 3) , T(1)/10 - 3im * 1im)
     @test check(closest(5im, b), 1im)
     @test check(closest(2 - 5im, b + 2) , 2 - 1im)
+    @test check(dist(-2 - 4im, b), abs(-T(2) - 4im + 1im))
+    @test check(closest(-2 - 4im, b), -T(1)*1im)
     @test all(check(arg(b, b(t)), t) for t in (0:T(10))/10)
+    @test !isapprox(a, b)
 
     b = reverse(b)
     @test check(point(b, T(1) / 3), 1im)
     @test all(check(arg(b, b(t)), t) for t in (0:T(10))/10)
     @test check(angle(tangent(b, T(2) / 3)) , -T(π) / 2)
+
+    b = Arc(Circle{T}(2im, 2), 1//3, 3//5)
+    z = point(b, [0, 1])
+    @test inv(b) ≈ Segment(1 ./ z...)
+    @test check(arclength(b), T(π) * 12 / 5)
+    @test conj(b) ≈ Arc(Circle{T}(-2im, 2), -1//3, -3//5)
 end
 
 @testset "Lines in $T" for T in (Float64, BigFloat)
-    check(u, v) = isapprox(u, v, rtol=CR.tolerance(T), atol=CR.tolerance(T))
     @test Line(1, 5) isa Line
     l = Line(T(1)*1im, direction=1 + 2im)
+    @test slope(l) ≈ T(2)
+    @test angle(l) ≈ atan(T(2))
+    @test angle(conj(l)) ≈ -atan(T(2))
+    @test angle(reverse(l)) ≈ atan(T(2)) - π
     @test isleft(2im, l) && !isleft(0, l)
+    @test !isright(2im, l) && isright(0, l)
+    @test isinf(arclength(l))
+    @test !isfinite(l)
+    @test ispositive(l)
+    @test all(check(arg(l, point(l, t)), t) for t in (1:T(9))/10)
+    @test isnothing(arg(l, 1 + 2im))
+    @test check(abs(unittangent(l, T(1)/3)), 1)
     dz = point(l, T(3) / 5) - point(l, T(1) / 10)
     @test angle(dz) ≈ angle(1 + 2im)
     @test 1 / l isa Circle
@@ -91,13 +127,14 @@ end
     @test tangent(l, T(2)/5) ≈ CR.fdtangent(l, T(2)/5) rtol = sqrt(eps(T))
     z = l(T(3)/10) + 1im * sign(l.direction)
     @test dist(z, l) ≈ 1
+    @test dist(z + 1 - 2im, (l + 1) - 2im) ≈ 1
     @test closest(z, l) ≈ l(T(3)/10)
     @test reflect(z, l) ≈ l(T(3)/10) - 1im * sign(l.direction)
     @test all(check(arg(l, l(t)), t) for t in (0:T(9))/10)
+    @test convert(Line{Float32}, l) ≈ Line(1.0f0im, direction=1+2im)
 end
 
 @testset "Segments in $T" for T in (Float64, BigFloat)
-    check(u, v) = isapprox(u, v, rtol=CR.tolerance(T), atol=CR.tolerance(T))
     s = Segment(1, T(3) + 5im)
     @test isleft(-1, s) && !isleft(2, s)
     zz = 2 + T(5)*1im / 2
@@ -113,14 +150,13 @@ end
 end
 
 @testset "Rays in $T" for T in (Float64, BigFloat)
-    check(u, v) = isapprox(u, v, rtol=50CR.tolerance(T), atol=50CR.tolerance(T))
     s = Ray(Polar(2, 0), T(pi) / 2)
     @test isinf(arclength(s))
     @test isleft(-1im, s) && !isleft(-1im, reverse(s))
     @test check(real(s(23//100)), 2)
     @test imag(s(9//10)) > imag(s(7//10))
     @test check(convert(Complex, closest(T(5)*1im, s)), 2 + 5im)
-    @test all(check(arg(s, s(t)), t) for t in (0:10)//10)
+    @test all(check(arg(s, s(t)), t) for t in (T(0):10)/10)
     @test check(2angle(tangent(s, 1//10)) , π)
     @test tangent(s, T(1)/10) ≈ convert(Complex, CR.fdtangent(s, T(1)/10)) rtol=sqrt(eps(T))
     @test check(2angle(tangent(reverse(s), 1)) , -T(π))
@@ -131,7 +167,7 @@ end
     @test !isleft(4, s) && isleft(-1 + 3im, s)
     @test check(convert(Complex, closest(-4 + 1im, s)) , -4 + 2im)
     @test check(convert(Complex, closest(6, s)) , 2im)
-    @test all(check(arg(s, s(t)), t) for t in (0:10)//10)
+    @test all(check(arg(s, s(t)), t) for t in (T(0):10)/10)
 end
 
 @testset "Intersections in $T" for T in (Float64, BigFloat)
@@ -150,6 +186,10 @@ end
     @test isempty(intersect(Line(T(1), direction=1im), Line(-T(2), direction=1im)))
     l = Line(T(2), direction=3 + 1im)
     @test intersect(l, l + 100CR.tolerance(T)) ≈ l
+    @test isempty(intersect(Segment(1im*T(1), 1im*T(3)), Segment(1im*T(-2), T(0))))
+    @test intersect(Segment(1im*T(1), 1im*T(3)), Segment(1im*T(2), T(0))) ≈ Segment(1im*T(1), 1im*T(2))
+    @test intersect(Segment{T}(1im, 3im), Line{T}(0, 1im)) ≈ Segment{T}(1im, 3im)
+    @test isempty(intersect(Segment{T}(1im, 3im), Line(T(2), direction=1im)))
 
     z = intersect(Segment(0, 1), Segment(T(2)/5 - 1im, T(7//10) + 2im))
     @test any(@. z ≈ 0.5)
@@ -203,9 +243,9 @@ end
     S = Segment{T}(1, 1im)
     A = Arc(1im, -T(1) + 0.5im, -1)
     P = Path([S, A, -S])
-    @test all(point(P, [0, 1, 1.5, 2.5, 3]) .≈ [S(0), S(1), A(0.5), -S(0.5), -S(1)])
+    @test check(point(P, [0, 1, 1.5, 2.5, 3]), [S(0), S(1), A(0.5), -S(0.5), -S(1)])
     Q = 1 - 3im * P
-    @test Q(1.5) ≈ 1 - 3im * A(0.5)
+    @test check(Q(1.5), 1 - 3im * A(0.5))
 
     z = (T(2) + 2im) / 5
     p = Path([Arc(-1, -z, -1im), Arc(-1im, conj(z), 1), Arc(1, z, 1im)])
@@ -214,11 +254,22 @@ end
     @test θ[2] ≈ θ[3]
     p = ClosedPath([curves(p); Arc(1im, -conj(z), -1)])
     θ = angles(p)
-    @test all(θ[1:3] .≈ θ[2:4])
+    @test check(θ[1:3], θ[2:4])
+
+    P = Path([S, 1im * S, -S])
+    @test check(vertex(P, 3), -1)
+    @test check(vertex(P, 4), -point(S, 1))
+    @test check(arclength(P), 3 * sqrt(T(2)))
+    @test length(vertices(P - 3im)) == 4
+    rP = reverse(P)
+    @test all(check(point(rP, t), point(P, 3 - t)) for t in range(T(0), T(3), 17))
+    @test isa(reverse(P), Path)
+    τ = unittangent(P, T(3)/2)
+    @test check(τ, 1im*unittangent(S, T(1)/2))
 
     P = ClosedPath([S, 1im * S, -S, -1im * S])
-    @test vertex(P, 3) ≈ -1
-    @test arclength(P) ≈ 4 * sqrt(T(2))
+    @test check(vertex(P, 3), -1)
+    @test check(arclength(P), 4 * sqrt(T(2)))
     @test isa(reverse(P), ClosedPath)
     @test all(point(P, [0, 1, 5//4, 2.5, 3, 4]) .≈ [S(0), S(1), 1im * S(1//4), -S(0.5), -S(1), S(0)])
 
@@ -312,21 +363,38 @@ end
     @test z ≈ c.(t) atol = CR.tolerance(T)
     @test all(abs.(z .- 1im) .≈ 2)
 
+    s = Segment(T(-4), -2)
+    t, z = discretize(s, 200)
+    @test length(t) == 201
+    @test eltype(t) == T
+    @test eltype(z) == T
+    @test z ≈ s.(t) atol = CR.tolerance(T)
+
     Z = discretize(interior(p), 100)
     @test size(Z) == (100, 100)
     @test count(isnan, Z) == 1981
+    Z = discretize(interior(p), 100; limits=[-1, 1, -2, 2])
+    @test all(isnan(z) || (abs(imag(z)) <= 2 && abs(real(z)) <= 1) for z in Z)
     Z = discretize(exterior(p), 120, limits=[-5, 10, -8, 7])
     @test size(Z) == (120, 120)
     @test count(isnan, Z) == 1536
+    @test all(isnan(z) || (-5 <= real(z) <= 10 && -8 <= imag(z) <= 7) for z in Z)
+    Z = discretize(exterior(p), 120)
+    @test size(Z) == (120, 120)
+    @test count(isnan, Z) == 1989
 end
 
 @testset "Möbius in $T" for T in (Float64, BigFloat)
     z = [T(0), 1, 2 + 2im]
     w = [Inf, -1im, -T(1)]
-    f = Möbius(z, w)
-    @test all(@. f(z) ≈ w)
-    g = inv(f)
-    @test all(@. g(w) ≈ z)
+    for order = 1:3
+        circshift!(z, 1)
+        circshift!(w, 1)
+        f = Möbius(z, w)
+        @test check(f.(z), w)
+        g = inv(f)
+        @test check(g.(w), z)
+    end
     c = Circle(z...)
     l = Line(w[2], w[3])
     @test f(c) ≈ l && g(l) ≈ c
@@ -334,10 +402,17 @@ end
     h = halfplane(l)
     @test f(d) ≈ !h && g(h) ≈ !d
     @test f(!d) ≈ h && g(!h) ≈ d
+    f = Mobius(c, l)
+    @test f(c) ≈ l
+    a = Arc(c, 1//4, 1//2)
+    @test f(a) ≈ Segment(f(c(1//4)), f(c(3//4)))
     f = Möbius([T(2), 3 + im, -5], z)
     g = Möbius(w, [T(2), 3 + im, -5])
     h = f ∘ g
-    @test all(@. h(w) ≈ z)
+    @test check(h.(w), z)
+    f = Möbius(T(1), 2, 3, 4)
+    g = Möbius([1 2; 3 T(4)])
+    @test all(check(f(z), g(z)) for z in [T(0), 1, 2 + 2im])
 end
 
 @testset "SC Regions in $T" for T in (Float64, BigFloat)

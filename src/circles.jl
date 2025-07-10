@@ -148,4 +148,4 @@ function show(io::IO, ::MIME"text/plain", C::Circle{T}) where {T}
     orient = C.ccw ? "positively" : "negatively"
     print(io, "Circle{$T} in the complex plane:\n   centered at (", C.center, ") with radius $(C.radius), $(orient) oriented")
 end
-# COV_EXCL_END
+# COV_EXCL_STOP

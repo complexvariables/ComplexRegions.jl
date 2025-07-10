@@ -61,14 +61,14 @@ function arg(L::Line{T}, z::Number) where T
     ρ = del / L.direction
     if minimum(abs(angle(s)) for s in (ρ, -ρ)) < tol    # on the line
         # solve for the larger of the real and imaginary parts
-    if abs(real(del)) > abs(imag(del))
-        del = real(del)
-        α = real(L.direction)
-    else
-        del = imag(del)
-        α = imag(L.direction)
-    end
-    for t in realroots(del, 2α - del, -α)
+        if abs(real(del)) > abs(imag(del))
+            del = real(del)
+            α = real(L.direction)
+        else
+            del = imag(del)
+            α = imag(L.direction)
+        end
+        for t in realroots(del, 2α - del, -α)
             (0 - tol ≤ t ≤ 1 + tol) && return t
         end
     else
@@ -167,7 +167,7 @@ end
 function Base.show(io::IO, ::MIME"text/plain", L::Line{T}) where {T}
     print(io, "Line{$T} in the complex plane:\n   through (", L.base, ") parallel to (", L.direction, ")")
 end
-# COV_EXCL_END
+# COV_EXCL_STOP
 
 # Two points are enough to draw a line (though not on the sphere), and we want to avoid infinity.
 plotdata(L::Line) = point(L, [0.1, 0.9])

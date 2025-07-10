@@ -169,4 +169,4 @@ end
 function show(io::IO, ::MIME"text/plain", A::Arc{T}) where {T}
     print(io, "Arc{$T} in the complex plane:\n   fraction ", A.delta, " of (", A.circle, ") starting at ", A.start)
 end
-# COV_EXCL_END
+# COV_EXCL_STOP
