@@ -54,9 +54,13 @@ Find a parameter argument `t` such that `L(t)==z` is true. For an infinite `z`, 
 
 This gives undefined results if `z` is not actually on the line.
 """
-function arg(L::Line, z::Number)
+function arg(L::Line{T}, z::Number) where T
+    tol = tolerance(T)
     isinf(z) && return zero(z)
     del = z - L.base
+    ρ = del / L.direction
+    if minimum(abs(angle(s)) for s in (ρ, -ρ)) < tol    # on the line
+        # solve for the larger of the real and imaginary parts
     if abs(real(del)) > abs(imag(del))
         del = real(del)
         α = real(L.direction)
@@ -65,9 +69,11 @@ function arg(L::Line, z::Number)
         α = imag(L.direction)
     end
     for t in realroots(del, 2α - del, -α)
-        0 - eps(del) ≤ t ≤ 1 + eps(del) && return t
+            (0 - tol ≤ t ≤ 1 + tol) && return t
+        end
+    else
+        return nothing
     end
-    return nothing
 end
 
 unittangent(L::Line, t::Real=0) = L.direction
