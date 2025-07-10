@@ -131,7 +131,7 @@ Construct a curve with point location and tangent given by the complex-valued fu
 
 Curve{T}(f::Function, a::Real, b::Real) where T = Curve{T}(f, t -> ForwardDiff.derivative(f, T(t)), a, b)
 function Curve{T}(f::Function, df::Function, a::Real, b::Real) where T<:AbstractFloat
-    return Curve{T}(t -> f(scaleto(T, a, b, t)), t -> df(scaleto(T, a, b, t)) / (b - a))
+    return Curve{T}(t -> f(scaleto(T, a, b, t)), t -> df(scaleto(T, a, b, t)) * (b - a))
 end
 
 # Constructors that try to determine underlying Real type automatically
