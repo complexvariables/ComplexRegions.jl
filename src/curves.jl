@@ -150,7 +150,7 @@ end
 
 function Curve(f::Function, a::Real, b::Real)
 	T = promote_type(real_type(float(a)), real_type(float(b)))
-	Curve{T}(f, t -> ForwardDiff.derivative(f, T(t)), T(a), T(b))
+	Curve{T}(f, T(a), T(b))
 end
 
 function Curve(f::Function, df::Function, a::Real, b::Real)
@@ -215,9 +215,9 @@ Construct a `ClosedCurve` object from the complex-valued function `point` accept
 	ClosedCurve(f,df[,a,b]; tol=<default>)
 Construct a closed curve with point location and tangent given by the complex-valued functions `f` and `df`, respectively, optionally with given limits on the parameter.
 """
-ClosedCurve(f,df=t -> ForwardDiff.derivative(f,t);kw...) = ClosedCurve(Curve(f,df;kw...))
-ClosedCurve(f,a::Real,b::Real;kw...) = ClosedCurve(Curve(f,a,b;kw...))
-ClosedCurve(f,df,a::Real,b::Real;kw...) = ClosedCurve(Curve(f,df,a,b;kw...))
+ClosedCurve(f::Function, df::Function=t -> ForwardDiff.derivative(f,t); kw...) = ClosedCurve(Curve(f, df; kw...))
+ClosedCurve(f::Function, a::Real, b::Real; kw...) = ClosedCurve(Curve(f, a, b; kw...))
+ClosedCurve(f::Function, df::Function, a::Real, b::Real; kw...) = ClosedCurve(Curve(f, df, a, b; kw...))
 
 ClosedCurve(c::Curve{T}, args...) where T = ClosedCurve{T}(c, args...)
 function ClosedCurve(f::Function, args...)
