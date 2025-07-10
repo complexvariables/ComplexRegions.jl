@@ -36,7 +36,7 @@ Line(z::Number; direction::Number) = Line(z, z + direction)
 # end
 
 function Base.convert(::Type{Line{T}}, L::Line{S}) where {T,S}
-	return Line{T}(convert_real_type(T, L.base), convert_real_type(T, L.direction))
+	return Line(convert_real_type(T, L.base), direction=convert_real_type(T, L.direction))
 end
 convert_real_type(::Type{T}, L::Line{S}) where {T<:Real,S} = convert(Line{T}, L)
 Base.promote_rule(::Type{<:Line{T}}, ::Type{<:Line{S}}) where {T,S} = Line{promote_type(T,S)}
