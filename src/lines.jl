@@ -106,10 +106,10 @@ reverse(L::Line) = Line(L.base, direction=-L.direction)
 Determine if `L1` and `L2` represent the same line, irrespective of the type or values of its parameters. Identity is determined by agreement within `tol`, which is interpreted as the weaker of absolute and relative differences.
 """
 function isapprox(L1::Line{T}, L2::Line{S}; tol=tolerance(S, T)) where {T,S}
-    dz = L1.base - L2.base
     w1, w2 = L1.direction, L2.direction
-    return isapprox(real(w1) * imag(w2), imag(w1) * real(w2), rtol=tol, atol=tol) &&
-           isapprox(real(w1) * imag(dz), imag(w1) * real(dz), rtol=tol, atol=tol)
+    # check if parallel, then check a base point
+    return (isapprox(w1, w2, rtol=tol, atol=tol) || isapprox(w1, -w2, rtol=tol, atol=tol)) &&
+           dist(L1.base, L2) < max(tol, tol*abs(L1.base))
 end
 
 """
