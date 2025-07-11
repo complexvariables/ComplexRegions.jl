@@ -2,6 +2,7 @@ using ComplexRegions, Statistics
 CR = ComplexRegions
 check(u::Number, v::Number, T::Type=real_type(float(u))) = isapprox(u, v, rtol=50CR.tolerance(T), atol=50CR.tolerance(T))
 check(u::AbstractArray, v::AbstractArray) = all(check(u, v) for (u, v) in zip(u, v))
+check(u::AbstractArray, v::Number) = all(check(u, v) for u in u)
 using Test
 @testset "Utilities" begin
     @test CR.scaleto(1im, 3im, [0.5, 0.75]) ≈ [2.0im, 2.5im]
@@ -18,8 +19,9 @@ using Test
 end
 
 @testset "Curves using $T" for T in (Float64, BigFloat)
+    capprox(c1, c2) = all(check(point(c1, t), point(c2, t)) for t in (0:T(1000))/1000)
     f = t -> 2cospi(t) + 1im*sinpi(t)
-    arc = Curve{T}(f, -1, 0)
+    arc = Curve(f, -1, 0)
     @test arc isa Curve
     @test check(point(arc, 1//2), f(-1//2))
     @test check(point(conj(arc), 1//2), conj(f(-1//2)))
@@ -28,6 +30,10 @@ end
     @test isfinite(arc)
     @test check(point(arc, 1//2), f(1//2))
     @test check(point(reverse(arc), 1//4), f(3//4))
+    @test capprox(arc + 1im*T(1//3), Curve(t -> f(t) + 1im*T(1//3)))
+    @test capprox(arc - 1im*T(1//3), Curve(t -> f(t) - 1im*T(1//3)))
+    @test capprox(arc * 1im*T(1//3), Curve(t -> f(t) * 1im*T(1//3)))
+    @test capprox(arc / 1im*T(1//3), Curve(t -> f(t) / 1im*T(1//3)))
     ellipse = ClosedCurve{T}(f, 0, 2)
     @test check(point(5 - 3im * ellipse, 1//8), 5 - 3im * f(T(1) / 4))
     @test check(point(conj(ellipse), 1//2), conj(f(1)))
@@ -251,7 +257,7 @@ end
     p = Path([Arc(-1, -z, -1im), Arc(-1im, conj(z), 1), Arc(1, z, 1im)])
     θ = angles(p)
     @test θ[2] ≈ 0.78121408739537 rtol=1e-13
-    @test θ[2] ≈ θ[3]
+    @test check(θ[2], θ[3])
     p = ClosedPath([curves(p); Arc(1im, -conj(z), -1)])
     θ = angles(p)
     @test check(θ[1:3], θ[2:4])
@@ -259,47 +265,69 @@ end
     P = Path([S, 1im * S, -S])
     @test check(vertex(P, 3), -1)
     @test check(vertex(P, 4), -point(S, 1))
+    @test_throws BoundsError vertex(P, 5)
     @test check(arclength(P), 3 * sqrt(T(2)))
     @test length(vertices(P - 3im)) == 4
     rP = reverse(P)
     @test all(check(point(rP, t), point(P, 3 - t)) for t in range(T(0), T(3), 17))
+    @test !isreal(P)
     @test isa(reverse(P), Path)
     τ = unittangent(P, T(3)/2)
     @test check(τ, 1im*unittangent(S, T(1)/2))
+    @test (P * 3im) / 3im ≈ P
+    Pi = inv(P)
+    @test all(dist(1 / point(Pi, t), P) < CR.tolerance(T) for t in range(T(0), T(3), ))
+    @test check(dist(T(1//3) + 1im, P), dist(T(1//3) + 1im, P[1]))
+    @test check(closest(T(1//3) + 1im, P), closest(T(1//3) + 1im, P[1]))
+    @test Path([convert(Segment{Float32}, S), 1im * S, -S]) ≈ P
 
     P = ClosedPath([S, 1im * S, -S, -1im * S])
     @test check(vertex(P, 3), -1)
     @test check(arclength(P), 4 * sqrt(T(2)))
     @test isa(reverse(P), ClosedPath)
     @test all(point(P, [0, 1, 5//4, 2.5, 3, 4]) .≈ [S(0), S(1), 1im * S(1//4), -S(0.5), -S(1), S(0)])
+    @test winding(P, -1//3 - T(1//2) * 1im) == 1
+    @test isinside(-1//3 - T(1//2) * 1im, P)
+    @test winding(P, -1//3 + T(3//2) * 1im) == 0
+    @test !isinside(-1//3 + T(3//2) * 1im, P)
+    @test Path([convert(Segment{Float32}, S), 1im * S, -S, -1im * S]) ≈ P
+
+    C = CR.enclosing_circle([P, -2P])
+    @test all(isinside(point(P, t), C) for t in range(T(0), T(4), 100))
+    @test all(isinside(point(-2P, t), C) for t in range(T(0), T(4), 100))
 
     P = ClosedPath([S, 1im * S, Arc(-T(1),-2 - 1im, 1)])
-    @test 2 * angles(P)[2] ≈ π
+    @test check(2 * angles(P)[2], π)
 end
 
 @testset "Polygons in $T" for T in (Float64, BigFloat)
     s = Segment{T}(2, 2im)
     p = Polygon([s, 1im * s, -s, -1im * s])
-    @test arclength(p) ≈ 8 * sqrt(T(2))
-    @test -4*angle(normal(p, 1.1 + length(p))) ≈ π
+    @test ispositive(p)
+    @test check(arclength(p), 8 * sqrt(T(2)))
+    @test check(-4*angle(normal(p, 1.1 + length(p))), π)
     z = (-T(4) + 5im) / 10
     @test winding(p, z) == 1
     @test winding(reverse(p), z) == -1
     @test winding(p, -T(4) - 0.5im) == 0
-    @test all(2angles(p) .≈ pi)
+    @test check(2angles(p), π)
     @test ispositive(p)
     @test !ispositive(reverse(p))
+    @test all(side(p, k) ≈ sides(p)[k] for k in 1:4)
 
     p = Polygon([T(4), 4 + 3im, 3im, -2im, 6 - 2im, 6])
     @test arclength(p) ≈ (3 + 4 + 5 + 6 + 2 + 2)
     @test tangent(p, 2.3 - length(p)) ≈ -5im
     @test winding(p, 5 - 1im) == 1
     @test winding(p, -1) == 0
-    @test sum(angles(p)) ≈ 4pi
+    @test check(sum(angles(p)), 4T(π))
 
     p = CircularPolygon([Arc(T(1), 2 + 1im, 1im), Segment{T}(1im, -1), Arc(-T(1), -0.5im, -1im), Segment{T}(-1im, 1)])
     @test all(winding(p, z) == 1 for z in [1 + 0.5im, 1.7 + 1im, 0, -1 + 0.05 * cispi(1 / 5), -1im + 0.05 * cispi(0.3)])
-    @test all(winding(p, z) == 0 for z in [-0.999im, 0.001 - 1im, -0.999, -1.001, 1.001, 1.999im])
+    @test all(winding(p, z) == 0 for z in [-0.999im, 0.001 - 1im, -0.999, -1.001, 1.001, 1.999im, 1000im])
+    @test check(arclength(p), sum(arclength(c) for c in curves(p)))
+    @test all(curves(inv(p)) .≈ inv.(curves(p)))
+    @test ispositive(p)
 
     r = Rectangle(T(2), [1, 3], T(π) / 2)
     @test arclength(r) ≈ 16
@@ -310,38 +338,47 @@ end
     @test point(r, 1//3) ≈ r.polygon(1//3)
     @test r(1//3) ≈ r.polygon(1//3)
     @test inv(r) ≈ inv(r.polygon)
+    @test rectangle(vertices(r)) ≈ r
+
+    for op in (+, -)
+        z = T(2//3) + 2im
+        @test op(r, z) ≈ op(Polygon(r), z)
+    end
 
     for r in (rectangle(-2im, T(3) + 4im), rectangle([0, T(3)], [-2, 4]))
         @test arclength(r) ≈ 18
         @test all(extrema(r)[1] .≈ (0, 3))
         @test all(extrema(r)[2] .≈ (-2, 4))
     end
+
+    @test all(length(n_gon(T, n)) == n for n in 3:7)
 end
 
 @testset "Unbounded polygons in $T" for T in (Float64, BigFloat)
-    p = Polygon([T(5), 4 + 3im, 3im, -2im, 6 - 2im, (-T(pi) / 2, 0)])
-    a = angles(p) / pi
-    @test(a[6] ≈ -0.5)
-    @test(sum(a .- 1) ≈ -2)
+    p = Polygon([T(5), 4 + 3im, 3im, -2im, 6 - 2im, (-T(π) / 2, 0)])
+    a = angles(p) / π
+    @test check(a[6], -0.5)
+    @test check(sum(a .- 1), -2)
 
-    p = Polygon([(T(pi) / 2, T(pi) / 2), T(5), 4 + 3im, 3im, -2im, 6 - 2im])
-    a = angles(p) / pi
-    @test(abs(a[1]) < CR.tolerance(T))
-    @test(sum(a .- 1) ≈ -2)
-    @test(all(winding(p, z) == 1 for z in [1 + 2im, 5 - 1im, 5.5 + 6im]))
-    @test(all(winding(p, z) == 0 for z in [-3im, 3 + 5im, 5.5 - 6im]))
+    p = Polygon([(T(π) / 2, T(π) / 2), T(5), 4 + 3im, 3im, -2im, 6 - 2im])
+    a = angles(p) / π
+    @test abs(a[1]) < CR.tolerance(T)
+    @test check(sum(a .- 1), -2)
+    @test all(winding(p, z) == 1 for z in [1 + 2im, 5 - 1im, 5.5 + 6im])
+    @test all(winding(p, z) == 0 for z in [-3im, 3 + 5im, 5.5 - 6im])
+    @test isfinite(truncate(p))
 
-    p = Polygon([(-T(pi) / 2, T(pi) / 2), T(7), 4 + 3im, 3im, -2im, 6 - 2im])
-    a = angles(p) / pi
-    @test(a[1] ≈ -1)
-    @test(sum(a .- 1) ≈ -2)
-    @test(all(winding(p, z) == 1 for z in [4, 7 - 2im, 9]))
-    @test(all(winding(p, z) == 0 for z in [4 + 4im, 6 + 2im, 4 - 3im]))
+    p = Polygon([(-T(π) / 2, T(π) / 2), T(7), 4 + 3im, 3im, -2im, 6 - 2im])
+    a = angles(p) / π
+    @test check(a[1], -1)
+    @test check(sum(a .- 1), -2)
+    @test all(winding(p, z) == 1 for z in [4, 7 - 2im, 9])
+    @test all(winding(p, z) == 0 for z in [4 + 4im, 6 + 2im, 4 - 3im])
 
     p = Polygon([4 + 3im, T(7), (0, 0), 6 - 2im, -2im, 3im])
-    a = angles(p) / pi
-    @test(a[3] ≈ -2)
-    @test(sum(a .- 1) ≈ -2)
+    a = angles(p) / π
+    @test check(a[3], -2)
+    @test check(sum(a .- 1), -2)
 end
 
 @testset "Discretization in $T" for T in (Float64, BigFloat)
