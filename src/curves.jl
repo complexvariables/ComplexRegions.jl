@@ -70,7 +70,7 @@ Base.:+(z::Number, C::AbstractCurve) = C + z
 Base.:-(C::AbstractCurve, z::Number) = C + (-z)
 Base.:-(z::Number, C::AbstractCurve) = z + (-C)
 Base.:*(z::Number, C::AbstractCurve) = C * z
-Base.:/(C::AbstractCurve, z::Number) = C * (1 / z)
+Base.:/(C::AbstractCurve{T}, z::Number) where {T} = C * (T(1) / z)
 Base.:/(z::Number, C::AbstractCurve) = z * inv(C)
 
 function arclength(C::AbstractCurve{T}, part=[0, 1]) where T
