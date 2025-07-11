@@ -193,7 +193,7 @@ Find the point on the path `P` that lies closest to `z`.
 """
 function closest(z::Number, P::AbstractPath)
     k = argmin([dist(z, s) for s in curves(P)])
-    closest(z, side(P, k))
+    closest(z, curve(P, k))
 end
 
 intersect(P::AbstractPath, C::AbstractCurve) = ∪([intersect(s, C) for s in curves(P)]...)
