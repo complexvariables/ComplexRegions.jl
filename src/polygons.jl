@@ -103,7 +103,6 @@ end
 curves(p::CircularPolygon) = curves(p.path)
 curve(p::CircularPolygon, k::Integer) = curve(p.path, k)
 arclength(p::CircularPolygon) = arclength(p.path)
-
 inv(p::CircularPolygon) = CircularPolygon([inv(c) for c in curves(p)])
 
 # Other methods
@@ -111,7 +110,7 @@ inv(p::CircularPolygon) = CircularPolygon([inv(c) for c in curves(p)])
 	ispositive(p::CircularPolygon)
 Determine whether the circular polygon is positively oriented (i.e., circulates counterclockwise around the points it encloses).
 """
-ispositive(p::CircularPolygon) = winding(0, 1 / p) < 0
+ispositive(p::CircularPolygon) = winding(1 / p, 0) < 0
 
 ############
 # Polygon
@@ -363,7 +362,7 @@ function rectangle(v::AbstractVector{<:Number})
     v .-= center
     θ = angle(v[2] - v[1])
     v *= cis(-θ)
-    radii = abs.([real(v[2] - v[1]), imag(v[4] - v[1])])
+    radii = abs.([real(v[2] - v[1]), imag(v[4] - v[1])]) / 2
     return Rectangle(center, radii, θ)
 end
 
