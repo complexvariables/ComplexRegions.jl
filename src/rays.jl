@@ -72,7 +72,7 @@ end
 
 Base.:+(R::Ray, z::Number) = Ray(R.base + z, R.angle, R.reverse)
 Base.:-(R::Ray) = Ray(-R.base, mod2pi(R.angle + pi), R.reverse)
-Base.:*(R::Ray, z::Number) = Ray(z * R.base, mod2pi(R.angle + sign(z)), R.reverse)
+Base.:*(R::Ray, z::Number) = Ray(z * R.base, mod2pi(R.angle + angle(z)), R.reverse)
 
 """
 	inv(R)
