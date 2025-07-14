@@ -2,13 +2,15 @@ const AbstractJordan{T} = Union{AbstractClosedCurve{T},AbstractClosedPath{T}}
 
 # get one point inside a closed path
 function get_one_inside(C::AbstractJordan{T}) where {T}
-    zc = mean(discretize(C, ds=1 / 100))
+    zc = mean(discretize(C, ds=1/T(100)))
     if isinside(zc, C)   # ignores the orientation
         return zc
     elseif isinside(0, C)  # allows manual control
         return 0
     else
-        for a in range(T(1) / 4, T(3) / 4, 10), b in range(a + T(1) / 4, a + T(3) / 4, 10)
+        # Try midpoints between pairs of boundary points
+        t = range(T(0), T(length(C)), 11)
+        for a in t, b in t .+ T(1)/20
             zc = mean(C.([a, b]))
             if isinside(zc, C)
                 return zc
@@ -40,7 +42,6 @@ isfinite(R::AbstractRegion) = @error "No isfinite() method defined for type $(ty
 # COV_EXCL_STOP
 
 # Default implementations
-
 """
     (type) RegionIntersection
 Representation of the intersection of two regions.
@@ -48,6 +49,10 @@ Representation of the intersection of two regions.
 struct RegionIntersection{T} <: AbstractRegion{T}
     one::AbstractRegion{T}
     two::AbstractRegion{T}
+    function RegionIntersection(one::AbstractRegion{R}, two::AbstractRegion{S}) where {R,S}
+        # one, two = promote(one, two)
+        new{promote_type(R,S)}(one, two)
+    end
 end
 in(z::Number, R::RegionIntersection) = in(z, R.one) && in(z, R.two)
 
@@ -67,7 +72,7 @@ in(z::Number, R::RegionUnion) = in(z, R.one) || in(z, R.two)
 Create the region that is the intersection of `R1` and `R2`.
 """
 function intersect(R1::AbstractRegion{T}, R2::AbstractRegion{S}) where {S,T}
-    return RegionIntersection{promote_type(S,T)}(R1, R2)
+    return RegionIntersection(R1, R2)
 end
 
 """
@@ -95,11 +100,11 @@ boundary(R::AbstractConnectedRegion) = outerboundary(R), innerboundary(R)
 Base.:+(R::AbstractConnectedRegion, z::Number) = typeof(R)(outerboundary(R) + z, innerboundary(R) .+ z)
 Base.:+(z::Number, R::AbstractConnectedRegion) = +(R, z)
 
-Base.:-(R::AbstractConnectedRegion) = typeof(R)(-outerboundary(R), -innerboundary(R))
+Base.:-(R::AbstractConnectedRegion) = typeof(R)(-outerboundary(R), map(-, innerboundary(R)))
 Base.:-(R::AbstractConnectedRegion, z::Number) = +(R, -z)
 Base.:-(z::Number, R::AbstractConnectedRegion) = +(z, -R)
 
-Base.:*(R::AbstractConnectedRegion, z::Number) = typeof(R)(outerboundary(R) * z, innerboundary(R) * z)
+Base.:*(R::AbstractConnectedRegion, z::Number) = typeof(R)(outerboundary(R) * z, innerboundary(R) .* z)
 Base.:*(z::Number, R::AbstractConnectedRegion) = R * z
 
 Base.:/(R::AbstractConnectedRegion, z::Number) = *(R, 1 / z)
@@ -151,9 +156,17 @@ function ExteriorRegion(inner::AbstractVector)
     end
 end
 
+isfinite(::ExteriorRegion) = false
 in(z::Number, R::ExteriorRegion) = all(isoutside(z, c) for c in R.inner)
 innerboundary(R::ExteriorRegion) = R.inner
 outerboundary(::ExteriorRegion) = nothing
+Base.:+(R::ExteriorRegion, z::Number) = ExteriorRegion(innerboundary(R) .+ z)
+Base.:*(R::ExteriorRegion, z::Number) = ExteriorRegion(innerboundary(R) .* z)
+Base.:-(R::ExteriorRegion, z::Number) = ExteriorRegion(innerboundary(R) .- z)
+Base.:-(R::ExteriorRegion) = ExteriorRegion(-innerboundary(R))
+
+convert_real_type(T::Type{<:AbstractFloat}, R::ExteriorRegion{N,S}) where {N,S} = ExteriorRegion{N,T}(R.inner)
+Base.promote_rule(::Type{<:ExteriorRegion{N,T}}, ::Type{<:ExteriorRegion{N,S}}) where {N,T,S} = ExteriorRegion{promote_type(T,S)}
 
 #
 # ConnectedRegion
@@ -201,7 +214,7 @@ function ConnectedRegion(
     if isnothing(outer)
         ExteriorRegion{n,T}(inner)
     else
-        ConnectedRegion{n + 1,T}(outer, inner)
+        ConnectedRegion{n+1,T}(outer, inner)
     end
 end
 
@@ -212,6 +225,8 @@ end
 outerboundary(R::ConnectedRegion) = R.outer
 innerboundary(R::ConnectedRegion) = R.inner
 #innerboundary(R::ConnectedRegion{2}) = R.inner[1]
+convert_real_type(T::Type{<:AbstractFloat}, R::ConnectedRegion{N,S}) where {N,S} = ConnectedRegion{N,T}(R,outer, R.inner)
+Base.promote_rule(::Type{ConnectedRegion{N,T}}, ::Type{ConnectedRegion{N,S}}) where {N,T,S} = ConnectedRegion{N,promote_type(T,S)}
 
 #
 # special cases
@@ -254,8 +269,8 @@ struct Annulus{T} <: AbstractConnectedRegion{2,T}
 end
 
 """
-    Annulus(radouter,radinner)
-    Annulus(radouter,radinner,center)
+    Annulus(radouter, radinner)
+    Annulus(radouter, radinner, center)
 Construct a concentric annulus of outer radius `radouter` and inner radius `radinner` centered at `center`. If the center is not given, the origin is used.
 """
 function Annulus(outer::Circle{T}, inner::Circle{S}) where {T,S}
