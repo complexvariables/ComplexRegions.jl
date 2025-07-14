@@ -27,6 +27,7 @@ end
     @test check(point(conj(arc), 1//2), conj(f(-1//2)))
     @test check(point(inv(arc), 1//2), 1 / f(-1//2))
     arc = Curve(f)
+    @test length(arc) == 1
     @test isfinite(arc)
     @test check(point(arc, 1//2), f(1//2))
     @test check(point(reverse(arc), 1//4), f(3//4))
@@ -35,6 +36,8 @@ end
     @test capprox(arc * 1im*T(1//3), Curve(t -> f(t) * 1im*T(1//3)))
     @test capprox(arc / 1im*T(1//3), Curve(t -> f(t) / 1im*T(1//3)))
     ellipse = ClosedCurve{T}(f, 0, 2)
+    @test isfinite(ellipse)
+    @test isfinite(reverse(ellipse))
     @test check(point(5 - 3im * ellipse, 1//8), 5 - 3im * f(T(1) / 4))
     @test check(point(conj(ellipse), 1//2), conj(f(1)))
     @test check(point(inv(ellipse), 1//2), 1 / f(1))
@@ -156,7 +159,9 @@ end
 end
 
 @testset "Rays in $T" for T in (Float64, BigFloat)
-    s = Ray(Polar(2, 0), T(pi) / 2)
+    s = Ray(Polar(2, 0), T(π) / 2)
+    @test !isfinite(s)
+    @test check(sign(s), T(1)*1im)
     @test isinf(arclength(s))
     @test isleft(-1im, s) && !isleft(-1im, reverse(s))
     @test check(real(s(23//100)), 2)
@@ -166,7 +171,17 @@ end
     @test check(2angle(tangent(s, 1//10)) , π)
     @test tangent(s, T(1)/10) ≈ convert(Complex, CR.fdtangent(s, T(1)/10)) rtol=sqrt(eps(T))
     @test check(2angle(tangent(reverse(s), 1)) , -T(π))
-    s = Ray(Spherical(T(2)*1im), T(pi), true)
+    z = T(3//7) + 2im
+    @test s + z ≈ Ray(s.base + z, T(π) / 2)
+    @test s - z ≈ Ray(s.base - z, T(π) / 2)
+    @test s * z ≈ Ray(z * s.base, T(π) / 2 + angle(z))
+    @test inv(s) ≈ Arc(T(1//2), T(1//4) - 1im/T(4), 0)
+
+    s = Ray(Spherical(T(2)*1im), T(π), true)
+    @test conj(s) ≈ Ray(-T(2)*1im, -T(π))
+    @test !isright(3im, s) && isright(3im, reverse(s))
+    @test isright(-3im, s) && !isright(-3im, reverse(s))
+    @test check(sign(s), T(1))
     @test check(imag(s(1//2)) , 2)
     @test real(s(3//10)) < real(s(2//5))
     @test tangent(s, T(3)/5) ≈ CR.fdtangent(s, T(3)/5) rtol=sqrt(eps(T))
@@ -452,19 +467,111 @@ end
     @test all(check(f(z), g(z)) for z in [T(0), 1, 2 + 2im])
 end
 
+@testset "Regions in $T" for T in (Float64, BigFloat)
+    C1 = Circle{T}(1im, 1)
+    C2 = Circle{T}(-1, 1//3)
+    E = ExteriorRegion([C1, C2])
+    for s in (-1//3, 2.2im, -3im), op in (+, -, *)
+        @test op(s, -1im) ∈ op(s, E)
+        @test op(s, -2 + 1im) ∈ op(E, s)
+    end
+    @test 2.2im / (2-1im) ∈ E / (2-1im)
+    @test length(innerboundary(E)) == 2
+    @test isnothing(outerboundary(E))
+    @test !isfinite(E)
+    C3 = Circle{T}(0, 10)
+    F = ConnectedRegion(C3, [C1, C2])
+    for s in (-1//3, 2.2im, -3im), op in (+, -, *)
+        @test op(s, -1im) ∈ op(s, F)
+        @test op(s, -2 + 1im) ∈ op(F, s)
+        @test !(op(s, -12) ∈ op(F, s))
+    end
+    @test length(innerboundary(F)) == 2
+    @test outerboundary(F) ≈ C3
+    @test between(C3, C2) isa ConnectedRegion{2}
+    @test between(C3, reverse(C2)) isa ConnectedRegion{2}
+    @test between(reverse(C3), reverse(C2)) isa ConnectedRegion{2}
+end
+
 @testset "SC Regions in $T" for T in (Float64, BigFloat)
     c = Circle{T}(0, 1)
+    @test disk(c) ≈ interior(c)
+    @test isfinite(interior(c))
+    @test !isfinite(exterior(c))
     for c in (c, reverse(c)), D in (interior(c), !exterior(c))
         @test in(0, D)
         @test !in(Inf, D)
         @test in(Inf, !D)
         @test !in(0, !D)
     end
+
+    for c in (Circle{T}(0, 1),
+        CircularPolygon([Arc(T(1), 2 + 1im, 1im), Segment{T}(1im, -1), Arc(-T(1), -0.5im, -1im), Segment{T}(-1im, 1)]),
+        Polygon([T(4), 4 + 3im, 3im, -2im, 6 - 2im, 6]))
+        z = CR.get_one_inside(c)
+        @test in(z, interior(c))
+        @test !in(z, exterior(c))
+        @test z isa Complex{T}
+    end
+
+    r = intersect(interior(Circle{T}(0, 1)), exterior(Circle{T}(1, 1//2)))
+    @test -T(1//2) + 1im/T(5) ∈ r
+    @test !(T(9//10) + 1im/T(7) ∈ r)
+    r = union(interior(Circle{T}(0, 1)), exterior(Circle{T}(1, 1//2)))
+    @test -T(1//2) + 1im/T(5) ∈ r
+    @test T(9//10) + 1im/T(7) ∈ r
+    r = intersect(interior(Circle{T}(0, 1)), interior(Circle{T}(3//2, 1)))
+    @test !(-T(1//2) + 1im/T(5) ∈ r)
+    @test !(T(12//10) - 1im/T(7) ∈ r)
+    @test T(9//10) + 1im/T(7) ∈ r
+    r = union(interior(Circle{T}(0, 1)), interior(Circle{T}(3//2, 1)))
+    @test -T(1//2) + 1im/T(5) ∈ r
+    @test T(12//10) - 1im/T(7) ∈ r
+    @test T(9//10) + 1im/T(7) ∈ r
+
+    @test boundary(interior(Circle{T}(0, 1))) ≈ Circle{T}(0, 1)
+    @test outerboundary(interior(Circle{T}(0, 1))) ≈ Circle{T}(0, 1)
+    @test isnothing(innerboundary(interior(Circle{T}(0, 1))))
+    @test boundary(exterior(Circle{T}(0, 1))) ≈ Circle{T}(0, 1)
+    @test innerboundary(exterior(Circle{T}(0, 1))) ≈ Circle{T}(0, 1)
+    @test isnothing(outerboundary(exterior(Circle{T}(0, 1))))
+
+    ell = Polygon([T(-10)-10im, 10-10im, 10-9im, -9-9im, -9+10im, -10+10im])
+    L = interior(ell)
+    @test boundary(!L) ≈ ell
+    # stress the get_one_inside function
+    @test in(CR.get_one_inside(ell), L)
+    @test !in(CR.get_one_inside(ell), exterior(ell))
+    @test in(CR.get_one_inside(ell + T(19)/2), 2L - T(-19))
+
     el = Line{T}(0, 1)
+    @test halfplane(el) ≈ interior(el)
+    @test halfplane(reverse(el)) ≈ exterior(el)
+    @test halfplane(T(0), 1) ≈ halfplane(el)
     for H in (interior(el), !exterior(el))
         @test in(1im, H)
         @test !in(-1im, H)
         @test in(-1im, !H)
         @test !in(1im, !H)
     end
+
+    @test CR.quad(rectangle(T(-1),3+3im)) isa CR.InteriorSimplyConnectedRegion{T}
+end
+
+@testset "Annulus in $T" for T in (Float64, BigFloat)
+    A = Annulus(1, T(1//3))
+    @test modulus(A) ≈ T(1//3)
+    @test all(!in(z, A) for z in (0, 0.1im, -1.1im))
+    @test all(in(z, A) for z in (0.4im, -0.99im))
+    zc = 21 - T(3)*1im / 11
+    A = Annulus(1, T(1//3), zc)
+    @test modulus(A) ≈ T(1//3)
+    @test all(!in(z + zc, A) for z in (0, 0.1im, -1.1im))
+    @test all(in(z + zc, A) for z in (0.4im, -0.99im))
+    @test isfinite(A)
+    C1 = Circle{T}(zc, 1)
+    C2 = Circle{T}(zc, T(1//3))
+    A = Annulus(C1, C2)
+    @test outerboundary(A) ≈ C1
+    @test innerboundary(A)[1] ≈ C2
 end
