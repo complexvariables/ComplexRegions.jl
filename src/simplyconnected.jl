@@ -28,6 +28,8 @@ function interior(C::AbstractJordan{T}) where {T}
     InteriorSimplyConnectedRegion{T,typeof(C)}(C)
 end
 
+InteriorSimplyConnectedRegion(C::AbstractJordan) = interior(C)
+
 """
 	exterior(C)
 Construct the region exterior to  the closed curve or path `C`. If `C` is bounded, the bounded enclosure is chosen regardless of the orientation of `C`; otherwise, the region "to the right" is the exterior.
@@ -47,6 +49,8 @@ function exterior(C::AbstractJordan{T}) where {T}
     ExteriorSimplyConnectedRegion{T,typeof(C)}(C)
 end
 
+ExteriorSimplyConnectedRegion(C::AbstractJordan) = exterior(C)
+
 boundary(R::SimplyConnectedRegion) = R.boundary
 innerboundary(R::InteriorSimplyConnectedRegion) = nothing
 innerboundary(R::ExteriorSimplyConnectedRegion) = R.boundary
@@ -57,6 +61,17 @@ in(z::Number, R::ExteriorSimplyConnectedRegion) = isoutside(z, innerboundary(R))
 isfinite(R::InteriorSimplyConnectedRegion) = isfinite(outerboundary(R))
 isfinite(R::ExteriorSimplyConnectedRegion) = false
 
+function Base.convert(::Type{InteriorSimplyConnectedRegion{T}}, L::InteriorSimplyConnectedRegion{S}) where {T,S}
+	return InteriorSimplyConnectedRegion{T}(convert_real_type(T, L.boundary))
+end
+Base.promote_rule(::Type{<:InteriorSimplyConnectedRegion{T}}, ::Type{<:InteriorSimplyConnectedRegion{S}}) where {T,S} = InteriorSimplyConnectedRegion{promote_type(T,S)}
+
+Base.:+(R::InteriorSimplyConnectedRegion, z::Number) = InteriorSimplyConnectedRegion(boundary(R) + z)
+Base.:*(R::InteriorSimplyConnectedRegion, z::Number) = InteriorSimplyConnectedRegion(boundary(R) * z)
+Base.:-(R::InteriorSimplyConnectedRegion, z::Number) = InteriorSimplyConnectedRegion(boundary(R) - z)
+Base.:-(R::InteriorSimplyConnectedRegion) = InteriorSimplyConnectedRegion(-boundary(R))
+
+# COV_EXCL_START
 function show(io::IO, R::InteriorSimplyConnectedRegion)
     print(IOContext(io, :compact => true), "Region interior to ", R.boundary)
 end
@@ -68,6 +83,7 @@ end
 function show(io::IO, ::MIME"text/plain", R::SimplyConnectedRegion)
     show(io, R)
 end
+# COV_EXCL_STOP
 
 """
 	!(R::SimplyConnectedRegion)
