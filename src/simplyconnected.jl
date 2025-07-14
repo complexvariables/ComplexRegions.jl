@@ -32,7 +32,7 @@ InteriorSimplyConnectedRegion(C::AbstractJordan) = interior(C)
 
 """
 	exterior(C)
-Construct the region exterior to  the closed curve or path `C`. If `C` is bounded, the bounded enclosure is chosen regardless of the orientation of `C`; otherwise, the region "to the right" is the exterior.
+Construct the region exterior to the closed curve or path `C`. If `C` is bounded, the bounded enclosure is chosen regardless of the orientation of `C`; otherwise, the region "to the right" is the exterior.
 """
 function exterior(C::AbstractJordan{T}) where {T}
     if isfinite(C)
@@ -161,9 +161,12 @@ upperhalfplane = halfplane(Line(0.0, direction=1.0))
 lowerhalfplane = halfplane(Line(0.0, direction=-1.0))
 lefthalfplane = halfplane(Line(0.0, direction=1.0im))
 righthalfplane = halfplane(Line(0.0, direction=-1.0im))
+
+# COV_EXCL_START
 function show(io::IO, ::MIME"text/plain", R::AbstractHalfplane)
     print(io, "Half-plane to the left of:\n   ", R.boundary)
 end
+# COV_EXCL_STOP
 
 """
 	(type) PolygonalRegion
