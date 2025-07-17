@@ -90,7 +90,7 @@ function enclosing_circle(z::AbstractVector{<:Number}, expansion=2)
     return zc, expansion * R
 end
 
-function enclosing_box(z::AbstractVector{<:Number},expansion=2)
+function enclosing_box(z::AbstractVector{<:Number}, expansion=2)
     zc = sum(z) / length(z)
     dz = z .- zc
     rx = length(z) > 1 ? maximum(@. abs(real(dz))) : max(1, abs(real(zc)))
