@@ -575,3 +575,32 @@ end
     @test outerboundary(A) ≈ C1
     @test innerboundary(A)[1] ≈ C2
 end
+
+@testset "Shapes" begin
+    @test all(θ ≈ π/3 for θ in angles(Shapes.triangle))
+    @test all(θ ≈ π/2 for θ in angles(Shapes.square))
+    @test length(Shapes.star) == 10
+    @test length(Shapes.cross) == 12
+    @test all(length(Shapes.hypo(k)) == k for k in 3:6)
+    @test all(sum(reim(point(Shapes.squircle, t)).^4) ≈ 1 for t in 0:0.05:1)
+    @test length(Shapes.spiral(3, 1)) == 4
+    @test arclength(Shapes.spiral(3, 1)) ≈ 172.17394523
+end
+
+@testset "Utilities" begin
+    @test isempty(CR.realroots(1, 2, 2))
+    @test length(CR.realroots(1, -4, 4)) == 1
+    @test length(CR.realroots(1, -4, -4)) == 2
+    v = [-BigFloat(10) + 2im, 4 + 4im, 3 - 5im]
+    for x in [1, 2]
+        bre, bim = CR.enclosing_box(v, x)
+        @test all(bre[1] .<= real(v) .<= bre[2])
+        @test all(bim[1] .<= imag(v) .<= bim[2])
+        zc, r = CR.enclosing_circle(v, x)
+        @test all(abs.(v .- zc) .<= r)
+    end
+    for s in (Shapes.ellipse(2, 1/3), Shapes.squircle, Shapes.triangle, Shapes.cross)
+        z = CR.adaptpoints(t -> s(t), t -> tangent(s, t), 0, 1)
+        @test maximum(abs, diff(z)) < 0.03
+    end
+end
