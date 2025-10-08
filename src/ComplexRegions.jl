@@ -29,7 +29,7 @@ export point, arclength, slope, dist, closest, isleft, isright, reflect, tangent
 export Curve, ClosedCurve, Circle, Line, Arc, Segment, Ray
 include("curves.jl")
 
-export Path, ClosedPath, Polygon, polygon, CircularPolygon
+export Path, ClosedPath, Polygon, CircularPolygon
 export curve, curves, vertex, vertices, side, sides, isfinite, sign, angle, angles, winding, ispositive, Rectangle, rectangle, n_gon
 include("paths.jl")
 
@@ -38,7 +38,7 @@ const AbstractCurveOrPath{T} = Union{AbstractCurve{T},AbstractPath{T}}
 export SimplyConnectedRegion, ConnectedRegion, ExteriorRegion, disk, unitdisk, Annulus, PolygonalRegion
 export halfplane, upperhalfplane, lowerhalfplane, lefthalfplane, righthalfplane
 export RegionIntersection, RegionUnion
-export region, interior, exterior, between, boundary, innerboundary, outerboundary, modulus
+export interior, exterior, between, boundary, innerboundary, outerboundary, modulus
 include("regions.jl")
 include("simplyconnected.jl")
 
