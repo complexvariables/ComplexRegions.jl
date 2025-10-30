@@ -48,7 +48,7 @@ Find the parameter argument `t` such that `S(t)==z` is true.
 
 This gives undefined results if `z` is not actually on the segment.
 """
-arg(S::Segment, z::Number) = (real(z) - real(S.za)) / (real(S.zb) - real(S.za))
+arg(S::Segment, z::Number) = real((z - S.za) / (S.zb - S.za))
 tangent(S::Segment) = S.zb - S.za
 tangent(S::Segment, t::Real) = tangent(S)
 unittangent(S::Segment) = sign(S.zb - S.za)
