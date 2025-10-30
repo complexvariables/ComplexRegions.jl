@@ -10,6 +10,9 @@ p = transpose(vertices(n_gon(5)))
 _star = Polygon( vec([p; cis(0.2π)*p/2]) )
 const star = 1im * _star / vertex(_star, 3)
 
+const L = Polygon([1im, -1+1im, -1-1im, 1-1im, 1, 0])
+const step = Polygon([0, -1im, (0, 0), 1im, (-π, -π)])
+
 """
     Shapes.ellipse(a, b)
 Create an ellipse with semiaxes `a` and `b`.
