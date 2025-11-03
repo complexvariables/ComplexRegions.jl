@@ -127,9 +127,11 @@ unitdisk = disk(complex(0.0), 1.0)
 
 # COV_EXCL_START
 function show(io::IO, ::MIME"text/plain", R::AbstractDisk)
-    side = in(Inf, R) ? "exterior" : "interior"
-    print(io, "Disk $side to:\n   ", R.boundary)
+    C = R.boundary
+    print(io, "Disk of radius ", C.radius, " centered at ", C.center)
 end
+
+show(io::IO, R::AbstractDisk) = print(io, "Disk")
 # COV_EXCL_STOP
 
 # quads

@@ -3,11 +3,11 @@ abstract type AbstractPolygon{T} <: AbstractCircularPolygon{T} end
 
 # COV_EXCL_START
 function show(io::IO, P::AbstractCircularPolygon)
-    print(IOContext(io, :compact => true), typeof(P), " with ", length(P), " sides")
+    print(IOContext(io, :compact => true), " Circular polygon with ", length(P), " sides")
 end
 
 function show(io::IO, ::MIME"text/plain", P::AbstractCircularPolygon)
-    print(io, typeof(P), " with ", length(P), " sides")
+    print(io, "Circular polygon with ", length(P), " sides")
 end
 # COV_EXCL_STOP
 
@@ -199,6 +199,10 @@ function show(io::IO, ::MIME"text/plain", P::Polygon)
         print(io, ", interior angle ", a / pi, "π")
     end
 end
+
+function show(io::IO, P::Polygon)
+    print(io, "Polygon with ", length(P), " vertices")
+end
 # COV_EXCL_STOP
 
 # Other methods
@@ -314,7 +318,7 @@ function Base.show(io::IO, ::MIME"text/plain", R::Rectangle)
 end
 
 function Base.show(io::IO, R::Rectangle)
-    print(io, "$(2R.radii[1]) × $(2R.radii[2]) Rectangle")
+    print(io, "$(2R.radii[1]) × $(2R.radii[2]) rectangle")
 end
 # COV_EXCL_STOP
 
