@@ -480,7 +480,7 @@ end
     @test isnothing(outerboundary(E))
     @test !isfinite(E)
     C3 = Circle{T}(0, 10)
-    F = ConnectedRegion(C3, [C1, C2])
+    F = connected_region(C3, [C1, C2])
     for s in (-1//3, 2.2im, -3im), op in (+, -, *)
         @test op(s, -1im) ∈ op(s, F)
         @test op(s, -2 + 1im) ∈ op(F, s)
@@ -488,9 +488,9 @@ end
     end
     @test length(innerboundary(F)) == 2
     @test outerboundary(F) ≈ C3
-    @test between(C3, C2) isa ConnectedRegion{2}
-    @test between(C3, reverse(C2)) isa ConnectedRegion{2}
-    @test between(reverse(C3), reverse(C2)) isa ConnectedRegion{2}
+    @test between(C3, C2) isa InteriorConnectedRegion{2}
+    @test between(C3, reverse(C2)) isa InteriorConnectedRegion{2}
+    @test between(reverse(C3), reverse(C2)) isa InteriorConnectedRegion{2}
 end
 
 @testset "SC Regions in $T" for T in (Float64, BigFloat)

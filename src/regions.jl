@@ -176,20 +176,18 @@ Base.promote_rule(::Type{<:ExteriorRegion{N,T}}, ::Type{<:ExteriorRegion{N,S}}) 
     (type) ConnectedRegion{N}
 Representation of a `N`-connected region in the extended complex plane.
 """
-struct ConnectedRegion{N,T} <: AbstractConnectedRegion{N,T}
-    outer::Union{Nothing,AbstractJordan{T}}
+struct InteriorConnectedRegion{N,T} <: AbstractConnectedRegion{N,T}
+    outer::AbstractJordan{T}
     inner::Vector{AbstractJordan{T}}
-    function ConnectedRegion{N,T}(outer, inner) where {N,T}
-        n = length(inner) + !isnothing(outer)
+    function InteriorConnectedRegion{N,T}(outer, inner) where {N,T<:AbstractFloat}
+        n = length(inner) + 1
         @assert N == n "Incorrect connectivity"
-        if !isnothing(outer)
-            # correct orientation of outer component?
-            isin = [isinside(point(c, 0), outer) for c in inner]
-            if all(.!isin)
-                outer = reverse(outer)
-            else
-                @assert all(isin) "Inner components appear to be crossing the outer boundary"
-            end
+        # correct orientation of outer component?
+        isin = [isinside(point(c, 0), outer) for c in inner]
+        if all(.!isin)
+            outer = reverse(outer)
+        else
+            @assert all(isin) "Inner components appear to be crossing the outer boundary"
         end
         # correct orientations of inner components?
         @assert all(isfinite.(inner)) "Inner boundaries must be finite"
@@ -198,7 +196,7 @@ struct ConnectedRegion{N,T} <: AbstractConnectedRegion{N,T}
                 c = reverse(c)
             end
         end
-        new(outer, inner)
+        new{N,T}(outer, inner)
     end
 end
 
@@ -206,27 +204,32 @@ end
     ConnectedRegion(outer, inner)
 Construct an open connected region by specifying its boundary components. The `outer` boundary could be `nothing` or a closed curve or path. The `inner` boundary should be a vector of one or more nonintersecting closed curves or paths. The defined region is interior to the outer boundary and exterior to all the components of the inner boundary, regardless of the orientations of the given curves.
 """
-function ConnectedRegion(
-                        outer::Union{Nothing,AbstractJordan{T}},
+function connected_region(inner::AbstractVector{<:AbstractJordan{T}}) where T
+    n = length(inner)
+    ExteriorRegion{n,T}(inner)
+end
+
+function connected_region(
+                        outer::AbstractJordan{T},
                         inner::AbstractVector{<:AbstractJordan{T}}
                         ) where T
     n = length(inner)
-    if isnothing(outer)
-        ExteriorRegion{n,T}(inner)
-    else
-        ConnectedRegion{n+1,T}(outer, inner)
-    end
+    InteriorConnectedRegion{n+1,T}(outer, inner)
 end
 
-function in(z::Number, R::ConnectedRegion)
+
+function in(z::Number, R::InteriorConnectedRegion)
     all(isoutside(z, c) for c in R.inner) && isinside(z, R.outer)
 end
 
-outerboundary(R::ConnectedRegion) = R.outer
-innerboundary(R::ConnectedRegion) = R.inner
-#innerboundary(R::ConnectedRegion{2}) = R.inner[1]
-convert_real_type(T::Type{<:AbstractFloat}, R::ConnectedRegion{N,S}) where {N,S} = ConnectedRegion{N,T}(R,outer, R.inner)
-Base.promote_rule(::Type{ConnectedRegion{N,T}}, ::Type{ConnectedRegion{N,S}}) where {N,T,S} = ConnectedRegion{N,promote_type(T,S)}
+outerboundary(R::InteriorConnectedRegion) = R.outer
+innerboundary(R::InteriorConnectedRegion) = R.inner
+convert_real_type(T::Type{<:AbstractFloat}, R::InteriorConnectedRegion{N,S}) where {N,S} = InteriorConnectedRegion{N,T}(R.outer, R.inner)
+Base.promote_rule(::Type{InteriorConnectedRegion{N,T}}, ::Type{InteriorConnectedRegion{N,S}}) where {N,T,S} = InteriorConnectedRegion{N,promote_type(T,S)}
+
+abstract type Abstract2CRegion{T} <: AbstractConnectedRegion{2,T} end
+const Interior2CRegion{T} = InteriorConnectedRegion{2,T}
+
 
 #
 # special cases
@@ -243,7 +246,7 @@ function between(outer::AbstractJordan{T}, inner::AbstractJordan{T}) where T
     if isfinite(inner) && isoutside(Inf, inner)
         inner = reverse(inner)
     end
-    ConnectedRegion{2,T}(outer, [inner])
+    InteriorConnectedRegion{2,T}(outer, [inner])
 end
 
 
@@ -280,7 +283,7 @@ end
 
 function Annulus(outerrad::Real, innerrad::Real, center::Number=0)
     @assert outerrad > innerrad > 0
-    Annulus(Circle(center, outerrad, true), Circle(center, innerrad, false))
+    return Annulus(Circle(center, outerrad, true), Circle(center, innerrad, false))
 end
 
 modulus(A::Annulus) = A.inner.radius / A.outer.radius

@@ -90,7 +90,7 @@ function argclosest(z1, z2)
     return i1[i2], i2
 end
 
-Plots.@recipe function f(R::Union{ConnectedRegion,ExteriorRegion})
+Plots.@recipe function f(R::Union{InteriorConnectedRegion,ExteriorRegion})
     p0 = outerboundary(R)
     p1 = innerboundary(R)
     z1 = [plotdata(p) for p in p1]

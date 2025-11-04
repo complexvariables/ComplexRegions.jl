@@ -35,7 +35,7 @@ include("paths.jl")
 
 const AbstractCurveOrPath{T} = Union{AbstractCurve{T},AbstractPath{T}}
 
-export SimplyConnectedRegion, ConnectedRegion, ExteriorRegion, disk, unitdisk, Annulus, PolygonalRegion
+export SimplyConnectedRegion, InteriorConnectedRegion, ExteriorRegion, disk, unitdisk, Annulus, PolygonalRegion, connected_region
 export halfplane, upperhalfplane, lowerhalfplane, lefthalfplane, righthalfplane
 export RegionIntersection, RegionUnion
 export interior, exterior, between, boundary, innerboundary, outerboundary, modulus
