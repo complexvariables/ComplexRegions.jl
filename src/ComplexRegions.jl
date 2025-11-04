@@ -34,11 +34,15 @@ export curve, curves, vertex, vertices, side, sides, isfinite, sign, angle, angl
 include("paths.jl")
 
 const AbstractCurveOrPath{T} = Union{AbstractCurve{T},AbstractPath{T}}
+export AbstractJordan, AbstractClosedCurve, AbstractClosedPath
 
-export SimplyConnectedRegion, InteriorConnectedRegion, ExteriorRegion, disk, unitdisk, Annulus, PolygonalRegion, connected_region
-export halfplane, upperhalfplane, lowerhalfplane, lefthalfplane, righthalfplane
+export AbstractSimplyConnectedRegion, SimplyConnectedRegion, InteriorSimplyConnectedRegion, ExteriorSimplyConnectedRegion, AbstractRegion, InteriorConnectedRegion, ExteriorRegion, connected_region
+export AbstractDisk, disk, unitdisk
+export AbstractHalfplane, halfplane, upperhalfplane, lowerhalfplane, lefthalfplane, righthalfplane
+export Annulus, PolygonalRegion, AbstractQuad
 export RegionIntersection, RegionUnion
 export interior, exterior, between, boundary, innerboundary, outerboundary, modulus
+
 include("regions.jl")
 include("simplyconnected.jl")
 
