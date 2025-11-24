@@ -303,7 +303,7 @@ Path(c::AbstractVector{<:AbstractCurve{T}}) where {T} = Path{T}(c)
 function Path(p::AbstractVector)
     try
         T = promote_type(real_type.(p)...)
-        return Path{T}(convert(Vector{Curve{T}}, p))
+        return Path{T}(convert_real_type.(Ref(T), p))
     catch
         @error "Vector must contain Curves"
     end
@@ -348,7 +348,7 @@ ClosedPath(p::AbstractVector{<:AbstractCurve{T}}) where {T} = ClosedPath{T}(p)
 function ClosedPath(p::AbstractVector)
     try
         T = promote_type(real_type.(p)...)
-        return ClosedPath{T}(convert(Vector{Curve{T}}, p))
+        return ClosedPath{T}(convert_real_type.(Ref(T), p))
     catch
         @error "Vector must contain Curves"
     end
