@@ -77,7 +77,7 @@ Regions are rendered as `Poly` objects, which have fill colors.
 
 ```@example makie
 C = Circle(0, 1);  S = Shapes.square;
-cmds = [ "interior(C)" "exterior(S)"; "between(2C, S)" "ExteriorRegion([C-2, S+1])" ]
+cmds = [ "interior(C)" "exterior(S)"; "between(2C, S)" "ExteriorRegion([C-1.5, S+1])" ]
 fig = Figure()
 for i in 1:2, j in 1:2
     ax = Axis(fig[i, j], title=cmds[i, j])

@@ -70,9 +70,9 @@ end
 function Base.truncate(R::ExteriorRegion)
     ∂R = innerboundary(R)
     C = ComplexRegions.enclosing_circle(ClosedPath.(∂R), 8)
-    return ConnectedRegion(C, ∂R)
+    return connected_region(C, ∂R)
 end
 
-Makie.convert_arguments(PT::Type{<:Poly}, A::Annulus) = convert_arguments(PT, ConnectedRegion{2}(A.outer, [A.inner]))
+Makie.convert_arguments(PT::Type{<:Poly}, A::Annulus) = convert_arguments(PT, InteriorConnectedRegion{2}(A.outer, [A.inner]))
 
 end
