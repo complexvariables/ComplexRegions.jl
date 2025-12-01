@@ -24,7 +24,8 @@ makedocs(;
         "Möbius" => "mobius.md",
         "Shapes" => "shapes.md",
         "Plotting in Makie" => "makie.md",
-        "API Reference" => "api.md"
+        "API Reference" => "api.md",
+        "Using from Python" => "python.md",
     ],
 )
 
