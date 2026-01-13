@@ -113,8 +113,12 @@ Base.:/(R::AbstractConnectedRegion, z::Number) = *(R, 1 / z)
 
 # COV_EXCL_START
 function show(io::IO, ::MIME"text/plain", R::AbstractConnectedRegion)
-    no = isnothing(outerboundary(R)) ? "no" : ""
-    print(io, "Region in the complex plane with $no outer boundary and $(length(innerboundary(R))) inner boundary components")
+    no = isnothing(outerboundary(R)) ? "no " : ""
+    n = length(innerboundary(R))
+    print(io, "Region in the complex plane with $(no)outer boundary and $(n) inner boundary component")
+    if n > 1
+        print(io, "s")
+    end
 end
 
 function show(io::IO, R::AbstractConnectedRegion)
@@ -178,7 +182,11 @@ Representation of a `N`-connected region in the extended complex plane.
 """
 struct InteriorConnectedRegion{N,T} <: AbstractConnectedRegion{N,T}
     outer::AbstractJordan{T}
-    inner::Vector{AbstractJordan{T}}
+    inner::Vector{<:AbstractJordan{T}}
+    function InteriorConnectedRegion(outer::AbstractJordan, inner::AbstractVector{<:AbstractJordan})
+        T = promote_type(real_type(outer), real_type.(inner)...)
+        return InteriorConnectedRegion{length(inner)+1,T}(outer, inner)
+    end
     function InteriorConnectedRegion{N,T}(outer, inner) where {N,T<:AbstractFloat}
         n = length(inner) + 1
         @assert N == n "Incorrect connectivity"
@@ -222,8 +230,8 @@ function in(z::Number, R::InteriorConnectedRegion)
     all(isoutside(z, c) for c in R.inner) && isinside(z, R.outer)
 end
 
-outerboundary(R::InteriorConnectedRegion) = R.outer
-innerboundary(R::InteriorConnectedRegion) = R.inner
+outerboundary(R::InteriorConnectedRegion{N,T}) where {N,T} = R.outer
+innerboundary(R::InteriorConnectedRegion{N,T}) where {N,T} = R.inner
 convert_real_type(T::Type{<:AbstractFloat}, R::InteriorConnectedRegion{N,S}) where {N,S} = InteriorConnectedRegion{N,T}(R.outer, R.inner)
 Base.promote_rule(::Type{InteriorConnectedRegion{N,T}}, ::Type{InteriorConnectedRegion{N,S}}) where {N,T,S} = InteriorConnectedRegion{N,promote_type(T,S)}
 
