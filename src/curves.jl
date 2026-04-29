@@ -10,28 +10,28 @@ abstract type AbstractCurve{T} <: Function end
 	point(C::AbstractCurve,t::Real)
 Find the point on curve `C` at parameter value `t`, which should lie in the interval [0,1].
 """
-point(c::AbstractCurve, ::Real) = @error "No point() method defined for type $(typeof(c))"
+point(c::AbstractCurve, t::Real) = throw(MethodError(point, (c, t)))
 
 """
 	tangent(C::AbstractCurve,t::Real)
 Find the complex number representing the tangent to curve `C` at parameter value `t` in [0,1].
 """
-tangent(C::AbstractCurve, ::Real) = @error "No tangent() method defined for type $(typeof(C))"
+tangent(C::AbstractCurve, t::Real) = throw(MethodError(tangent, (C, t)))
 
-Base.reverse(C::AbstractCurve) = @error "No reverse() method defined for type $(typeof(C))"
+Base.reverse(C::AbstractCurve) = throw(MethodError(Base.reverse, (C,)))
 
 """
 	isfinite(C::AbstractCurve)
 Return `true` if the curve is bounded in the complex plane (i.e., does not pass through infinity).
 """
-Base.isfinite(C::AbstractCurve) = @error "No isfinite() method defined for type $(typeof(C))"
+Base.isfinite(C::AbstractCurve) = throw(MethodError(Base.isfinite, (C,)))
 Base.isreal(::AbstractCurve) = false  # unless detected otherwise
 
-Base.conj(C::AbstractCurve) = @error "No conj() method defined for type $(typeof(C))"
-Base.:+(C::AbstractCurve, z::Number) = @error "No addition method defined for type $(typeof(C))"
-Base.:-(C::AbstractCurve) = @error "No negation method defined for type $(typeof(C))"
-Base.:*(C::AbstractCurve, z::Number) = @error "No multiplication method defined for type $(typeof(C))"
-Base.inv(C::AbstractCurve) = @error "No inversion method defined for type $(typeof(C))"
+Base.conj(C::AbstractCurve) = throw(MethodError(Base.conj, (C,)))
+Base.:+(C::AbstractCurve, z::Number) = throw(MethodError(Base.:+, (C, z)))
+Base.:-(C::AbstractCurve) = throw(MethodError(Base.:-, (C,)))
+Base.:*(C::AbstractCurve, z::Number) = throw(MethodError(Base.:*, (C, z)))
+Base.inv(C::AbstractCurve) = throw(MethodError(Base.inv, (C,)))
 # COV_EXCL_STOP
 
 # Default implementations
@@ -99,8 +99,8 @@ function winding(C::AbstractClosedCurve{T}, z::Number) where T
     try
 		w = intadapt(f, 0, 1, 1e-4)
     	return round(Int, w / (2π))
-	catch
-		@error "Unable to determine winding number at $(z)"
+	catch e
+		error("Unable to determine winding number at $(z): $(e)")
 	end
 end
 winding(C::AbstractClosedCurve) = z -> winding(C, z)

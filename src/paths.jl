@@ -7,7 +7,7 @@ const PathLike{T} = Union{AbstractPath{T},AbstractVector{<:AbstractCurve{T}}}
 	curves(P::AbstractPath)
 Return an array of the curves that make up the path `P`.
 """
-curves(p::AbstractPath)::AbstractVector = @error "No curves() method defined for type $(typeof(p))"
+curves(p::AbstractPath)::AbstractVector = throw(MethodError(curves, (p,)))
 # COV_EXCL_STOP
 
 # Default implementations
@@ -126,12 +126,7 @@ end
 Return a vecrtor of the interior angles at the vertices of the path `P`. The length is one greater than the number of curves in `P`, and the first and last values are `NaN`.
 """
 function angles(P::AbstractPath{T}) where T
-    τ = nothing
-    try
-        τ = tangent(P, 0)
-    catch
-        @error "Path must have a tangent defined"
-    end
+    τ = tangent(P, 0)
     m = length(P)
     θ = Vector{real_type(τ)}(undef, m + 1)
     θ[1] = θ[m+1] = NaN
@@ -241,12 +236,7 @@ vertices(P::AbstractClosedPath) = [vertex(P, k) for k = 1:length(P)]
 Return a vecrtor of the interior angles at the vertices of the path `P`. The length is one greater than the number of curves in `P`, and the first and last values are `NaN`.
 """
 function angles(P::AbstractClosedPath{T}) where T
-    τ = nothing
-    try
-        τ = tangent(P, 0)
-    catch
-        @error "Path must have a tangent defined"
-    end
+    τ = tangent(P, 0)
     m = length(P)
     θ = similar([real(τ)], m)
     c = CircularVector(curves(P))
@@ -301,12 +291,8 @@ Given a vector `c` of curves, construct a path. The path is checked for continui
 """
 Path(c::AbstractVector{<:AbstractCurve{T}}) where {T} = Path{T}(c)
 function Path(p::AbstractVector)
-    try
-        T = promote_type(real_type.(p)...)
-        return Path{T}(convert_real_type.(Ref(T), p))
-    catch
-        @error "Vector must contain Curves"
-    end
+    T = promote_type(real_type.(p)...)
+    return Path{T}(convert_real_type.(Ref(T), p))
 end
 Path(c::AbstractCurve{T}) where {T} = Path{T}([c])
 
@@ -346,12 +332,8 @@ Given a vector `c` of curves, or an existing path, construct a closed path. The 
 """
 ClosedPath(p::AbstractVector{<:AbstractCurve{T}}) where {T} = ClosedPath{T}(p)
 function ClosedPath(p::AbstractVector)
-    try
-        T = promote_type(real_type.(p)...)
-        return ClosedPath{T}(convert_real_type.(Ref(T), p))
-    catch
-        @error "Vector must contain Curves"
-    end
+    T = promote_type(real_type.(p)...)
+    return ClosedPath{T}(convert_real_type.(Ref(T), p))
 end
 ClosedPath(c::AbstractCurve{T}) where {T} = ClosedPath{T}([c])
 ClosedPath(c::AbstractClosedPath{T}) where {T} = c

@@ -44,7 +44,7 @@ function exterior(C::AbstractJordan{T}) where {T}
         end
     else
         if C isa AbstractClosedPath && (length(filter(isinf, vertices(C))) > 1)
-            @error "Disconnected exterior"
+            error("Disconnected exterior")
         end
         #C = reverse(C)
     end

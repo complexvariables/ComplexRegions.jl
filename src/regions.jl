@@ -17,28 +17,28 @@ function get_one_inside(C::AbstractJordan{T}) where {T}
             end
         end
     end
-    @error "Could not find a point inside the curve"
+    error("Could not find a point inside the curve")
 end
 
 abstract type AbstractRegion{T} end
 
 # COV_EXCL_START
 # Required methods
-boundary(R::AbstractRegion) = @error "No boundary() method defined for type $(typeof(R))"
+boundary(R::AbstractRegion) = throw(MethodError(boundary, (R,)))
 
 """
     in(z::Number,R::AbstractRegion;tol=<default>)
     z ∈ R   (type "\\in" followed by tab)
 True if `z` is in the region `R`.
 """
-in(z::Number, R::AbstractRegion; tol=nothing) = @error "No in() method defined for type $(typeof(R))"
+in(z::Number, R::AbstractRegion; tol=nothing) = throw(MethodError(in, (z, R)))
 in(R::AbstractRegion; kw...) = z -> in(z, R; kw...)
 
 """
     isfinite(R::AbstractRegion)
 Return `true` if the region is bounded in the complex plane.
 """
-isfinite(R::AbstractRegion) = @error "No isfinite() method defined for type $(typeof(R))"
+isfinite(R::AbstractRegion) = throw(MethodError(isfinite, (R,)))
 # COV_EXCL_STOP
 
 # Default implementations
@@ -91,8 +91,8 @@ end
 abstract type AbstractConnectedRegion{N,T} <: AbstractRegion{T} end
 
 # Required methods
-innerboundary(R::AbstractConnectedRegion) = @error "No innerboundary() method defined for type $(typeof(R))"
-outerboundary(R::AbstractConnectedRegion) = @error "No outerboundary() method defined for type $(typeof(R))"
+innerboundary(R::AbstractConnectedRegion) = throw(MethodError(innerboundary, (R,)))
+outerboundary(R::AbstractConnectedRegion) = throw(MethodError(outerboundary, (R,)))
 boundary(R::AbstractConnectedRegion) = outerboundary(R), innerboundary(R)
 
 # Default implementations
@@ -152,12 +152,8 @@ struct ExteriorRegion{N,T} <: AbstractConnectedRegion{N,T}
 end
 
 function ExteriorRegion(inner::AbstractVector)
-    try
-        T = promote_type(real_type.(inner)...)
-        return ExteriorRegion{length(inner),T}(convert(Vector{AbstractJordan{T}}, inner))
-    catch
-        @error "Could not promote the types of the inner boundaries"
-    end
+    T = promote_type(real_type.(inner)...)
+    return ExteriorRegion{length(inner),T}(convert(Vector{AbstractJordan{T}}, inner))
 end
 
 isfinite(::ExteriorRegion) = false

@@ -166,8 +166,7 @@ function Polygon(v::AbstractVector)
         vnext = v[mod(j, n) + 1]
         if isa(vthis, Tuple)
             if isa(vnext, Tuple)
-                @error("Cannot have consecutive infinite vertices")
-                return nothing
+                error("Cannot have consecutive infinite vertices")
             else
                 p[j] = Ray{T}(vnext, vthis[2], true)
             end
