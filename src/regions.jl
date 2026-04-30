@@ -88,12 +88,24 @@ end
 # AbstractConnectedRegion
 #############################
 
-abstract type AbstractConnectedRegion{N,T} <: AbstractRegion{T} end
+abstract type AbstractConnectedRegion{T} <: AbstractRegion{T} end
+abstract type AbstractSimplyConnectedRegion{T} <: AbstractConnectedRegion{T} end
+abstract type AbstractMultiplyConnectedRegion{T} <: AbstractConnectedRegion{T} end
 
 # Required methods
 innerboundary(R::AbstractConnectedRegion) = throw(MethodError(innerboundary, (R,)))
 outerboundary(R::AbstractConnectedRegion) = throw(MethodError(outerboundary, (R,)))
 boundary(R::AbstractConnectedRegion) = outerboundary(R), innerboundary(R)
+
+"""
+    connectivity(R::AbstractConnectedRegion)
+Return the connectivity of `R` (the number of connected boundary components).
+"""
+connectivity(R::AbstractSimplyConnectedRegion) = 1
+function connectivity(R::AbstractMultiplyConnectedRegion)
+    n = length(innerboundary(R))
+    isnothing(outerboundary(R)) ? n : n + 1
+end
 
 # Default implementations
 
@@ -134,10 +146,9 @@ end
 # ExteriorRegion
 ########################
 
-struct ExteriorRegion{N,T} <: AbstractConnectedRegion{N,T}
+struct ExteriorRegion{T} <: AbstractMultiplyConnectedRegion{T}
     inner::Vector{<:Jordan{T}}
-    function ExteriorRegion{N,T}(inner::AbstractVector) where {N,T}
-        @assert N == length(inner) "Incorrect connectivity"
+    function ExteriorRegion{T}(inner::AbstractVector) where {T}
         @assert all(c isa Jordan{T} for c in inner) "Boundary components must be closed curves or paths"
         @assert all(isfinite.(inner)) "Inner boundaries must be finite"
         # Correct the orientations of inner components (region is on the left)
@@ -153,7 +164,7 @@ end
 
 function ExteriorRegion(inner::AbstractVector)
     T = promote_type(real_type.(inner)...)
-    return ExteriorRegion{length(inner),T}(convert(Vector{Jordan{T}}, inner))
+    return ExteriorRegion{T}(convert(Vector{Jordan{T}}, inner))
 end
 
 isfinite(::ExteriorRegion) = false
@@ -165,8 +176,8 @@ Base.:*(R::ExteriorRegion, z::Number) = ExteriorRegion(innerboundary(R) .* z)
 Base.:-(R::ExteriorRegion, z::Number) = ExteriorRegion(innerboundary(R) .- z)
 Base.:-(R::ExteriorRegion) = ExteriorRegion(-innerboundary(R))
 
-convert_real_type(T::Type{<:AbstractFloat}, R::ExteriorRegion{N,S}) where {N,S} = ExteriorRegion{N,T}(R.inner)
-Base.promote_rule(::Type{<:ExteriorRegion{N,T}}, ::Type{<:ExteriorRegion{N,S}}) where {N,T,S} = ExteriorRegion{promote_type(T,S)}
+convert_real_type(T::Type{<:AbstractFloat}, R::ExteriorRegion{S}) where {S} = ExteriorRegion{T}(R.inner)
+Base.promote_rule(::Type{<:ExteriorRegion{T}}, ::Type{<:ExteriorRegion{S}}) where {T,S} = ExteriorRegion{promote_type(T,S)}
 
 #
 # ConnectedRegion
@@ -176,16 +187,14 @@ Base.promote_rule(::Type{<:ExteriorRegion{N,T}}, ::Type{<:ExteriorRegion{N,S}}) 
     (type) ConnectedRegion{N}
 Representation of a `N`-connected region in the extended complex plane.
 """
-struct InteriorConnectedRegion{N,T} <: AbstractConnectedRegion{N,T}
+struct InteriorConnectedRegion{T} <: AbstractMultiplyConnectedRegion{T}
     outer::Jordan{T}
     inner::Vector{<:Jordan{T}}
     function InteriorConnectedRegion(outer::Jordan, inner::AbstractVector{<:Jordan})
         T = promote_type(real_type(outer), real_type.(inner)...)
-        return InteriorConnectedRegion{length(inner)+1,T}(outer, inner)
+        return InteriorConnectedRegion{T}(outer, inner)
     end
-    function InteriorConnectedRegion{N,T}(outer, inner) where {N,T<:AbstractFloat}
-        n = length(inner) + 1
-        @assert N == n "Incorrect connectivity"
+    function InteriorConnectedRegion{T}(outer, inner) where {T<:AbstractFloat}
         # correct orientation of outer component?
         isin = [isinside(point(c, 0), outer) for c in inner]
         if all(.!isin)
@@ -200,25 +209,23 @@ struct InteriorConnectedRegion{N,T} <: AbstractConnectedRegion{N,T}
                 c = reverse(c)
             end
         end
-        new{N,T}(outer, inner)
+        new{T}(outer, inner)
     end
 end
 
 """
-    ConnectedRegion(outer, inner)
+    connected_region(outer, inner)
 Construct an open connected region by specifying its boundary components. The `outer` boundary could be `nothing` or a closed curve or path. The `inner` boundary should be a vector of one or more nonintersecting closed curves or paths. The defined region is interior to the outer boundary and exterior to all the components of the inner boundary, regardless of the orientations of the given curves.
 """
 function connected_region(inner::AbstractVector{<:Jordan{T}}) where T
-    n = length(inner)
-    ExteriorRegion{n,T}(inner)
+    ExteriorRegion{T}(inner)
 end
 
 function connected_region(
                         outer::Jordan{T},
                         inner::AbstractVector{<:Jordan{T}}
                         ) where T
-    n = length(inner)
-    InteriorConnectedRegion{n+1,T}(outer, inner)
+    InteriorConnectedRegion{T}(outer, inner)
 end
 
 
@@ -226,13 +233,10 @@ function in(z::Number, R::InteriorConnectedRegion)
     all(isoutside(z, c) for c in R.inner) && isinside(z, R.outer)
 end
 
-outerboundary(R::InteriorConnectedRegion{N,T}) where {N,T} = R.outer
-innerboundary(R::InteriorConnectedRegion{N,T}) where {N,T} = R.inner
-convert_real_type(T::Type{<:AbstractFloat}, R::InteriorConnectedRegion{N,S}) where {N,S} = InteriorConnectedRegion{N,T}(R.outer, R.inner)
-Base.promote_rule(::Type{InteriorConnectedRegion{N,T}}, ::Type{InteriorConnectedRegion{N,S}}) where {N,T,S} = InteriorConnectedRegion{N,promote_type(T,S)}
-
-abstract type Abstract2CRegion{T} <: AbstractConnectedRegion{2,T} end
-const Interior2CRegion{T} = InteriorConnectedRegion{2,T}
+outerboundary(R::InteriorConnectedRegion) = R.outer
+innerboundary(R::InteriorConnectedRegion) = R.inner
+convert_real_type(T::Type{<:AbstractFloat}, R::InteriorConnectedRegion{S}) where {S} = InteriorConnectedRegion{T}(R.outer, R.inner)
+Base.promote_rule(::Type{InteriorConnectedRegion{T}}, ::Type{InteriorConnectedRegion{S}}) where {T,S} = InteriorConnectedRegion{promote_type(T,S)}
 
 
 #
@@ -250,7 +254,7 @@ function between(outer::Jordan{T}, inner::Jordan{T}) where T
     if isfinite(inner) && isoutside(Inf, inner)
         inner = reverse(inner)
     end
-    InteriorConnectedRegion{2,T}(outer, [inner])
+    InteriorConnectedRegion{T}(outer, [inner])
 end
 
 
@@ -260,7 +264,7 @@ end
     (type) Annulus
 Representation of the region between two circles.
 """
-struct Annulus{T} <: AbstractConnectedRegion{2,T}
+struct Annulus{T} <: AbstractMultiplyConnectedRegion{T}
     outer::Circle{T}
     inner::Circle{T}
     function Annulus{T}(outer::Circle{T}, inner::Circle{T}) where T

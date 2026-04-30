@@ -1,10 +1,8 @@
-const AbstractSimplyConnectedRegion{T,S} = AbstractConnectedRegion{1,T}
-
-struct InteriorSimplyConnectedRegion{T,S} <: AbstractSimplyConnectedRegion{T} where S<:Jordan{T}
+struct InteriorSimplyConnectedRegion{T,S<:Jordan{T}} <: AbstractSimplyConnectedRegion{T}
     boundary::S
 end
 
-struct ExteriorSimplyConnectedRegion{T,S} <: AbstractSimplyConnectedRegion{T} where S<:Jordan{T}
+struct ExteriorSimplyConnectedRegion{T,S<:Jordan{T}} <: AbstractSimplyConnectedRegion{T}
     boundary::S
 end
 

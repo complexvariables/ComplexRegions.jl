@@ -41,7 +41,7 @@ end
 
 # Convert a generic region to a Makie Polygon
 Makie.plottype(::AbstractRegion) = Poly
-function Makie.convert_arguments(PT::Type{<:Poly}, R::InteriorConnectedRegion{N}) where N
+function Makie.convert_arguments(PT::Type{<:Poly}, R::InteriorConnectedRegion)
     outer = curve_to_points(outerboundary(R))
     inner = curve_to_points.(innerboundary(R))
     return convert_arguments(PT, GB.Polygon(outer, inner))
@@ -57,7 +57,7 @@ function Makie.convert_arguments(PT::Type{<:Poly}, R::ExteriorSimplyConnectedReg
     return convert_arguments(PT, truncate(R))
 end
 
-function Makie.convert_arguments(PT::Type{<:Poly}, R::ExteriorRegion{N}) where N
+function Makie.convert_arguments(PT::Type{<:Poly}, R::ExteriorRegion)
     return convert_arguments(PT, truncate(R))
 end
 
@@ -73,6 +73,6 @@ function Base.truncate(R::ExteriorRegion)
     return connected_region(C, ∂R)
 end
 
-Makie.convert_arguments(PT::Type{<:Poly}, A::Annulus) = convert_arguments(PT, InteriorConnectedRegion{2}(A.outer, [A.inner]))
+Makie.convert_arguments(PT::Type{<:Poly}, A::Annulus) = convert_arguments(PT, InteriorConnectedRegion(A.outer, [A.inner]))
 
 end
