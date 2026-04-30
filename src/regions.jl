@@ -42,6 +42,7 @@ isfinite(R::AbstractRegion) = throw(MethodError(isfinite, (R,)))
 # COV_EXCL_STOP
 
 # Default implementations
+# TODO: promote different floating types to common type
 """
     (type) RegionIntersection
 Representation of the intersection of two regions.
@@ -49,10 +50,6 @@ Representation of the intersection of two regions.
 struct RegionIntersection{T} <: AbstractRegion{T}
     one::AbstractRegion{T}
     two::AbstractRegion{T}
-    function RegionIntersection(one::AbstractRegion{R}, two::AbstractRegion{S}) where {R,S}
-        # one, two = promote(one, two)
-        new{promote_type(R,S)}(one, two)
-    end
 end
 in(z::Number, R::RegionIntersection) = in(z, R.one) && in(z, R.two)
 
@@ -71,7 +68,7 @@ in(z::Number, R::RegionUnion) = in(z, R.one) || in(z, R.two)
     R1 ∩ R2    (type "\\cap" followed by tab key)
 Create the region that is the intersection of `R1` and `R2`.
 """
-function intersect(R1::AbstractRegion{T}, R2::AbstractRegion{S}) where {S,T}
+function intersect(R1::AbstractRegion{T}, R2::AbstractRegion{T}) where {T}
     return RegionIntersection(R1, R2)
 end
 
@@ -80,8 +77,8 @@ end
     R1 ∪ R2    (type "\\cup" followed by tab key)
 Create the region that is the union of `R1` and `R2`.
 """
-function union(R1::AbstractRegion{T}, R2::AbstractRegion{S}) where {S,T}
-    return RegionUnion{promote_type(S,T)}(R1, R2)
+function union(R1::AbstractRegion{T}, R2::AbstractRegion{T}) where {T}
+    return RegionUnion{T}(R1, R2)
 end
 
 #############################
