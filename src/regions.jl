@@ -1,7 +1,7 @@
-const AbstractJordan{T} = Union{AbstractClosedCurve{T},AbstractClosedPath{T}}
+const Jordan{T} = Union{AbstractClosedCurve{T},AbstractClosedPath{T}}
 
 # get one point inside a closed path
-function get_one_inside(C::AbstractJordan{T}) where {T}
+function get_one_inside(C::Jordan{T}) where {T}
     zc = mean(discretize(C, ds=1/T(100)))
     if isinside(zc, C)   # ignores the orientation
         return zc
@@ -135,10 +135,10 @@ end
 ########################
 
 struct ExteriorRegion{N,T} <: AbstractConnectedRegion{N,T}
-    inner::Vector{<:AbstractJordan{T}}
+    inner::Vector{<:Jordan{T}}
     function ExteriorRegion{N,T}(inner::AbstractVector) where {N,T}
         @assert N == length(inner) "Incorrect connectivity"
-        @assert all(c isa AbstractJordan{T} for c in inner) "Boundary components must be closed curves or paths"
+        @assert all(c isa Jordan{T} for c in inner) "Boundary components must be closed curves or paths"
         @assert all(isfinite.(inner)) "Inner boundaries must be finite"
         # Correct the orientations of inner components (region is on the left)
         b = ClosedPath.(copy(inner))
@@ -153,7 +153,7 @@ end
 
 function ExteriorRegion(inner::AbstractVector)
     T = promote_type(real_type.(inner)...)
-    return ExteriorRegion{length(inner),T}(convert(Vector{AbstractJordan{T}}, inner))
+    return ExteriorRegion{length(inner),T}(convert(Vector{Jordan{T}}, inner))
 end
 
 isfinite(::ExteriorRegion) = false
@@ -177,9 +177,9 @@ Base.promote_rule(::Type{<:ExteriorRegion{N,T}}, ::Type{<:ExteriorRegion{N,S}}) 
 Representation of a `N`-connected region in the extended complex plane.
 """
 struct InteriorConnectedRegion{N,T} <: AbstractConnectedRegion{N,T}
-    outer::AbstractJordan{T}
-    inner::Vector{<:AbstractJordan{T}}
-    function InteriorConnectedRegion(outer::AbstractJordan, inner::AbstractVector{<:AbstractJordan})
+    outer::Jordan{T}
+    inner::Vector{<:Jordan{T}}
+    function InteriorConnectedRegion(outer::Jordan, inner::AbstractVector{<:Jordan})
         T = promote_type(real_type(outer), real_type.(inner)...)
         return InteriorConnectedRegion{length(inner)+1,T}(outer, inner)
     end
@@ -208,14 +208,14 @@ end
     ConnectedRegion(outer, inner)
 Construct an open connected region by specifying its boundary components. The `outer` boundary could be `nothing` or a closed curve or path. The `inner` boundary should be a vector of one or more nonintersecting closed curves or paths. The defined region is interior to the outer boundary and exterior to all the components of the inner boundary, regardless of the orientations of the given curves.
 """
-function connected_region(inner::AbstractVector{<:AbstractJordan{T}}) where T
+function connected_region(inner::AbstractVector{<:Jordan{T}}) where T
     n = length(inner)
     ExteriorRegion{n,T}(inner)
 end
 
 function connected_region(
-                        outer::AbstractJordan{T},
-                        inner::AbstractVector{<:AbstractJordan{T}}
+                        outer::Jordan{T},
+                        inner::AbstractVector{<:Jordan{T}}
                         ) where T
     n = length(inner)
     InteriorConnectedRegion{n+1,T}(outer, inner)
@@ -243,7 +243,7 @@ const Interior2CRegion{T} = InteriorConnectedRegion{2,T}
     between(outer,inner)
 Construct the region interior to the closed curve or path `outer` and interior to `inner`.
 """
-function between(outer::AbstractJordan{T}, inner::AbstractJordan{T}) where T
+function between(outer::Jordan{T}, inner::Jordan{T}) where T
     if isfinite(outer) && isinside(Inf, outer)
         outer = reverse(outer)
     end

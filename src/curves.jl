@@ -6,18 +6,10 @@ abstract type AbstractCurve{T} <: AbstractParameterizedMap{T} end
 
 Base.length(::AbstractCurve) = 1  # length of parameter interval
 
-"""
-	real_type(::AbstractCurve)
-Return the type of the real part of the curve's point function.
-"""
-real_type(::AbstractCurve{T}) where T = T
-
 function arclength(C::AbstractCurve{T}, part=[0, 1]) where T
     f = t -> abs(tangent(C, T(t)))
     intadapt(f, part..., tolerance(T))
 end
-
-isclosed(c::AbstractCurve) = isa(c, AbstractClosedCurve)
 
 # COV_EXCL_START
 Base.show(io::IO, C::AbstractCurve) = print(io, "Complex-valued $(typeof(C))")
@@ -25,10 +17,14 @@ Base.show(io::IO, ::MIME"text/plain", C::AbstractCurve) = print(io, "Complex-val
 # COV_EXCL_STOP
 
 # By default, curves are not equal to one another, but curves of the same type can override this.
-isapprox(::AbstractCurve, ::AbstractCurve; kw...) = false
+Base.isapprox(::AbstractCurve, ::AbstractCurve; kw...) = false
 
+#####################
 # AbstractClosedCurve
+#####################
+
 abstract type AbstractClosedCurve{T} <: AbstractCurve{T} end
+Closure(::Type{<:AbstractClosedCurve}) = IsClosed()
 
 # Default implementations
 function winding(C::AbstractClosedCurve{T}, z::Number) where T
@@ -49,9 +45,9 @@ isinside(C::AbstractClosedCurve) = z -> isinside(z, C)
 isoutside(z::Number, C::AbstractClosedCurve) = winding(C, z) == 0
 isoutside(C::AbstractClosedCurve) = z -> isoutside(z, C)
 
-##################
+#####################
 # generic Curve
-##################
+#####################
 
 """
 (type) Smooth curve defined by an explicit function of a real paramerter in [0,1].
@@ -130,11 +126,11 @@ Base.inv(C::Curve{T}) where T = Curve{T}(t -> 1 / C.point(t), t -> -C.tangent(t)
 
 Compute points along the curve `C` suitable to make a nice plot of it.
 """
-plotdata(C::ComplexRegions.AbstractCurve) = adaptpoints(t -> point(C,t), t -> unittangent(C,t), 0, 1)
+plotdata(C::AbstractCurve) = adaptpoints(t -> point(C,t), t -> unittangent(C,t), 0, 1)
 
-#
+#####################
 # generic ClosedCurve
-#
+#####################
 
 """
 (type) Smooth closed curve defined by an explicit function of a real paramerter in [0,1].

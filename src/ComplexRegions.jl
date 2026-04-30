@@ -37,7 +37,7 @@ export curve, curves, vertex, vertices, side, sides, isfinite, sign, angle, angl
 include("paths.jl")
 
 const AbstractCurveOrPath{T} = Union{AbstractCurve{T},AbstractPath{T}}
-export AbstractJordan, AbstractClosedCurve, AbstractClosedPath
+export Jordan, AbstractClosedCurve, AbstractClosedPath
 
 export AbstractSimplyConnectedRegion, SimplyConnectedRegion, InteriorSimplyConnectedRegion, ExteriorSimplyConnectedRegion, AbstractRegion, InteriorConnectedRegion, ExteriorRegion, connected_region
 export Disk, disk, unitdisk

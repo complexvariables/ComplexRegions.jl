@@ -53,12 +53,6 @@ Return `true` if the path is entirely on the real axis.
 """
 Base.isreal(p::AbstractPath) = all(isreal(s) for s in curves(p))
 
-"""
-	real_type(::AbstractPath)
-Return the type of the real part of the curve's point function.
-"""
-real_type(::AbstractPath{T}) where T = T
-
 # iteration interface
 Base.eltype(::Type{AbstractPath{T}}) where T = AbstractCurve{T}
 Base.length(p::AbstractPath) = length(curves(p))
@@ -131,7 +125,6 @@ end
 Base.conj(p::AbstractPath) = typeof(p)(conj.(curves(p)))
 
 Base.reverse(p::AbstractPath) = typeof(p)(reverse(reverse.(curves(p))))
-isclosed(p::AbstractPath) = isa(p, AbstractClosedPath)
 
 function Base.:+(p::AbstractPath{T}, z::Number) where T
 	return typeof(p)([c + convert_real_type(T, z) for c in curves(p)])
@@ -201,6 +194,7 @@ end
 ###############
 
 abstract type AbstractClosedPath{T} <: AbstractPath{T} end
+Closure(::Type{<:AbstractClosedPath}) = IsClosed()
 
 """
 	curve(P::AbstractClosedPath,k::Integer)

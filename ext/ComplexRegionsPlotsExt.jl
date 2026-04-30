@@ -5,7 +5,7 @@ using ComplexRegions
 const AbstractCurve = ComplexRegions.AbstractCurve
 const AbstractPath = ComplexRegions.AbstractPath
 const AbstractCurveOrPath = Union{AbstractCurve, AbstractPath}
-const AbstractJordan = ComplexRegions.AbstractJordan
+const Jordan = ComplexRegions.Jordan
 const AbstractCircularPolygon = ComplexRegions.AbstractCircularPolygon
 const AbstractRegion = ComplexRegions.AbstractRegion
 const ExteriorRegion = ComplexRegions.ExteriorRegion

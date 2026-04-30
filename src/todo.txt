@@ -1,0 +1,34 @@
+# Type issues to be fixed
+
+2. 
+AbstractSimplyConnectedRegion{T,S} has a second type parameter S that is immediately dropped in the alias body (AbstractConnectedRegion{1,T}), making S phantom and unused.
+
+4. The connectivity N type parameter carries no compiler enforcement
+AbstractConnectedRegion{N,T} (regions.jl:91) parameterizes over connectivity, but it's validated with a runtime @assert:
+
+
+function ExteriorRegion{N,T}(inner::AbstractVector) where {N,T}
+    @assert N == length(inner) "Incorrect connectivity"
+The type system never actually constrains N — a caller can pass any integer. More practically, the N parameter forces every algebraic operation (+, *, etc.) to use typeof(R)(...), which only works because Julia reconstructs the same concrete type. It also prevents writing a clean + method that returns a simply-connected region when a doubly-connected region is mapped to one. The connectivity value is always just length(innerboundary(R)) + 1, so it doesn't carry independent information.
+
+5. RegionIntersection stores mismatched real types
+regions.jl:49-55: the struct declares both fields as AbstractRegion{T}, but the constructor promotes the type parameter without converting the stored values:
+
+
+struct RegionIntersection{T} <: AbstractRegion{T}
+    one::AbstractRegion{T}
+    two::AbstractRegion{T}
+    function RegionIntersection(one::AbstractRegion{R}, two::AbstractRegion{S}) where {R,S}
+        # one, two = promote(one, two)     ← commented out
+        new{promote_type(R,S)}(one, two)
+    end
+end
+If R=Float64 and S=BigFloat, the struct is RegionIntersection{BigFloat} but one::AbstractRegion{Float64}, which violates the declared field type. The commented-out promote line is the intended fix that was never completed. RegionUnion has the same issue.
+
+6. ClosedCurve{T} wraps Curve{T} unnecessarily
+curves.jl:203-241: ClosedCurve stores a Curve field and every method just delegates:
+
+point(C::ClosedCurve, t::Real) = point(C.curve, t)
+tangent(C::ClosedCurve, t::Real) = tangent(C.curve, t)
+...
+The only thing ClosedCurve adds over Curve is the closure check at construction and the AbstractClosedCurve tag. It could simply be a validated newtype over Curve that carries the data directly, or Curve could have an optional closure flag to avoid the extra heap allocation per object.

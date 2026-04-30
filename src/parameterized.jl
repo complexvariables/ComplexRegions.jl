@@ -1,11 +1,17 @@
 abstract type AbstractParameterizedMap{T} <: Function end
 
+# COV_EXCL_START
 # This is an explicit statement of what is default behavior for a Function. It makes, e.g.,
 # point.(c, t) work for parameter arrays, but it disables broadcasting over the
 # sides of a Path object. Callers should broadcast over sides(p) explicitly.
 Base.broadcastable(::AbstractParameterizedMap) = Ref(x)
 
-# COV_EXCL_START
+"""
+	real_type(::AbstractParameterizedMap)
+Return the type of the real part of the curve's point function.
+"""
+real_type(::AbstractParameterizedMap{T}) where T = T
+
 # Required methods
 """
 	point(C::AbstractParameterizedMap, t::Real)
@@ -76,3 +82,14 @@ Find the complex number in the direction of the leftward-pointing normal at para
 unitnormal(C::AbstractParameterizedMap, t::Real) = 1im * unittangent(C, t)
 
 @deprecate normal unitnormal
+
+##
+# Closure trait
+
+abstract type Closure end
+struct IsClosed <: Closure end
+struct NotClosed <: Closure end
+
+Closure(::Type) = NotClosed()
+Closure(x) = Closure(typeof(x))
+isclosed(x) = isa(Closure(x), IsClosed)

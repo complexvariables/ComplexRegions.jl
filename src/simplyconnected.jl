@@ -1,10 +1,10 @@
 const AbstractSimplyConnectedRegion{T,S} = AbstractConnectedRegion{1,T}
 
-struct InteriorSimplyConnectedRegion{T,S} <: AbstractSimplyConnectedRegion{T} where S<:AbstractJordan{T}
+struct InteriorSimplyConnectedRegion{T,S} <: AbstractSimplyConnectedRegion{T} where S<:Jordan{T}
     boundary::S
 end
 
-struct ExteriorSimplyConnectedRegion{T,S} <: AbstractSimplyConnectedRegion{T} where S<:AbstractJordan{T}
+struct ExteriorSimplyConnectedRegion{T,S} <: AbstractSimplyConnectedRegion{T} where S<:Jordan{T}
     boundary::S
 end
 
@@ -18,7 +18,7 @@ const SimplyConnectedRegion{T,S} = Union{InteriorSimplyConnectedRegion{T,S},Exte
 	interior(C)
 Construct the region interior to the closed curve or path `C`. If `C` is bounded, the bounded enclosure is chosen regardless of the orientation of `C`; otherwise, the region "to the left" is the interior.
 """
-function interior(C::AbstractJordan{T}) where {T}
+function interior(C::Jordan{T}) where {T}
     # Determine the winding number of the inverse path around the origin. This reveals the
     # orientation without needing to find an interior point.
     # use a strange number to avoid divide by zero when it's on the curve
@@ -28,7 +28,7 @@ function interior(C::AbstractJordan{T}) where {T}
     InteriorSimplyConnectedRegion{T,typeof(C)}(C)
 end
 
-InteriorSimplyConnectedRegion(C::AbstractJordan) = interior(C)
+InteriorSimplyConnectedRegion(C::Jordan) = interior(C)
 
 """
 	exterior(C)
@@ -36,7 +36,7 @@ Construct the region exterior to the closed curve or path `C`. If `C` is bounded
 complement of the bounded enclosure is chosen regardless of the orientation of `C`; otherwise,
 the region "to the right" is the exterior.
 """
-function exterior(C::AbstractJordan{T}) where {T}
+function exterior(C::Jordan{T}) where {T}
     if isfinite(C)
         # use a strange number to avoid divide by zero when it's on the curve
         if winding(1 / (C + complex(T(0.13298), -T(0.398127))), 0) < 0
@@ -51,7 +51,7 @@ function exterior(C::AbstractJordan{T}) where {T}
     ExteriorSimplyConnectedRegion{T,typeof(C)}(C)
 end
 
-ExteriorSimplyConnectedRegion(C::AbstractJordan) = exterior(C)
+ExteriorSimplyConnectedRegion(C::Jordan) = exterior(C)
 
 boundary(R::SimplyConnectedRegion) = R.boundary
 innerboundary(R::InteriorSimplyConnectedRegion) = nothing

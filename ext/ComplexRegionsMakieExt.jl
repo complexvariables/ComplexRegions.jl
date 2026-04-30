@@ -6,7 +6,7 @@ const GB = Makie.GeometryBasics
 const AbstractCurve = ComplexRegions.AbstractCurve
 const AbstractPath = ComplexRegions.AbstractPath
 const AbstractCurveOrPath = Union{AbstractCurve, AbstractPath}
-const AbstractJordan = ComplexRegions.AbstractJordan
+const Jordan = ComplexRegions.Jordan
 const AbstractCircularPolygon = ComplexRegions.AbstractCircularPolygon
 const AbstractRegion = ComplexRegions.AbstractRegion
 const ExteriorRegion = ComplexRegions.ExteriorRegion
@@ -27,7 +27,7 @@ curve_to_points(c::AbstractCurveOrPath) = z_to_point.(complex(plotdata(c)))
 Makie.convert_arguments(::PointBased, c::AbstractCurveOrPath) = (curve_to_points(c), )
 
 # Plot a compound boundary (e.g., from a generic ConnectedRegion)
-const Compound = Tuple{Union{Nothing,AbstractJordan}, Vector{<:AbstractJordan}}
+const Compound = Tuple{Union{Nothing,Jordan}, Vector{<:Jordan}}
 function Makie.plot!(plt::Tuple{Compound})
     outer, inner = plt[1][]
     if !isnothing(outer)
