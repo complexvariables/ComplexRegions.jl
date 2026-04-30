@@ -9,6 +9,7 @@ const Jordan = ComplexRegions.Jordan
 const AbstractCircularPolygon = ComplexRegions.AbstractCircularPolygon
 const AbstractRegion = ComplexRegions.AbstractRegion
 const ExteriorRegion = ComplexRegions.ExteriorRegion
+const InteriorRegion = ComplexRegions.InteriorRegion
 const ExteriorSimplyConnectedRegion = ComplexRegions.ExteriorSimplyConnectedRegion
 const InteriorSimplyConnectedRegion = ComplexRegions.InteriorSimplyConnectedRegion
 
@@ -90,7 +91,7 @@ function argclosest(z1, z2)
     return i1[i2], i2
 end
 
-Plots.@recipe function f(R::Union{InteriorConnectedRegion,ExteriorRegion})
+Plots.@recipe function f(R::Union{InteriorRegion,ExteriorRegion})
     p0 = outerboundary(R)
     p1 = innerboundary(R)
     z1 = [plotdata(p) for p in p1]

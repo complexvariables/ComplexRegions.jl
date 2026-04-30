@@ -488,10 +488,11 @@ end
     end
     @test length(innerboundary(F)) == 2
     @test outerboundary(F) ≈ C3
-    @test between(C3, C2) isa InteriorConnectedRegion
+    @test between(C3, C2) isa InteriorDoublyConnectedRegion
+    @test between(C2, C3) isa InteriorDoublyConnectedRegion
     @test connectivity(between(C3, C2)) == 2
-    @test between(C3, reverse(C2)) isa InteriorConnectedRegion
-    @test between(reverse(C3), reverse(C2)) isa InteriorConnectedRegion
+    @test between(C3, reverse(C2)) isa InteriorDoublyConnectedRegion
+    @test between(reverse(C3), reverse(C2)) isa InteriorDoublyConnectedRegion
 end
 
 @testset "SC Regions in $T" for T in (Float64, BigFloat)

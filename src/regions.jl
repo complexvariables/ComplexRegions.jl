@@ -90,7 +90,7 @@ end
 
 abstract type AbstractConnectedRegion{T} <: AbstractRegion{T} end
 abstract type AbstractSimplyConnectedRegion{T} <: AbstractConnectedRegion{T} end
-abstract type AbstractMultiplyConnectedRegion{T} <: AbstractConnectedRegion{T} end
+abstract type AbstractDoublyConnectedRegion{T} <: AbstractConnectedRegion{T} end
 
 # Required methods
 innerboundary(R::AbstractConnectedRegion) = throw(MethodError(innerboundary, (R,)))
@@ -102,7 +102,8 @@ boundary(R::AbstractConnectedRegion) = outerboundary(R), innerboundary(R)
 Return the connectivity of `R` (the number of connected boundary components).
 """
 connectivity(R::AbstractSimplyConnectedRegion) = 1
-function connectivity(R::AbstractMultiplyConnectedRegion)
+connectivity(R::AbstractDoublyConnectedRegion) = 2
+function connectivity(R::AbstractConnectedRegion)
     n = length(innerboundary(R))
     isnothing(outerboundary(R)) ? n : n + 1
 end
@@ -124,7 +125,7 @@ Base.:/(R::AbstractConnectedRegion, z::Number) = *(R, 1 / z)
 #inv(p::AbstractConnectedRegion) = typeof(R)([inv(c) for c in curves(p)])
 
 # COV_EXCL_START
-function show(io::IO, ::MIME"text/plain", R::AbstractConnectedRegion)
+function Base.show(io::IO, ::MIME"text/plain", R::AbstractConnectedRegion)
     no = isnothing(outerboundary(R)) ? "no " : ""
     n = length(innerboundary(R))
     print(io, "Region in the complex plane with $(no)outer boundary and $(n) inner boundary component")
@@ -133,20 +134,16 @@ function show(io::IO, ::MIME"text/plain", R::AbstractConnectedRegion)
     end
 end
 
-function show(io::IO, R::AbstractConnectedRegion)
+function Base.show(io::IO, R::AbstractConnectedRegion)
     print(io, "Region in the complex plane")
 end
 # COV_EXCL_STOP
 
-#
-# concrete implementations
-#
-
 ########################
-# ExteriorRegion
+# generic ExteriorRegion
 ########################
 
-struct ExteriorRegion{T} <: AbstractMultiplyConnectedRegion{T}
+struct ExteriorRegion{T} <: AbstractConnectedRegion{T}
     inner::Vector{<:Jordan{T}}
     function ExteriorRegion{T}(inner::AbstractVector) where {T}
         @assert all(c isa Jordan{T} for c in inner) "Boundary components must be closed curves or paths"
@@ -167,8 +164,8 @@ function ExteriorRegion(inner::AbstractVector)
     return ExteriorRegion{T}(convert(Vector{Jordan{T}}, inner))
 end
 
-isfinite(::ExteriorRegion) = false
-in(z::Number, R::ExteriorRegion) = all(isoutside(z, c) for c in R.inner)
+Base.isfinite(::ExteriorRegion) = false
+Base.in(z::Number, R::ExteriorRegion) = all(isoutside(z, c) for c in R.inner)
 innerboundary(R::ExteriorRegion) = R.inner
 outerboundary(::ExteriorRegion) = nothing
 Base.:+(R::ExteriorRegion, z::Number) = ExteriorRegion(innerboundary(R) .+ z)
@@ -179,22 +176,22 @@ Base.:-(R::ExteriorRegion) = ExteriorRegion(-innerboundary(R))
 convert_real_type(T::Type{<:AbstractFloat}, R::ExteriorRegion{S}) where {S} = ExteriorRegion{T}(R.inner)
 Base.promote_rule(::Type{<:ExteriorRegion{T}}, ::Type{<:ExteriorRegion{S}}) where {T,S} = ExteriorRegion{promote_type(T,S)}
 
-#
-# ConnectedRegion
-#
+########################
+# generic InteriorRegion
+########################
 
 """
-    (type) ConnectedRegion{N}
+    (type) InteriorRegion{N}
 Representation of a `N`-connected region in the extended complex plane.
 """
-struct InteriorConnectedRegion{T} <: AbstractMultiplyConnectedRegion{T}
+struct InteriorRegion{T} <: AbstractConnectedRegion{T}
     outer::Jordan{T}
     inner::Vector{<:Jordan{T}}
-    function InteriorConnectedRegion(outer::Jordan, inner::AbstractVector{<:Jordan})
+    function InteriorRegion(outer::Jordan, inner::AbstractVector{<:Jordan})
         T = promote_type(real_type(outer), real_type.(inner)...)
-        return InteriorConnectedRegion{T}(outer, inner)
+        return InteriorRegion{T}(outer, inner)
     end
-    function InteriorConnectedRegion{T}(outer, inner) where {T<:AbstractFloat}
+    function InteriorRegion{T}(outer, inner) where {T<:AbstractFloat}
         # correct orientation of outer component?
         isin = [isinside(point(c, 0), outer) for c in inner]
         if all(.!isin)
@@ -225,84 +222,17 @@ function connected_region(
                         outer::Jordan{T},
                         inner::AbstractVector{<:Jordan{T}}
                         ) where T
-    InteriorConnectedRegion{T}(outer, inner)
+    InteriorRegion{T}(outer, inner)
 end
 
 
-function in(z::Number, R::InteriorConnectedRegion)
+function Base.in(z::Number, R::InteriorRegion)
     all(isoutside(z, c) for c in R.inner) && isinside(z, R.outer)
 end
 
-outerboundary(R::InteriorConnectedRegion) = R.outer
-innerboundary(R::InteriorConnectedRegion) = R.inner
-convert_real_type(T::Type{<:AbstractFloat}, R::InteriorConnectedRegion{S}) where {S} = InteriorConnectedRegion{T}(R.outer, R.inner)
-Base.promote_rule(::Type{InteriorConnectedRegion{T}}, ::Type{InteriorConnectedRegion{S}}) where {T,S} = InteriorConnectedRegion{promote_type(T,S)}
+outerboundary(R::InteriorRegion) = R.outer
+innerboundary(R::InteriorRegion) = R.inner
+convert_real_type(T::Type{<:AbstractFloat}, R::InteriorRegion{S}) where {S} = InteriorRegion{T}(R.outer, R.inner)
+Base.promote_rule(::Type{InteriorRegion{T}}, ::Type{InteriorRegion{S}}) where {T,S} = InteriorRegion{promote_type(T,S)}
 
-
-#
-# special cases
-#
-
-"""
-    between(outer,inner)
-Construct the region interior to the closed curve or path `outer` and interior to `inner`.
-"""
-function between(outer::Jordan{T}, inner::Jordan{T}) where T
-    if isfinite(outer) && isinside(Inf, outer)
-        outer = reverse(outer)
-    end
-    if isfinite(inner) && isoutside(Inf, inner)
-        inner = reverse(inner)
-    end
-    InteriorConnectedRegion{T}(outer, [inner])
-end
-
-
-# Annulus
-
-"""
-    (type) Annulus
-Representation of the region between two circles.
-"""
-struct Annulus{T} <: AbstractMultiplyConnectedRegion{T}
-    outer::Circle{T}
-    inner::Circle{T}
-    function Annulus{T}(outer::Circle{T}, inner::Circle{T}) where T
-        @assert(outer.center ≈ inner.center)
-        if isinside(Inf, outer)
-            outer = reverse(outer)
-        end
-        if isoutside(Inf, inner)
-            inner = reverse(inner)
-        end
-        new(outer, inner)
-    end
-end
-
-"""
-    Annulus(radouter, radinner)
-    Annulus(radouter, radinner, center)
-Construct a concentric annulus of outer radius `radouter` and inner radius `radinner` centered at `center`. If the center is not given, the origin is used.
-"""
-function Annulus(outer::Circle{T}, inner::Circle{S}) where {T,S}
-    R = promote_type(T,S)
-    return Annulus{R}(convert(Circle{R}, outer), convert(Circle{R}, inner))
-end
-
-function Annulus(outerrad::Real, innerrad::Real, center::Number=0)
-    @assert outerrad > innerrad > 0
-    return Annulus(Circle(center, outerrad, true), Circle(center, innerrad, false))
-end
-
-modulus(A::Annulus) = A.inner.radius / A.outer.radius
-innerboundary(A::Annulus) = [A.inner]    # must be a vector
-outerboundary(A::Annulus) = A.outer
-in(z::Number, A::Annulus) = isinside(z, A.outer) && isoutside(z, A.inner)
-isfinite(::Annulus) = true
-
-# COV_EXCL_START
-function show(io::IO, ::MIME"text/plain", R::Annulus)
-    print(io, "Annulus in the complex plane:\n")
-    print(io, "   centered at ", R.outer.center, " with distances from ", R.inner.radius, " to ", R.outer.radius)
-end
-# COV_EXCL_STOP
+@deprecate InteriorConnectedRegion InteriorRegion

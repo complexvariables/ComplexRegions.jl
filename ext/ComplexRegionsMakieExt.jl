@@ -10,6 +10,7 @@ const Jordan = ComplexRegions.Jordan
 const AbstractCircularPolygon = ComplexRegions.AbstractCircularPolygon
 const AbstractRegion = ComplexRegions.AbstractRegion
 const ExteriorRegion = ComplexRegions.ExteriorRegion
+const InteriorRegion = ComplexRegions.InteriorRegion
 const ExteriorSimplyConnectedRegion = ComplexRegions.ExteriorSimplyConnectedRegion
 const InteriorSimplyConnectedRegion = ComplexRegions.InteriorSimplyConnectedRegion
 
@@ -41,7 +42,7 @@ end
 
 # Convert a generic region to a Makie Polygon
 Makie.plottype(::AbstractRegion) = Poly
-function Makie.convert_arguments(PT::Type{<:Poly}, R::InteriorConnectedRegion)
+function Makie.convert_arguments(PT::Type{<:Poly}, R::InteriorRegion)
     outer = curve_to_points(outerboundary(R))
     inner = curve_to_points.(innerboundary(R))
     return convert_arguments(PT, GB.Polygon(outer, inner))
@@ -51,6 +52,12 @@ end
 function Makie.convert_arguments(PT::Type{<:Poly}, R::InteriorSimplyConnectedRegion)
     ∂R = curve_to_points(boundary(R))
     return convert_arguments(PT, GB.Polygon(∂R))
+end
+
+function Makie.convert_arguments(PT::Type{<:Poly}, R::InteriorDoublyConnectedRegion)
+    outer = curve_to_points(outerboundary(R))
+    inner = curve_to_points.(innerboundary(R))
+    return convert_arguments(PT, GB.Polygon(outer, inner))
 end
 
 function Makie.convert_arguments(PT::Type{<:Poly}, R::ExteriorSimplyConnectedRegion)
@@ -73,6 +80,6 @@ function Base.truncate(R::ExteriorRegion)
     return connected_region(C, ∂R)
 end
 
-Makie.convert_arguments(PT::Type{<:Poly}, A::Annulus) = convert_arguments(PT, InteriorConnectedRegion(A.outer, [A.inner]))
+Makie.convert_arguments(PT::Type{<:Poly}, A::Annulus) = convert_arguments(PT, InteriorRegion(A.outer, [A.inner]))
 
 end

@@ -39,8 +39,11 @@ include("paths.jl")
 const AbstractCurveOrPath{T} = Union{AbstractCurve{T},AbstractPath{T}}
 export Jordan, AbstractClosedCurve, AbstractClosedPath
 
-export AbstractRegion, AbstractConnectedRegion, AbstractSimplyConnectedRegion, AbstractMultiplyConnectedRegion
-export SimplyConnectedRegion, InteriorSimplyConnectedRegion, ExteriorSimplyConnectedRegion, InteriorConnectedRegion, ExteriorRegion, connected_region, connectivity
+export AbstractRegion, AbstractConnectedRegion,
+    AbstractSimplyConnectedRegion, AbstractDoublyConnectedRegion,
+    InteriorSimplyConnectedRegion, ExteriorSimplyConnectedRegion,
+    InteriorDoublyConnectedRegion, ExteriorDoublyConnectedRegion,
+    InteriorRegion, ExteriorRegion, connected_region, connectivity
 export Disk, disk, unitdisk
 export Halfplane, halfplane, upperhalfplane, lowerhalfplane, lefthalfplane, righthalfplane
 export Annulus, PolygonalRegion, Quad
@@ -48,12 +51,19 @@ export RegionIntersection, RegionUnion
 export interior, exterior, between, boundary, innerboundary, outerboundary, modulus
 
 include("regions.jl")
+
 include("simplyconnected.jl")
+const I1CRegion = InteriorSimplyConnectedRegion
+const E1CRegion = ExteriorSimplyConnectedRegion
+
+include("doublyconnected.jl")
+const I2CRegion = InteriorDoublyConnectedRegion
+const E2CRegion = ExteriorDoublyConnectedRegion
 
 export discretize
 include("discretize.jl")
 
-export Möbius,Mobius
+export Möbius, Mobius
 include("mobius.jl")
 
 export Shapes
