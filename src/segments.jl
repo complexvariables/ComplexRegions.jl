@@ -53,7 +53,7 @@ tangent(S::Segment) = S.zb - S.za
 tangent(S::Segment, t::Real) = tangent(S)
 unittangent(S::Segment) = sign(S.zb - S.za)
 unittangent(S::Segment, t::Real) = unittangent(S)
-normal(S::Segment) = normal(S, 0)
+unitnormal(S::Segment) = unitnormal(S, 0)
 
 Base.:+(S::Segment, z::Number) = Segment(S.za + z, S.zb + z)
 Base.:-(S::Segment) = Segment(-S.za, -S.zb)
@@ -63,17 +63,17 @@ Base.:*(S::Segment, z::Number) = Segment(S.za * z, S.zb * z)
 	inv(S)
 Invert the segment `S` through the origin. In general the inverse is an `Arc`, though the result is a `Segment` if `S` would pass through the origin when extended.
 """
-function inv(S::Segment)
+function Base.inv(S::Segment)
    w = 1 ./ points(S, SVector(0, 1//2, 1))
     return Arc(w...)
 end
 
 # Other methods
-isfinite(::Segment) = true
-conj(S::Segment) = Segment(conj(S.za), conj(S.zb))
-reverse(S::Segment) = Segment(S.zb, S.za)
+Base.isfinite(::Segment) = true
+Base.conj(S::Segment) = Segment(conj(S.za), conj(S.zb))
+Base.reverse(S::Segment) = Segment(S.zb, S.za)
 Base.isreal(S::Segment) = isreal(S.za) && isreal(S.za)
-sign(S::Segment) = unittangent(S)
+Base.sign(S::Segment) = unittangent(S)
 
 """
 	isapprox(S1::Segment,S2::Segment; tol=<default>)
@@ -81,7 +81,7 @@ sign(S::Segment) = unittangent(S)
 
 Determine if `S1` and `S2` represent the same segment, irrespective of the type or values of its parameters. Identity is determined by agreement within `tol`, which is interpreted as the weaker of absolute and relative differences.
 """
-function isapprox(S1::Segment{S}, S2::Segment{T}; tol=tolerance(S, T)) where {S,T}
+function Base.isapprox(S1::Segment{S}, S2::Segment{T}; tol=tolerance(S, T)) where {S,T}
     return isapprox(S1.za, S2.za, rtol=tol, atol=tol) &&
            isapprox(S1.zb, S2.zb, rtol=tol, atol=tol)
 end
@@ -138,12 +138,12 @@ reflect(z::Number, S::Segment) = reflect(z, Line(S.za, S.zb))
 
 # Display methods
 # COV_EXCL_START
-function show(io::IO, S::Segment{T}) where {T}
-    print(IOContext(io, :compact => true), "Segment(", point(S, 0), ",", point(S, 1), ")")
+function Base.show(io::IO, S::Segment{T}) where {T}
+    print(IOContext(io, :compact => true), "Segment(", point(S, 0), ", ", point(S, 1), ")")
 end
 
-function show(io::IO, ::MIME"text/plain", S::Segment{T}) where {T}
-    print(io, "Segment{$T} in the complex plane:\n   from (", point(S, 0), ") to (", point(S, 1), ")")
+function Base.show(io::IO, ::MIME"text/plain", S::Segment{T}) where {T}
+    print(io, "Segment{$T} from (", point(S, 0), ") to (", point(S, 1), ")")
 end
 # COV_EXCL_STOP
 

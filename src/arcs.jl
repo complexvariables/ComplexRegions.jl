@@ -99,15 +99,15 @@ end
 
 Invert the arc `A` through the origin. In general the inverse is an `Arc`, though the result is a `Segment` if the arc's circle passes through the origin.
 """
-function inv(A::Arc{T}) where T
+function Base.inv(A::Arc{T}) where T
     w = 1 ./ points(A, SVector(T(0), T(1) / 2, T(1)))
     Arc(w...)
 end
 
 # Other methods
-isfinite(::Arc) = true
-conj(A::Arc) = Arc(conj(A(0)), conj(A(0.5)), conj(A(1)))
-reverse(A::Arc{T}) where T = Arc(A(1), A(T(1)/2), A(0))
+Base.isfinite(::Arc) = true
+Base.conj(A::Arc) = Arc(conj(A(0)), conj(A(0.5)), conj(A(1)))
+Base.reverse(A::Arc{T}) where T = Arc(A(1), A(T(1)/2), A(0))
 
 """
 	isapprox(A1::Arc,A2::Arc; tol=<default>)
@@ -115,7 +115,7 @@ reverse(A::Arc{T}) where T = Arc(A(1), A(T(1)/2), A(0))
 
 Determine if `A1` and `A2` represent the same arc, irrespective of the type or values of its parameters. Identity is determined by agreement within `tol`, which is interpreted as the weaker of absolute and relative differences.
 """
-function isapprox(A1::Arc{S}, A2::Arc{T}; tol=tolerance(S, T)) where {S,T}
+function Base.isapprox(A1::Arc{S}, A2::Arc{T}; tol=tolerance(S, T)) where {S,T}
     if isapprox(A1.circle, A2.circle, tol=tol)
         z1 = points(A1, SVector(0, 1))
         z2 = points(A2, SVector(0, 1))
@@ -162,11 +162,11 @@ function closest(z::Number, A::Arc)
 end
 
 # COV_EXCL_START
-function show(io::IO, A::Arc{T}) where {T}
+function Base.show(io::IO, A::Arc{T}) where {T}
     print(IOContext(io, :compact => true), "Arc(", A(0.0), "...", A(1.0), ")")
 end
 
 function show(io::IO, ::MIME"text/plain", A::Arc{T}) where {T}
-    print(io, "Arc{$T} in the complex plane:\n   fraction ", A.delta, " of (", A.circle, ") starting at ", A.start)
+    print(io, "Arc{$T} fraction ", A.delta, " of ", A.circle, " starting at ", A.start)
 end
 # COV_EXCL_STOP

@@ -8,6 +8,23 @@ outerboundary(R::InteriorDoublyConnectedRegion) = R.outer
 Base.in(z::Number, R::InteriorDoublyConnectedRegion) = isinside(z, R.outer) && isoutside(z, R.inner)
 Base.isfinite(::InteriorDoublyConnectedRegion) = true
 
+# COV_EXCL_START
+function Base.show(io::IO, R::InteriorDoublyConnectedRegion)
+    outer = isa(R.outer, ClosedCurve) ? "closed curve" : "$(R.outer)"
+    inner = isa(R.inner, ClosedCurve) ? "closed curve" : "$(R.inner)"
+    if inner == outer == "closed curve"
+        print(IOContext(io, :compact => true), "Region between two closed curves")
+    else
+         print(IOContext(io, :compact => true), "Region between ", outer, " and ", inner)
+    end
+end
+
+function Base.show(io::IO, ::MIME"text/plain", R::InteriorDoublyConnectedRegion)
+    print(io, "Region between $(R.outer) and $(R.inner)")
+end
+
+# COV_EXCL_STOP
+
 # TODO: check that the inner boundaries do not nest or intersect
 struct ExteriorDoublyConnectedRegion{T,S<:Jordan{T},R<:Jordan{T}} <: AbstractDoublyConnectedRegion{T}
     inner::Tuple{S,R}
@@ -91,7 +108,6 @@ Base.isfinite(::Annulus) = true
 
 # COV_EXCL_START
 function Base.show(io::IO, ::MIME"text/plain", R::Annulus)
-    print(io, "Annulus in the complex plane:\n")
-    print(io, "   centered at ", R.outer.center, " with distances from ", R.inner.radius, " to ", R.outer.radius)
+    print(io, "Annulus centered at ", R.outer.center, " with radii ", R.outer.radius, ", ", R.inner.radius)
 end
 # COV_EXCL_STOP

@@ -78,22 +78,22 @@ Base.:*(R::Ray, z::Number) = Ray(z * R.base, mod2pi(R.angle + angle(z)), R.rever
 	inv(R)
 Invert the ray `R` through the origin. In general the inverse is an `Arc`.
 """
-function inv(R::Ray{T}) where T
+function Base.inv(R::Ray{T}) where T
     w = 1 ./ points(R, SVector(0, T(1) / 2, 1))
     Arc(w...)
 end
 
 # Other methods
-isfinite(::Ray) = false
-conj(R::Ray) = Ray(conj(R.base), -R.angle, R.reverse)
-reverse(R::Ray) = Ray(R.base, R.angle, !R.reverse)
+Base.isfinite(::Ray) = false
+Base.conj(R::Ray) = Ray(conj(R.base), -R.angle, R.reverse)
+Base.reverse(R::Ray) = Ray(R.base, R.angle, !R.reverse)
 
 """
 	isapprox(R1::Ray, R2::Ray; tol=<default>)
 	R1 ≈ R2
 Determine if `R1` and `R2` represent the same segment, irrespective of the type or values of its parameters. Identity is determined by agreement within `tol`, which is interpreted as the weaker of absolute and relative differences.
 """
-function isapprox(R1::Ray{S}, R2::Ray{T}; tol=tolerance(S, T)) where {S,T}
+function Base.isapprox(R1::Ray{S}, R2::Ray{T}; tol=tolerance(S, T)) where {S,T}
     return isapprox(R1.base, R2.base, rtol=tol, atol=tol) && (abs(mod2pi(R1.angle - R2.angle)) < tol)
 end
 
@@ -141,11 +141,11 @@ sign(R::Ray) = unittangent(R)
 
 # Display methods
 # COV_EXCL_START
-function show(io::IO, R::Ray{T}) where {T}
-    print(IOContext(io, :compact => true), "Ray(", R.base, ",", R.angle, ",", R.reverse, ")")
+function Base.show(io::IO, R::Ray{T}) where {T}
+    print(IOContext(io, :compact => true), "Ray(", R.base, ", ", R.angle, ", ", R.reverse, ")")
 end
 
-function show(io::IO, ::MIME"text/plain", R::Ray{T}) where {T}
+function Base.show(io::IO, ::MIME"text/plain", R::Ray{T}) where {T}
     if R.reverse
         print(io, "Ray from ∞ to ", R.base, " at angle ", R.angle)
     else

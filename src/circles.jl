@@ -90,15 +90,15 @@ Base.:*(C::Circle, z::Number) = Circle(C.center * z, C.radius * abs(z), C.ccw)
 	inv(C)
 Invert the circle `C` through the origin. In general the inverse is a `Circle`, though the result is a `Line` if `C` passes through the origin.
 """
-function inv(C::Circle{T}) where T
+function Base.inv(C::Circle{T}) where T
     w = 1 ./ points(C, SVector(T(0), T(1)/4, T(1)/2))
     Circle(w...)
 end
 
 # Other methods
-isfinite(::Circle) = true
-conj(C::Circle) = Circle(conj(C.center), C.radius, !C.ccw)
-reverse(C::Circle) = Circle(C.center, C.radius, !C.ccw)
+Base.isfinite(::Circle) = true
+Base.conj(C::Circle) = Circle(conj(C.center), C.radius, !C.ccw)
+Base.reverse(C::Circle) = Circle(C.center, C.radius, !C.ccw)
 
 """
 	isapprox(C1::Circle,C2::Circle; tol=<default>)
@@ -139,13 +139,13 @@ end
 unitcircle = Circle(0, 1)
 
 # COV_EXCL_START
-function show(io::IO, C::Circle)
+function Base.show(io::IO, C::Circle)
     orient = C.ccw ? "ccw" : "cw"
-    print(IOContext(io, :compact => true), "Circle(", C.center, ",", C.radius, ",", orient, ")")
+    print(IOContext(io, :compact => true), "Circle(", C.center, ", ", C.radius, ", ", orient, ")")
 end
 
-function show(io::IO, ::MIME"text/plain", C::Circle{T}) where {T}
+function Base.show(io::IO, ::MIME"text/plain", C::Circle{T}) where {T}
     orient = C.ccw ? "positively" : "negatively"
-    print(io, "Circle{$T} in the complex plane:\n   centered at (", C.center, ") with radius $(C.radius), $(orient) oriented")
+    print(io, "Circle{$T} centered at (", C.center, ") with radius $(C.radius), $(orient) oriented")
 end
 # COV_EXCL_STOP

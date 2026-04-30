@@ -72,15 +72,15 @@ Base.:-(R::InteriorSimplyConnectedRegion, z::Number) = InteriorSimplyConnectedRe
 Base.:-(R::InteriorSimplyConnectedRegion) = InteriorSimplyConnectedRegion(-boundary(R))
 
 # COV_EXCL_START
-function show(io::IO, R::InteriorSimplyConnectedRegion)
+function Base.show(io::IO, R::InteriorSimplyConnectedRegion)
     print(IOContext(io, :compact => true), "Region interior to ", R.boundary)
 end
 
-function show(io::IO, R::ExteriorSimplyConnectedRegion)
+function Base.show(io::IO, R::ExteriorSimplyConnectedRegion)
     print(IOContext(io, :compact => true), "Region exterior to ", R.boundary)
 end
 
-function show(io::IO, ::MIME"text/plain", R::SimplyConnectedRegion)
+function Base.show(io::IO, ::MIME"text/plain", R::SimplyConnectedRegion)
     show(io, R)
 end
 # COV_EXCL_STOP

@@ -2,11 +2,11 @@ abstract type AbstractCircularPolygon{T} <: AbstractClosedPath{T} end
 abstract type AbstractPolygon{T} <: AbstractCircularPolygon{T} end
 
 # COV_EXCL_START
-function show(io::IO, P::AbstractCircularPolygon)
+function Base.show(io::IO, P::AbstractCircularPolygon)
     print(IOContext(io, :compact => true), " Circular polygon with ", length(P), " sides")
 end
 
-function show(io::IO, ::MIME"text/plain", P::AbstractCircularPolygon)
+function Base.show(io::IO, ::MIME"text/plain", P::AbstractCircularPolygon)
     print(io, "Circular polygon with ", length(P), " sides")
 end
 # COV_EXCL_STOP
@@ -190,16 +190,16 @@ inv(p::Polygon) = CircularPolygon([inv(c) for c in curves(p)])
 
 # Display methods
 # COV_EXCL_START
-function show(io::IO, ::MIME"text/plain", P::Polygon)
+function Base.show(io::IO, ::MIME"text/plain", P::Polygon)
     print(io, "Polygon with ", length(P), " vertices:")
     for (v, a) in zip(vertices(P), angles(P))
         print(io, "\n   ")
-        show(io, MIME("text/plain"), v)
+        Base.show(io, MIME("text/plain"), v)
         print(io, ", interior angle ", a / pi, "π")
     end
 end
 
-function show(io::IO, P::Polygon)
+function Base.show(io::IO, P::Polygon)
     print(io, "Polygon with ", length(P), " vertices")
 end
 # COV_EXCL_STOP

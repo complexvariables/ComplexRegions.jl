@@ -142,12 +142,12 @@ end
 #
 
 # COV_EXCL_START
-function show(io::IO, f::Möbius)
+function Base.show(io::IO, f::Möbius)
     a, b, c, d = f.coeff
     print(IOContext(io, :compact => true), "Möbius map z --> (($a)*z + $b) / (($c)*z + $d)")
 end
 
-function show(io::IO, ::MIME"text/plain", f::Möbius)
+function Base.show(io::IO, ::MIME"text/plain", f::Möbius)
     a, b, c, d = [repr("text/plain", x) for x in f.coeff]
     numer = "(" * a * ") z + (" * b * ")"
     denom = "(" * c * ") z + (" * d * ")"

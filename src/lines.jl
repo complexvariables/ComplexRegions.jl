@@ -87,17 +87,17 @@ Base.:*(L::Line, z::Number) = Line(L.base * z, direction=L.direction * sign(z))
 	inv(L)
 Invert a line `L` through the origin. In general the inverse is a `Circle` through the inverse of any three points on the line.
 """
-function inv(L::Line{T}) where T
+function Base.inv(L::Line{T}) where T
     w = 1 ./ points(L, SVector(T(1) / 4, T(1) / 2, T(3) / 4))
     Circle(w...)
 end
 
 # Other methods
-isfinite(::Line) = false
+Base.isfinite(::Line) = false
 slope(L::Line) = imag(L.direction) / real(L.direction)
-angle(L::Line) = angle(L.direction)
-conj(L::Line) = Line(conj(L.base), direction=conj(L.direction))
-reverse(L::Line) = Line(L.base, direction=-L.direction)
+Base.angle(L::Line) = angle(L.direction)
+Base.conj(L::Line) = Line(conj(L.base), direction=conj(L.direction))
+Base.reverse(L::Line) = Line(L.base, direction=-L.direction)
 
 """
 	isapprox(L1::Line, L2::Line; tol=<default>)
@@ -105,7 +105,7 @@ reverse(L::Line) = Line(L.base, direction=-L.direction)
 
 Determine if `L1` and `L2` represent the same line, irrespective of the type or values of its parameters. Identity is determined by agreement within `tol`, which is interpreted as the weaker of absolute and relative differences.
 """
-function isapprox(L1::Line{T}, L2::Line{S}; tol=tolerance(S, T)) where {T,S}
+function Base.isapprox(L1::Line{T}, L2::Line{S}; tol=tolerance(S, T)) where {T,S}
     w1, w2 = L1.direction, L2.direction
     # check if parallel, then check a base point
     return (isapprox(w1, w2, rtol=tol, atol=tol) || isapprox(w1, -w2, rtol=tol, atol=tol)) &&
@@ -165,9 +165,9 @@ function Base.show(io::IO, L::Line)
 end
 
 function Base.show(io::IO, ::MIME"text/plain", L::Line{T}) where {T}
-    print(io, "Line{$T} in the complex plane:\n   through (", L.base, ") parallel to (", L.direction, ")")
+    print(io, "Line{$T} through (", L.base, ") parallel to (", L.direction, ")")
 end
 # COV_EXCL_STOP
 
 # Two points are enough to draw a line (though not on the sphere), and we want to avoid infinity.
-plotdata(L::Line) = point(L, [0.1, 0.9])
+plotdata(L::Line) = points(L, [0.2, 0.8])
