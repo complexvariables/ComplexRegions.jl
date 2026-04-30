@@ -37,9 +37,9 @@ const AbstractCurveOrPath{T} = Union{AbstractCurve{T},AbstractPath{T}}
 export AbstractJordan, AbstractClosedCurve, AbstractClosedPath
 
 export AbstractSimplyConnectedRegion, SimplyConnectedRegion, InteriorSimplyConnectedRegion, ExteriorSimplyConnectedRegion, AbstractRegion, InteriorConnectedRegion, ExteriorRegion, connected_region
-export AbstractDisk, disk, unitdisk
-export AbstractHalfplane, halfplane, upperhalfplane, lowerhalfplane, lefthalfplane, righthalfplane
-export Annulus, PolygonalRegion, AbstractQuad
+export Disk, disk, unitdisk
+export Halfplane, halfplane, upperhalfplane, lowerhalfplane, lefthalfplane, righthalfplane
+export Annulus, PolygonalRegion, Quad
 export RegionIntersection, RegionUnion
 export interior, exterior, between, boundary, innerboundary, outerboundary, modulus
 
@@ -56,5 +56,11 @@ export Shapes
 include("shapes.jl")
 
 include("docs.jl")
+
+
+# deprecations
+const AbstractDisk = Disk
+const AbstractHalfplane = Halfplane
+const AbstractQuad = Quad
 
 end # module

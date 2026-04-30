@@ -93,8 +93,8 @@ Find the image of the arc or segment `C` under the `Möbius` map `f`. The result
 (f::Möbius)(C::Union{Arc{T}, Segment{T}}) where T = Arc(f.(point(C, [T(0), T(1)/2, T(1)]))...)
 
 """
-	f(R::Union{AbstractDisk,AbstractHalfplane})
-If `R` is an `AbstractDisk` or an `AbstractHalfplane`, find its image under the `Möbius` map `f`. The result is also either an `AbstractDisk` or an `AbstractHalfplane`.
+	f(R::Union{Disk,Halfplane})
+If `R` is an `Disk` or an `Halfplane`, find its image under the `Möbius` map `f`. The result is also either an `Disk` or an `Halfplane`.
 # Examples
 ```julia-repl
 julia> f = Möbius(Line(-1,1),Circle(0,1))
@@ -113,9 +113,9 @@ true
 ```
 """
 function (f::Möbius)(R::Union{
-							AbstractDisk,
+							Disk,
 							ExteriorSimplyConnectedRegion{T,Circle{T}},
-							AbstractHalfplane}
+							Halfplane}
 					) where T
 	return interior(f(R.boundary))
 end

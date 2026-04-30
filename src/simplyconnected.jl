@@ -112,7 +112,7 @@ function isapprox(
 end
 
 # disks
-const AbstractDisk{T} = InteriorSimplyConnectedRegion{T,Circle{T}}
+const Disk{T} = InteriorSimplyConnectedRegion{T, Circle{T}}
 """
 	disk(C::Circle)
 Construct the disk interior to `C`.
@@ -126,16 +126,16 @@ disk(center::Number, radius::Real) = interior(Circle(center, radius))
 unitdisk = disk(complex(0.0), 1.0)
 
 # COV_EXCL_START
-function show(io::IO, ::MIME"text/plain", R::AbstractDisk)
+function show(io::IO, ::MIME"text/plain", R::Disk)
     C = R.boundary
     print(io, "Disk of radius ", C.radius, " centered at ", C.center)
 end
 
-show(io::IO, R::AbstractDisk) = print(io, "Disk")
+show(io::IO, R::Disk) = print(io, "Disk")
 # COV_EXCL_STOP
 
 # quads
-AbstractQuad{T} = InteriorSimplyConnectedRegion{T,Rectangle{T}}
+const Quad{T} = InteriorSimplyConnectedRegion{T, Rectangle{T}}
 """
 	quad(R::Rectangle)
 Construct the rectangle interior to `R`.
@@ -144,13 +144,13 @@ quad(R::Rectangle) = interior(R)
 unitquad = quad(Rectangle(0.0, [1, 1]))
 
 # COV_EXCL_START
-function show(io::IO, ::MIME"text/plain", R::AbstractQuad)
+function show(io::IO, ::MIME"text/plain", R::Quad)
     print(io, "Quad inside ", R.boundary)
 end
 # COV_EXCL_STOP
 
 # half-planes
-AbstractHalfplane{T} = SimplyConnectedRegion{T,Line{T}}
+const Halfplane{T} = SimplyConnectedRegion{T, Line{T}}
 """
 	halfplane(L::Line)
 Construct the half-plane to the left of `L`.
@@ -167,7 +167,7 @@ lefthalfplane = halfplane(Line(0.0, direction=1.0im))
 righthalfplane = halfplane(Line(0.0, direction=-1.0im))
 
 # COV_EXCL_START
-function show(io::IO, ::MIME"text/plain", R::AbstractHalfplane)
+function show(io::IO, ::MIME"text/plain", R::Halfplane)
     print(io, "Half-plane to the left of:\n   ", R.boundary)
 end
 # COV_EXCL_STOP
@@ -176,4 +176,4 @@ end
 	(type) PolygonalRegion
 Representation of a simply connected region bounded by a polygon.
 """
-PolygonalRegion{T} = SimplyConnectedRegion{T,Polygon{T}}
+const PolygonalRegion{T} = SimplyConnectedRegion{T, Polygon{T}}
