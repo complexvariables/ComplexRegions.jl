@@ -2,39 +2,8 @@
 # abstract interfaces
 #
 
-abstract type AbstractCurve{T} <: Function end
+abstract type AbstractCurve{T} <: AbstractParameterizedMap{T} end
 
-# COV_EXCL_START
-# Required methods
-"""
-	point(C::AbstractCurve,t::Real)
-Find the point on curve `C` at parameter value `t`, which should lie in the interval [0,1].
-"""
-point(c::AbstractCurve, t::Real) = throw(MethodError(point, (c, t)))
-
-"""
-	tangent(C::AbstractCurve,t::Real)
-Find the complex number representing the tangent to curve `C` at parameter value `t` in [0,1].
-"""
-tangent(C::AbstractCurve, t::Real) = throw(MethodError(tangent, (C, t)))
-
-Base.reverse(C::AbstractCurve) = throw(MethodError(Base.reverse, (C,)))
-
-"""
-	isfinite(C::AbstractCurve)
-Return `true` if the curve is bounded in the complex plane (i.e., does not pass through infinity).
-"""
-Base.isfinite(C::AbstractCurve) = throw(MethodError(Base.isfinite, (C,)))
-Base.isreal(::AbstractCurve) = false  # unless detected otherwise
-
-Base.conj(C::AbstractCurve) = throw(MethodError(Base.conj, (C,)))
-Base.:+(C::AbstractCurve, z::Number) = throw(MethodError(Base.:+, (C, z)))
-Base.:-(C::AbstractCurve) = throw(MethodError(Base.:-, (C,)))
-Base.:*(C::AbstractCurve, z::Number) = throw(MethodError(Base.:*, (C, z)))
-Base.inv(C::AbstractCurve) = throw(MethodError(Base.inv, (C,)))
-# COV_EXCL_STOP
-
-# Default implementations
 Base.length(::AbstractCurve) = 1  # length of parameter interval
 
 """
@@ -42,36 +11,6 @@ Base.length(::AbstractCurve) = 1  # length of parameter interval
 Return the type of the real part of the curve's point function.
 """
 real_type(::AbstractCurve{T}) where T = T
-
-"""
-	point(C::AbstractCurve, t::AbstractArray)
-
-Vectorize the `point` function for curve `C`.
-"""
-point(c::AbstractCurve, t::AbstractArray{T}) where {T<:Real} = [point(c, t) for t in t]
-
-# callable by name
-(c::AbstractCurve)(t::Real) = point(c, t)
-
-"""
-	unittangent(C::AbstractCurve, t::Real)
-Find the complex number representing the unit tangent to curve `C` at parameter value `t` in [0,1]. For Lines, Segments, and Rays, the `t` argument is optional.
-"""
-unittangent(C::AbstractCurve, t::Real) = sign(tangent(C, t))
-
-"""
-	normal(C::AbstractCurve,t::Real)
-Find the unit complex number in the direction of the leftward-pointing normal to curve `C` at parameter value `t` in [0,1].
-"""
-normal(c::AbstractCurve, t::Real) = 1im * unittangent(c, t)
-
-# Concrete types must define C + z, C * z, and inv(C) only.
-Base.:+(z::Number, C::AbstractCurve) = C + z
-Base.:-(C::AbstractCurve, z::Number) = C + (-z)
-Base.:-(z::Number, C::AbstractCurve) = z + (-C)
-Base.:*(z::Number, C::AbstractCurve) = C * z
-Base.:/(C::AbstractCurve{T}, z::Number) where {T} = C * (T(1) / z)
-Base.:/(z::Number, C::AbstractCurve) = z * inv(C)
 
 function arclength(C::AbstractCurve{T}, part=[0, 1]) where T
     f = t -> abs(tangent(C, T(t)))

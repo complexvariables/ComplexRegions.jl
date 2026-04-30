@@ -260,7 +260,7 @@ Compute a vector of interior angles at the vertices of the polygon `P`. At a fin
 function angles(p::Polygon{T}) where T
     # computes a turn angle in (-pi,pi]  (neg = left turn)
     turn(s1, s2) = π - mod(angle(s2 / s1) + π, 2T(π))
-    s = unittangent.(p)
+    s = unittangent.(sides(p))
     n = length(p)
     v = vertices(p)
     θ = similar(real(s))
@@ -329,7 +329,6 @@ Polygon(r::Rectangle) = r.polygon
 arclength(r::Rectangle) = arclength(Polygon(r))
 curves(r::Rectangle) = curves(Polygon(r))
 point(r::Rectangle, t::Real) = point(Polygon(r), t)
-(r::Rectangle)(t) = point(Polygon(r), t)
 inv(r::Rectangle) = inv(Polygon(r))
 
 # these provide shortcuts

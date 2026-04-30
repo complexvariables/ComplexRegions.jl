@@ -88,7 +88,7 @@ Base.:*(L::Line, z::Number) = Line(L.base * z, direction=L.direction * sign(z))
 Invert a line `L` through the origin. In general the inverse is a `Circle` through the inverse of any three points on the line.
 """
 function inv(L::Line{T}) where T
-    w = 1 ./ point(L, SVector(T(1) / 4, T(1) / 2, T(3) / 4))
+    w = 1 ./ points(L, SVector(T(1) / 4, T(1) / 2, T(3) / 4))
     Circle(w...)
 end
 

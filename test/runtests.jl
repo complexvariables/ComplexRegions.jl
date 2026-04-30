@@ -41,7 +41,7 @@ end
     @test check(point(5 - 3im * ellipse, 1//8), 5 - 3im * f(T(1) / 4))
     @test check(point(conj(ellipse), 1//2), conj(f(1)))
     @test check(point(inv(ellipse), 1//2), 1 / f(1))
-    @test check(angle(normal(ellipse, 3//4)), T(π) / 2)
+    @test check(angle(unitnormal(ellipse, 3//4)), T(π) / 2)
     @test isapprox(arclength(ellipse), 9.6884482205476761984285031963918294, rtol=1e-10)
     @test winding(ellipse, 1 + 0.1im) == 1
     @test winding(ellipse)(1 - 2im) == 0
@@ -106,7 +106,7 @@ end
     @test check(angle(tangent(b, T(2) / 3)) , -T(π) / 2)
 
     b = Arc(Circle{T}(2im, 2), 1//3, 3//5)
-    z = point(b, [0, 1])
+    z = points(b, [0, 1])
     @test inv(b) ≈ Segment(1 ./ z...)
     @test check(arclength(b), T(π) * 12 / 5)
     @test conj(b) ≈ Arc(Circle{T}(-2im, 2), -1//3, -3//5)
@@ -264,7 +264,7 @@ end
     S = Segment{T}(1, 1im)
     A = Arc(1im, -T(1) + 0.5im, -1)
     P = Path([S, A, -S])
-    @test check(point(P, [0, 1, 1.5, 2.5, 3]), [S(0), S(1), A(0.5), -S(0.5), -S(1)])
+    @test check(points(P, [0, 1, 1.5, 2.5, 3]), [S(0), S(1), A(0.5), -S(0.5), -S(1)])
     Q = 1 - 3im * P
     @test check(Q(1.5), 1 - 3im * A(0.5))
 
@@ -300,7 +300,7 @@ end
     @test check(vertex(P, 3), -1)
     @test check(arclength(P), 4 * sqrt(T(2)))
     @test isa(reverse(P), ClosedPath)
-    @test all(point(P, [0, 1, 5//4, 2.5, 3, 4]) .≈ [S(0), S(1), 1im * S(1//4), -S(0.5), -S(1), S(0)])
+    @test all(points(P, [0, 1, 5//4, 2.5, 3, 4]) .≈ [S(0), S(1), 1im * S(1//4), -S(0.5), -S(1), S(0)])
     @test winding(P, -1//3 - T(1//2) * 1im) == 1
     @test isinside(-1//3 - T(1//2) * 1im, P)
     @test winding(P, -1//3 + T(3//2) * 1im) == 0
@@ -320,7 +320,7 @@ end
     p = Polygon([s, 1im * s, -s, -1im * s])
     @test ispositive(p)
     @test check(arclength(p), 8 * sqrt(T(2)))
-    @test check(-4*angle(normal(p, 1.1 + length(p))), π)
+    @test check(-4*angle(unitnormal(p, 1.1 + length(p))), π)
     z = (-T(4) + 5im) / 10
     @test winding(p, z) == 1
     @test winding(reverse(p), z) == -1
@@ -402,7 +402,7 @@ end
     @test eltype(t) == T
     @test real_type(first(z)) == T
     @test length(t) == 200
-    @test all(abs.(z .- p(t)) .< CR.tolerance(T))
+    @test all(abs.(z .- p.(t)) .< CR.tolerance(T))
     dz = abs.(diff(z))
     @test mean(dz) ≈   0.1100035321168 rtol=max(1e-12,CR.tolerance(T))
     @test median(dz) ≈ 0.1092971087529 rtol=max(1e-12,CR.tolerance(T))

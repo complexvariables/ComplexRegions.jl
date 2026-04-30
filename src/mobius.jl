@@ -58,7 +58,7 @@ Construct a `Möbius` map that transforms the curve `C1` to `C2`. Both curves mu
 """
 function Möbius(c1::LineOrCircle{T}, c2::LineOrCircle{T}) where T
 	t = SVector(T(1), T(1)/4, T(1)/2)
-	return Möbius(point(c1, t), point(c2, t))
+	return Möbius(points(c1, t), points(c2, t))
 end
 
 #
@@ -84,13 +84,13 @@ end
 	f(C::Union{Circle,Line})
 Find the image of the circle or line `C` under the `Möbius` map `f`. The result is also either a `Circle` or a `Line`.
 """
-(f::Möbius)(C::LineOrCircle{T}) where T = Circle(f.(point(C, [T(0), T(1)/4, T(1)/2]))...)
+(f::Möbius)(C::LineOrCircle{T}) where T = Circle(f.(points(C, [T(0), T(1)/4, T(1)/2]))...)
 
 """
 	f(C::Union{Arc,Segment})
 Find the image of the arc or segment `C` under the `Möbius` map `f`. The result is also either an `Arc` or a `Segment`.
 """
-(f::Möbius)(C::Union{Arc{T}, Segment{T}}) where T = Arc(f.(point(C, [T(0), T(1)/2, T(1)]))...)
+(f::Möbius)(C::Union{Arc{T}, Segment{T}}) where T = Arc(f.(points(C, [T(0), T(1)/2, T(1)]))...)
 
 """
 	f(R::Union{Disk,Halfplane})

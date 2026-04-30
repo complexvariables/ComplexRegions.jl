@@ -100,7 +100,7 @@ end
 Invert the arc `A` through the origin. In general the inverse is an `Arc`, though the result is a `Segment` if the arc's circle passes through the origin.
 """
 function inv(A::Arc{T}) where T
-    w = 1 ./ point(A, SVector(T(0), T(1) / 2, T(1)))
+    w = 1 ./ points(A, SVector(T(0), T(1) / 2, T(1)))
     Arc(w...)
 end
 
@@ -117,8 +117,8 @@ Determine if `A1` and `A2` represent the same arc, irrespective of the type or v
 """
 function isapprox(A1::Arc{S}, A2::Arc{T}; tol=tolerance(S, T)) where {S,T}
     if isapprox(A1.circle, A2.circle, tol=tol)
-        z1 = point(A1, SVector(0, 1))
-        z2 = point(A2, SVector(0, 1))
+        z1 = points(A1, SVector(0, 1))
+        z2 = points(A2, SVector(0, 1))
         appx(u, v) = isapprox(u, v, atol=tol, rtol=tol)
         return appx(z1, z2) || appx(z1, reverse(z2))
     else

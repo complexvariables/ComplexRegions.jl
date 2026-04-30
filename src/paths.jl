@@ -1,5 +1,5 @@
-abstract type AbstractPath{T} end
-const PathLike{T} = Union{AbstractPath{T},AbstractVector{<:AbstractCurve{T}}}
+abstract type AbstractPath{T} <: AbstractParameterizedMap{T} end
+const PathLike{T} = Union{AbstractPath{T}, AbstractVector{<:AbstractCurve{T}}}
 
 #COV_EXCL_START
 # Required methods
@@ -45,7 +45,7 @@ end
 	isfinite(P::AbstractPath)
 Return `true` if the path is bounded in the complex plane (i.e., does not pass through infinity).
 """
-isfinite(p::AbstractPath) = all(isfinite(s) for s in curves(p))
+Base.isfinite(p::AbstractPath) = all(isfinite(s) for s in curves(p))
 
 """
 	isreal(P::AbstractPath)
@@ -60,21 +60,10 @@ Return the type of the real part of the curve's point function.
 real_type(::AbstractPath{T}) where T = T
 
 # iteration interface
-eltype(::Type{AbstractPath{T}}) where T = AbstractCurve{T}
-length(p::AbstractPath) = length(curves(p))
-getindex(p::AbstractPath, k) = curve(p, k)
-iterate(p::AbstractPath, state=1) = state > length(curves(p)) ? nothing : (p[state], state + 1)
-
-"""
-	point(P::AbstractPath, t::Real)
-	P(t)
-Compute the point along path `P` at parameter value `t`. Values of `t` in [k,k+1] correspond to values in [0,1] along curve k of the path, for k = 1,2,...,length(P)-1.
-
-	point(P::AbstractPath, t::AbstractVector)
-Vectorize the `point` method for path `P`.
-"""
-point(p::AbstractPath, t::AbstractArray{<:Real}) = [point(p, t) for t in t]
-(p::AbstractPath)(t) = point(p, t)
+Base.eltype(::Type{AbstractPath{T}}) where T = AbstractCurve{T}
+Base.length(p::AbstractPath) = length(curves(p))
+Base.getindex(p::AbstractPath, k) = curve(p, k)
+Base.iterate(p::AbstractPath, state=1) = state > length(curves(p)) ? nothing : (p[state], state + 1)
 
 # This determines how to parse a parameter of a path. Overloaded later for the case of a closed path.
 function sideargs(p::AbstractPath, t)
@@ -113,12 +102,12 @@ function unittangent(p::AbstractPath{T}, t::Real) where T
 end
 
 """
-	normal(P::AbstractPath,t::Real)
-Compute a complex-valued normal to path `P` at parameter value `t`. Values of `t` in [k,k+1] correspond to values in [0,1] along curve k of the path, for k = 1,2,...,length(P)-1. The result is not well-defined at an integer value of `t`.
+	unitnormal(P::AbstractPath,t::Real)
+Compute a complex-valued unit normal to path `P` at parameter value `t`. Values of `t` in [k,k+1] correspond to values in [0,1] along curve k of the path, for k = 1,2,...,length(P)-1. The result is not well-defined at an integer value of `t`.
 """
-function normal(p::AbstractPath{T}, t::Real) where T
+function unitnormal(p::AbstractPath{T}, t::Real) where T
     k, s = sideargs(p, T(t))
-    normal(curve(p, k), s)
+    unitnormal(curve(p, k), s)
 end
 
 """
@@ -139,9 +128,9 @@ function angles(P::AbstractPath{T}) where T
     return θ
 end
 
-conj(p::AbstractPath) = typeof(p)(conj.(curves(p)))
+Base.conj(p::AbstractPath) = typeof(p)(conj.(curves(p)))
 
-reverse(p::AbstractPath) = typeof(p)(reverse(reverse.(curves(p))))
+Base.reverse(p::AbstractPath) = typeof(p)(reverse(reverse.(curves(p))))
 isclosed(p::AbstractPath) = isa(p, AbstractClosedPath)
 
 function Base.:+(p::AbstractPath{T}, z::Number) where T
@@ -165,7 +154,7 @@ inv(p::AbstractPath) = typeof(p)([inv(c) for c in curves(p)])
 	P1 ≈ P2       (type "\\approx" followed by tab key)
 Determine whether `P1` and `P2` represent the same path, up to tolerance `tol`, irrespective of the parameterization of its curves.
 """
-function isapprox(P1::AbstractPath, P2::AbstractPath)
+function Base.isapprox(P1::AbstractPath, P2::AbstractPath)
     if length(P1) != length(P2)
         return false
     else
@@ -173,8 +162,8 @@ function isapprox(P1::AbstractPath, P2::AbstractPath)
         all(isapprox(c1[k], c2[k]) for k in eachindex(c1))
     end
 end
-isapprox(::AbstractCurve, ::AbstractPath; kw...) = false
-isapprox(::AbstractPath, ::AbstractCurve; kw...) = false
+Base.isapprox(::AbstractCurve, ::AbstractPath; kw...) = false
+Base.isapprox(::AbstractPath, ::AbstractCurve; kw...) = false
 
 """
 	dist(z,P::AbstractPath)

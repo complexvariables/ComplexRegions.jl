@@ -25,7 +25,10 @@ export !, ∘, sign, inv, angle, real, imag, conj, show, iterate, eltype, length
 
 include("utilities.jl")
 
-export point, arclength, slope, dist, closest, isleft, isright, reflect, tangent, unittangent, normal, arg, isinside, isoutside, isclosed, plotdata, unitcircle
+export point, tangent, arclength, points, unittangent, normal, unitnormal
+include("parameterized.jl")
+
+export slope, dist, closest, isleft, isright, reflect, arg, isinside, isoutside, isclosed, plotdata, unitcircle
 export Curve, ClosedCurve, Circle, Line, Arc, Segment, Ray
 include("curves.jl")
 

@@ -79,7 +79,7 @@ Base.:*(R::Ray, z::Number) = Ray(z * R.base, mod2pi(R.angle + angle(z)), R.rever
 Invert the ray `R` through the origin. In general the inverse is an `Arc`.
 """
 function inv(R::Ray{T}) where T
-    w = 1 ./ point(R, SVector(0, T(1) / 2, 1))
+    w = 1 ./ points(R, SVector(0, T(1) / 2, 1))
     Arc(w...)
 end
 
@@ -104,7 +104,7 @@ Determine whether the number `z` lies "to the left" of ray `R`. This means that 
 Note that `isleft` and `isright` are *not* logical opposites; a point on the (extended) ray should give `false` in both cases.
 """
 function isleft(z::Number, R::Ray{T}) where T
-    a, b = point(R, SVector(T(1), T(4)) / 5)  # accounts for reversal
+    a, b = points(R, SVector(T(1), T(4)) / 5)  # accounts for reversal
     return (real(b) - real(a)) * (imag(z) - imag(a)) > (real(z) - real(a)) * (imag(b) - imag(a))
 end
 
@@ -115,7 +115,7 @@ Determine whether the number `z` lies "to the right" of ray `R`. This means that
 Note that `isleft` and `isright` are *not* logical opposites; a point on the (extended) ray should give `false` in both cases.
 """
 function isright(z::Number, R::Ray)
-    a, b = point(R, [0.2, 0.8])  # accounts for reversal
+    a, b = points(R, [0.2, 0.8])  # accounts for reversal
     (real(b) - real(a)) * (imag(z) - imag(a)) < (real(z) - real(a)) * (imag(b) - imag(a))
 end
 

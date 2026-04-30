@@ -91,7 +91,7 @@ Base.:*(C::Circle, z::Number) = Circle(C.center * z, C.radius * abs(z), C.ccw)
 Invert the circle `C` through the origin. In general the inverse is a `Circle`, though the result is a `Line` if `C` passes through the origin.
 """
 function inv(C::Circle{T}) where T
-    w = 1 ./ point(C, SVector(T(0), T(1)/4, T(1)/2))
+    w = 1 ./ points(C, SVector(T(0), T(1)/4, T(1)/2))
     Circle(w...)
 end
 
