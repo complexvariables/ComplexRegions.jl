@@ -31,14 +31,14 @@ boundary(R::AbstractRegion) = throw(MethodError(boundary, (R,)))
     z ∈ R   (type "\\in" followed by tab)
 True if `z` is in the region `R`.
 """
-in(z::Number, R::AbstractRegion; tol=nothing) = throw(MethodError(in, (z, R)))
-in(R::AbstractRegion; kw...) = z -> in(z, R; kw...)
+Base.in(z::Number, R::AbstractRegion; tol=nothing) = throw(MethodError(in, (z, R)))
+Base.in(R::AbstractRegion; kw...) = z -> in(z, R; kw...)
 
 """
     isfinite(R::AbstractRegion)
 Return `true` if the region is bounded in the complex plane.
 """
-isfinite(R::AbstractRegion) = throw(MethodError(isfinite, (R,)))
+Base.isfinite(R::AbstractRegion) = throw(MethodError(isfinite, (R,)))
 # COV_EXCL_STOP
 
 # Default implementations
@@ -51,7 +51,8 @@ struct RegionIntersection{T} <: AbstractRegion{T}
     one::AbstractRegion{T}
     two::AbstractRegion{T}
 end
-in(z::Number, R::RegionIntersection) = in(z, R.one) && in(z, R.two)
+
+Base.in(z::Number, R::RegionIntersection) = in(z, R.one) && in(z, R.two)
 
 """
     (type) RegionUnion
@@ -61,7 +62,8 @@ struct RegionUnion{T} <: AbstractRegion{T}
     one::AbstractRegion{T}
     two::AbstractRegion{T}
 end
-in(z::Number, R::RegionUnion) = in(z, R.one) || in(z, R.two)
+
+Base.in(z::Number, R::RegionUnion) = in(z, R.one) || in(z, R.two)
 
 """
     intersect(R1::AbstractRegion,R2::AbstractRegion)
@@ -94,6 +96,8 @@ innerboundary(R::AbstractConnectedRegion) = throw(MethodError(innerboundary, (R,
 outerboundary(R::AbstractConnectedRegion) = throw(MethodError(outerboundary, (R,)))
 boundary(R::AbstractConnectedRegion) = outerboundary(R), innerboundary(R)
 
+# Default implementations
+
 """
     connectivity(R::AbstractConnectedRegion)
 Return the connectivity of `R` (the number of connected boundary components).
@@ -104,8 +108,6 @@ function connectivity(R::AbstractConnectedRegion)
     n = length(innerboundary(R))
     isnothing(outerboundary(R)) ? n : n + 1
 end
-
-# Default implementations
 
 Base.:+(R::AbstractConnectedRegion, z::Number) = typeof(R)(outerboundary(R) + z, innerboundary(R) .+ z)
 Base.:+(z::Number, R::AbstractConnectedRegion) = +(R, z)
