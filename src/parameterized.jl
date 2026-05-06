@@ -3,7 +3,7 @@ abstract type AbstractParameterizedMap{T} <: Function end
 # COV_EXCL_START
 # This is an explicit statement of what is default behavior for a Function. It makes, e.g.,
 # point.(c, t) work for parameter arrays, but it disables broadcasting over the
-# sides of a Path object. Callers should broadcast over sides(p) explicitly.
+# sides of a Path object. Callers should broadcast over curves(p) explicitly.
 Base.broadcastable(x::AbstractParameterizedMap) = Ref(x)
 
 """
