@@ -114,9 +114,9 @@ true
 """
 function (f::Möbius)(R::Union{
 							Disk,
-							ExteriorSimplyConnectedRegion{T,Circle{T}},
+							ExteriorSimplyConnectedRegion,
 							Halfplane}
-					) where T
+					)
 	return interior(f(R.boundary))
 end
 
