@@ -73,6 +73,7 @@ include("docs.jl")
 
 
 # deprecations
+export AbstractDisk, AbstractHalfplane, AbstractQuad
 const AbstractDisk = Disk
 const AbstractHalfplane = Halfplane
 const AbstractQuad = Quad
