@@ -128,6 +128,38 @@ Compute points along the curve `C` suitable to make a nice plot of it.
 """
 plotdata(C::AbstractCurve) = adaptpoints(t -> point(C,t), t -> unittangent(C,t), 0, 1)
 
+"""
+	dist(ζ::Number, C::AbstractCurve)
+
+Compute the distance from a point `ζ` to the curve `C` by simple optimization.
+"""
+dist(ζ::Number, C::AbstractCurve) = finddist(ζ, C)[1]
+
+# brute-force distance to a point (not bulletproof)
+function finddist(ζ::Number, C::AbstractCurve{T}) where T
+	# get initial guess
+	t, z = discretize(C, 200)
+	m, i = findmin(abs2, z .- ζ)
+	t₀, d₀ = t[i], sqrt(m)
+	# cos of the angle with the curve
+	dotprod(t) = real(conj(tangent(C, t)) * (point(C, t) - ζ))
+	# if the dot product changes sign between t[i] and a neighbor, find the root
+	dpi = dotprod(t₀)
+	j = mod(i-1, 1:200)
+	if dotprod(t[j]) * dpi > 0
+		j = mod(i+1, 1:200)
+	end
+	if dotprod(t[j]) * dpi < 0
+		s = brent(dotprod, t[i], t[j], 100*eps(T))
+		d = abs(point(C, s) - ζ)
+		if d < d₀
+			t₀ = s
+			d₀ = d
+		end
+	end
+	return d₀, t₀
+end
+
 #####################
 # generic ClosedCurve
 #####################

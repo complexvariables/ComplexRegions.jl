@@ -82,6 +82,54 @@ function intadapt(f,a,b,tol)
     return Q
 end
 
+function brent(f, a, b, tol=1e-12)
+    fa, fb = f(a), f(b)
+    fa * fb > 0 && error("f(a) and f(b) must have opposite signs")
+    if abs(fa) < abs(fb)
+        a, b = b, a
+        fa, fb = fb, fa
+    end
+    c, fc = a, fa
+    mflag = true
+    s = b
+    d = b
+    for _ in 1:50
+        if abs(b - a) < tol
+            return b
+        end
+        if fa != fc && fb != fc
+            # inverse quadratic interpolation
+            s = a*fb*fc/((fa-fb)*(fa-fc)) + b*fa*fc/((fb-fa)*(fb-fc)) + c*fa*fb/((fc-fa)*(fc-fb))
+        else
+            s = b - fb*(b-a)/(fb-fa)   # secant
+        end
+        cond1 = !((3a+b)/4 < s < b || b < s < (3a+b)/4)
+        cond2 = mflag && abs(s-b) >= abs(b-c)/2
+        cond3 = !mflag && abs(s-b) >= abs(c-d)/2
+        cond4 = mflag && abs(b-c) < tol
+        cond5 = !mflag && abs(c-d) < tol
+        if cond1 || cond2 || cond3 || cond4 || cond5
+            s = (a + b) / 2   # bisection fallback
+            mflag = true
+        else
+            mflag = false
+        end
+        fs = f(s)
+        d, c, fc = c, b, fb
+        if fa * fs < 0
+            b, fb = s, fs
+        else
+            a, fa = s, fs
+        end
+        if abs(fa) < abs(fb)
+            a, b = b, a
+            fa, fb = fb, fa
+        end
+    end
+    @warn "brent did not converge"
+    return b
+end
+
 function enclosing_circle(z::AbstractVector{<:Number}, expansion=2)
     xa, xb = extrema(real(z))
     ya, yb = extrema(imag(z))

@@ -16,6 +16,13 @@ using Test
     @test CR.fdtangent(z, 0) ≈ 1im
     @test CR.fdtangent(z, 1) ≈ 1im * exp(1im)
     @test CR.fdtangent(z, 0.2) ≈ 1im * cis(0.2)
+    e = 1 / Shapes.ellipse(3, 1)
+    @test dist(0.3 + 0.5im, e) ≈ 0.228639049020744
+    @test dist(-0.4 - 1im, e) ≈ 0.13410210966056
+    c = Curve(t -> 2cospi(t) + 1im*sinpi(t), 0, 0.5)
+    @test dist(1 + 1im, c) ≈ 0.1289426785967065
+    @test dist(-1 + 1im, c) ≈ 1
+    @test dist(-1im, c) ≈ 2
 end
 
 @testset "Curves using $T" for T in (Float64, BigFloat)
