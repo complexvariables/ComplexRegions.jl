@@ -247,7 +247,9 @@ function winding(P::AbstractClosedPath, z::Number)
 end
 
 isinside(z::Number, P::AbstractClosedPath) = winding(P, z) != 0
+isinside(P::AbstractClosedPath) = z -> isinside(z, P)
 isoutside(z::Number, P::AbstractClosedPath) = winding(P, z) == 0
+isoutside(P::AbstractClosedPath) = z -> isoutside(z, P)
 
 #
 # Concrete implementations
