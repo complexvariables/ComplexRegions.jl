@@ -96,7 +96,7 @@ s = Segment(-3+1im,3+1im);
 p = ClosedPath([s,right...,-s,-right...]);
 r = interior(exp(1im*pi/4)*p)
 
-using  Plots
+using Plots
 default(linewidth=2, legend=:none)
 plot(r)
 ```

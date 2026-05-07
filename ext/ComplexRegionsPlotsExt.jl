@@ -8,8 +8,10 @@ const AbstractCurveOrPath = Union{AbstractCurve, AbstractPath}
 const Jordan = ComplexRegions.Jordan
 const AbstractCircularPolygon = ComplexRegions.AbstractCircularPolygon
 const AbstractRegion = ComplexRegions.AbstractRegion
+const AbstractConnectedRegion = ComplexRegions.AbstractConnectedRegion
 const ExteriorRegion = ComplexRegions.ExteriorRegion
 const InteriorRegion = ComplexRegions.InteriorRegion
+const SimplyConnectedRegion = ComplexRegions.SimplyConnectedRegion
 const ExteriorSimplyConnectedRegion = ComplexRegions.ExteriorSimplyConnectedRegion
 const InteriorSimplyConnectedRegion = ComplexRegions.InteriorSimplyConnectedRegion
 
@@ -26,7 +28,7 @@ Plots.@recipe function f(P::AbstractPath, vertices=false)
     aspect_ratio --> 1.0
 
     @series begin
-        vcat( [plotdata(c) for c in P]... )
+        plotdata(P)
     end
 
     if vertices
@@ -67,8 +69,6 @@ Plots.@recipe function f(::Type{T}, R::T) where T<:SimplyConnectedRegion
         # need to fake with a polygon
         θ = angle(C)
         Polygon([C(0.5), (θ, θ+π)])
-#    elseif C isa AbstractCurve
- #       ClosedPath(C)
     else
         C
     end
@@ -76,12 +76,17 @@ end
 
 Plots.@recipe function f(R::ExteriorSimplyConnectedRegion)
     P = innerboundary(R)
-    C = ComplexRegions.enclosing_circle(ClosedPath(P),8)
+    C = ComplexRegions.enclosing_circle(ClosedPath(P), 8)
     zc = C.center
-    r = 0.2*C.radius
+    r = 0.2 * C.radius
     xlims --> [real(zc) - r, real(zc) + r]
     ylims --> [imag(zc) - r, imag(zc) + r]
-    between(C,P)
+    between(C, P)
+end
+
+Plots.@recipe function f(R::InteriorSimplyConnectedRegion)
+    seriestype := :shape
+    plotdata(outerboundary(R))
 end
 
 # indices of the closest pair of points from two lists
@@ -91,7 +96,7 @@ function argclosest(z1, z2)
     return i1[i2], i2
 end
 
-Plots.@recipe function f(R::Union{InteriorRegion,ExteriorRegion})
+Plots.@recipe function f(R::AbstractConnectedRegion)
     p0 = outerboundary(R)
     p1 = innerboundary(R)
     z1 = [plotdata(p) for p in p1]
@@ -105,7 +110,7 @@ Plots.@recipe function f(R::Union{InteriorRegion,ExteriorRegion})
     z0 = plotdata(p0)
     # This is not fast, but I don't see a shortcut...
     # find pairwise distances between components
-    comp = [z1...,z0]
+    comp = [z1..., z0]
     n = length(comp)
     index = Array{Tuple}(undef,n,n)
     dist = fill(Inf,n,n)
