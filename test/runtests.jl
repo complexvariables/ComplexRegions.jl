@@ -31,6 +31,7 @@ end
     arc = Curve(f, -1, 0)
     @test arc isa Curve
     @test check(point(arc, 1//2), f(-1//2))
+    @test check(arc(1//2), f(-1//2))
     @test check(point(conj(arc), 1//2), conj(f(-1//2)))
     @test check(point(inv(arc), 1//2), 1 / f(-1//2))
     arc = Curve(f)
@@ -45,6 +46,9 @@ end
     ellipse = ClosedCurve{T}(f, 0, 2)
     @test isfinite(ellipse)
     @test isfinite(reverse(ellipse))
+    @test point(ellipse, 1//3) ≈ ellipse(1//3)
+    @test points(ellipse, [1//3, 2//3]) ≈ [ellipse(1//3), ellipse(2//3)]
+    @test plotdata(ellipse) isa Vector
     @test check(point(5 - 3im * ellipse, 1//8), 5 - 3im * f(T(1) / 4))
     @test check(point(conj(ellipse), 1//2), conj(f(1)))
     @test check(point(inv(ellipse), 1//2), 1 / f(1))
@@ -292,6 +296,8 @@ end
     @test length(vertices(P - 3im)) == 4
     rP = reverse(P)
     @test all(check(point(rP, t), point(P, 3 - t)) for t in range(T(0), T(3), 17))
+    @test point(P, 1//3) ≈ P(1//3)
+    @test points(P, [1//3, 2//3]) ≈ [P(1//3), P(2//3)]
     @test !isreal(P)
     @test isa(reverse(P), Path)
     τ = unittangent(P, T(3)/2)
@@ -320,6 +326,7 @@ end
 
     P = ClosedPath([S, 1im * S, Arc(-T(1),-2 - 1im, 1)])
     @test check(2 * angles(P)[2], π)
+    @test plotdata(P) isa Vector
 end
 
 @testset "Polygons in $T" for T in (Float64, BigFloat)

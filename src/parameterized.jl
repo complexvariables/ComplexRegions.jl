@@ -59,6 +59,7 @@ Base.:/(z::Number, C::AbstractParameterizedMap) = z * inv(C)
 
 # make callable by name
 (C::AbstractParameterizedMap)(t::Real) = point(C, t)
+(C::AbstractParameterizedMap)(t::AbstractArray{<:Real}) = points(C, t)
 
 """
 	points(C::AbstractParameterizedMap, t::AbstractArray)
