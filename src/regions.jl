@@ -92,9 +92,11 @@ abstract type AbstractSimplyConnectedRegion{T} <: AbstractConnectedRegion{T} end
 abstract type AbstractDoublyConnectedRegion{T} <: AbstractConnectedRegion{T} end
 
 # Required methods
+# COV_EXCL_START
 innerboundary(R::AbstractConnectedRegion) = throw(MethodError(innerboundary, (R,)))
 outerboundary(R::AbstractConnectedRegion) = throw(MethodError(outerboundary, (R,)))
 boundary(R::AbstractConnectedRegion) = outerboundary(R), innerboundary(R)
+# COV_EXCL_STOP
 
 # Default implementations
 

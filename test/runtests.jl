@@ -500,6 +500,7 @@ end
         @test op(s, -2 + 1im) ∈ op(F, s)
         @test !(op(s, -12) ∈ op(F, s))
     end
+    @test connectivity(F) == 3
     @test length(innerboundary(F)) == 2
     @test outerboundary(F) ≈ C3
     @test between(C3, C2) isa InteriorDoublyConnectedRegion
@@ -507,6 +508,28 @@ end
     @test connectivity(between(C3, C2)) == 2
     @test between(C3, reverse(C2)) isa InteriorDoublyConnectedRegion
     @test between(reverse(C3), reverse(C2)) isa InteriorDoublyConnectedRegion
+
+    C_big = Circle{T}(0, 2)
+    C_small = Circle{T}(0, T(1//2))
+    R = between(C_big, C_small)
+    @test outerboundary(R) ≈ C_big
+    @test innerboundary(R)[1] ≈ C_small
+    @test isfinite(R)
+    @test T(1) ∈ R           # between the circles
+    @test T(1//10) ∉ R       # inside inner
+    @test T(3) ∉ R           # outside outer
+
+    C1 = Circle{T}(0, 1)
+    C2 = Circle{T}(3, T(1//2))
+    Ed = ExteriorDoublyConnectedRegion(C1, C2)
+    @test isnothing(outerboundary(Ed))
+    @test length(innerboundary(Ed)) == 2
+    @test !isfinite(Ed)
+    @test T(10) ∈ Ed          # outside both
+    @test T(0) ∉ Ed           # inside C1
+    @test T(3) ∉ Ed           # inside C2
+
+    @test_throws ArgumentError between(Circle{T}(0, 1), Circle{T}(3, T(1//2)))
 end
 
 @testset "SC Regions in $T" for T in (Float64, BigFloat)
@@ -514,6 +537,8 @@ end
     @test disk(c) ≈ interior(c)
     @test isfinite(interior(c))
     @test !isfinite(exterior(c))
+    @test connectivity(interior(c)) == 1
+    @test connectivity(exterior(c)) == 1
     for c in (c, reverse(c)), D in (interior(c), !exterior(c))
         @test in(0, D)
         @test !in(Inf, D)
@@ -590,6 +615,7 @@ end
     A = Annulus(C1, C2)
     @test outerboundary(A) ≈ C1
     @test innerboundary(A)[1] ≈ C2
+    @test connectivity(A) == 2
 end
 
 @testset "Shapes" begin
