@@ -1,0 +1,15 @@
+# Type issues to be fixed
+
+5. RegionIntersection stores mismatched real types
+regions.jl:49-55: the struct declares both fields as AbstractRegion{T}, but the constructor promotes the type parameter without converting the stored values:
+
+
+struct RegionIntersection{T} <: AbstractRegion{T}
+    one::AbstractRegion{T}
+    two::AbstractRegion{T}
+    function RegionIntersection(one::AbstractRegion{R}, two::AbstractRegion{S}) where {R,S}
+        # one, two = promote(one, two)     ← commented out
+        new{promote_type(R,S)}(one, two)
+    end
+end
+If R=Float64 and S=BigFloat, the struct is RegionIntersection{BigFloat} but one::AbstractRegion{Float64}, which violates the declared field type. The commented-out promote line is the intended fix that was never completed. RegionUnion has the same issue.

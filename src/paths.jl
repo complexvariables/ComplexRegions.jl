@@ -274,6 +274,7 @@ end
 	Path(c::AbstractVector; tol=<default>)
 Given a vector `c` of curves, construct a path. The path is checked for continuity (to tolerance `tol`) at the interior vertices.
 """
+Path(p::AbstractPath) = p
 Path(c::AbstractVector{<:AbstractCurve{T}}) where {T} = Path{T}(c)
 function Path(p::AbstractVector)
     T = promote_type(real_type.(p)...)
