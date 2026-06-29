@@ -5,10 +5,13 @@
 
 Each `Line` type is parameterized according to the common type of its complex input arguments.
 """
-struct Line{T} <: AbstractClosedCurve{T}
-    base::Union{T,AnyComplex{T}}
-    direction::Union{T,AnyComplex{T}}
-    Line{T}(a, b) where {T} = new(convert_real_type(T, a), sign(convert_real_type(T, b - a)))
+struct Line{T,Z<:Union{T,AnyComplex{T}}} <: AbstractClosedCurve{T}
+    base::Z
+    direction::Z
+    function Line{T}(a, b) where {T}
+        base, dir = promote(convert_real_type(T, a), sign(convert_real_type(T, b - a)))
+        new{T,typeof(base)}(base, dir)
+    end
 end
 """
 	Line(a, b)

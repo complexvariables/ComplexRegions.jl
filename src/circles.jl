@@ -4,14 +4,14 @@
 
 Each `Circle` type is parameterized according to the common type of its complex input arguments.
 """
-struct Circle{T} <: AbstractClosedCurve{T}
-    center::AnyComplex{T}
+struct Circle{T,Z<:AnyComplex{T}} <: AbstractClosedCurve{T}
+    center::Z
     radius::T
     ccw::Bool
 	function Circle{T}(z, r, ccw=true) where {T}
 		Tz = complex(convert_real_type(T, z))
 		Tr = convert(T, r)
-		return new(Tz, Tr, ccw)
+		return new{T,typeof(Tz)}(Tz, Tr, ccw)
 	end
 end
 """

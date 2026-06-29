@@ -122,25 +122,30 @@ function angles(P::AbstractPath{T}) where T
     return θ
 end
 
-Base.conj(p::AbstractPath) = typeof(p)(conj.(curves(p)))
+# Reconstruct a path of the same kind from a new set of curves. Uses only the
+# real-type parameter so the curve-vector type parameter is recomputed (the new
+# curves may differ in type from the originals).
+rebuild(p::AbstractPath{T}) where {T} = (typeof(p).name.wrapper){T}
 
-Base.reverse(p::AbstractPath) = typeof(p)(reverse(reverse.(curves(p))))
+Base.conj(p::AbstractPath) = rebuild(p)(conj.(curves(p)))
+
+Base.reverse(p::AbstractPath) = rebuild(p)(reverse(reverse.(curves(p))))
 
 function Base.:+(p::AbstractPath{T}, z::Number) where T
-	return typeof(p)([c + convert_real_type(T, z) for c in curves(p)])
+	return rebuild(p)([c + convert_real_type(T, z) for c in curves(p)])
 end
 Base.:+(z::Number, p::AbstractPath) = p + z
 
-Base.:-(p::AbstractPath) = typeof(p)([-c for c in curves(p)])
+Base.:-(p::AbstractPath) = rebuild(p)([-c for c in curves(p)])
 Base.:-(p::AbstractPath, z::Number) = p + (-z)
 Base.:-(z::Number, p::AbstractPath) = (-p) + z
 
-Base.:*(p::AbstractPath, z::Number) = typeof(p)([c * z for c in curves(p)])
-Base.:*(z::Number, p::AbstractPath) = typeof(p)([z * c for c in curves(p)])
+Base.:*(p::AbstractPath, z::Number) = rebuild(p)([c * z for c in curves(p)])
+Base.:*(z::Number, p::AbstractPath) = rebuild(p)([z * c for c in curves(p)])
 
-Base.:/(p::AbstractPath, z::Number) = typeof(p)([c / z for c in curves(p)])
+Base.:/(p::AbstractPath, z::Number) = rebuild(p)([c / z for c in curves(p)])
 Base.:/(z::Number, p::AbstractPath) = z * inv(p)
-inv(p::AbstractPath) = typeof(p)([inv(c) for c in curves(p)])
+inv(p::AbstractPath) = rebuild(p)([inv(c) for c in curves(p)])
 
 """
 	isapprox(P1::AbstractPath,R2::AbstractPath)
@@ -260,14 +265,14 @@ isoutside(P::AbstractClosedPath) = z -> isoutside(z, P)
 	(type) Path
 Generic implementation of an `AbstractPath`.
 """
-struct Path{T} <: AbstractPath{T}
-    curve::Vector{AbstractCurve{T}}
+struct Path{T,V<:AbstractVector{<:AbstractCurve{T}}} <: AbstractPath{T}
+    curve::V
     function Path{T}(c::AbstractVector{<:AbstractCurve{T}}; tol::Real=tolerance(T)) where {T}
         n = length(c)
         for k = 1:n-1
             @assert isapprox(point(c[k], 1), point(c[k+1], 0), rtol=tol, atol=tol) "Curve endpoints do not match for pieces $(k) and $(k+1)"
         end
-        new{T}(c)
+        new{T,typeof(c)}(c)
     end
 end
 """
@@ -302,13 +307,13 @@ end
 	(type) ClosedPath
 Generic implementation of an `AbstractClosedPath`.
 """
-struct ClosedPath{T} <: AbstractClosedPath{T}
-    curve::Vector{AbstractCurve{T}}
+struct ClosedPath{T,V<:AbstractVector{<:AbstractCurve{T}}} <: AbstractClosedPath{T}
+    curve::V
     function ClosedPath{T}(p::AbstractVector{<:AbstractCurve{T}}; tol=tolerance(T)) where {T}
         q = Path{T}(p)
         zi, zf = point(q, 0), point(q, length(q))
         @assert isapprox(zi, zf, rtol=tol, atol=tol) || (isinf(zi) && isinf(zf)) "Path endpoints do not match"
-        new{T}(p)
+        new{T,typeof(p)}(p)
     end
 end
 """

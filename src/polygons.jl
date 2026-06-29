@@ -17,7 +17,7 @@ side(p::AbstractCircularPolygon, args...) = curve(p, args...)
 
 function reverse(p::AbstractCircularPolygon)
     @assert sum(isinf.(vertices(p))) < 2 "Reversal is not a propoer polygon"
-    typeof(p)(reverse(reverse.(sides(p))))
+    rebuild(p)(reverse(reverse.(sides(p))))
 end
 
 function winding(p::AbstractCircularPolygon, z::Number)
@@ -69,13 +69,13 @@ end
 	(type) CircularPolygon
 Type for closed paths consisting entirely of arcs, segments, and rays.
 """
-struct CircularPolygon{T} <: AbstractCircularPolygon{T}
-    path::ClosedPath{T}
-    function CircularPolygon{T}(p::ClosedPath{T}) where {T}
+struct CircularPolygon{T,V<:AbstractVector{<:AbstractCurve{T}}} <: AbstractCircularPolygon{T}
+    path::ClosedPath{T,V}
+    function CircularPolygon{T}(p::ClosedPath{T,V}) where {T,V}
         # Continuity and closure have been checked to make a closed path
         valid = isa.(curves(p), Union{Arc, Segment, Ray})
         @assert all(valid) "All sides must be an Arc, Segment, or Ray"
-        new(p)
+        new{T,V}(p)
     end
     function CircularPolygon{T}(p::AbstractVector{<:AbstractCurve{T}}; kw...) where {T}
         return CircularPolygon{T}(ClosedPath(p; kw...))
@@ -121,13 +121,13 @@ ispositive(p::CircularPolygon) = winding(1 / p, 0) < 0
 	(type) Polygon
 Type for closed paths consisting entirely of segments and rays.
 """
-struct Polygon{T} <: AbstractPolygon{T}
-    path::ClosedPath{T}
-    function Polygon{T}(p::AbstractClosedPath{T}) where {T}
+struct Polygon{T,V<:AbstractVector{<:AbstractCurve{T}}} <: AbstractPolygon{T}
+    path::ClosedPath{T,V}
+    function Polygon{T}(p::ClosedPath{T,V}) where {T,V}
         # Assumes continuity and closure have been checked previously
         valid = isa.(curves(p), Union{Segment{T}, Ray{T}})
         @assert all(valid) "All sides must be a Segment or Ray of the same base type"
-        new(p)
+        new{T,V}(p)
     end
 	function Polygon{T}(p::PathLike{T}; kw...) where {T}
 		Polygon{T}(ClosedPath{T}(p; kw...))
@@ -294,20 +294,21 @@ ispositive(p::Polygon) = sum(angles(p) / π .- 1) < 0
 
 ## Special polygon types and constructors
 
-struct Rectangle{T} <: AbstractPolygon{T}
-    center::AnyComplex{T}
+struct Rectangle{T,Z<:AnyComplex{T},V<:AbstractVector{<:AbstractCurve{T}}} <: AbstractPolygon{T}
+    center::Z
     radii::SVector{2,T}
     rotation::T   # angle about the center point
-    polygon::Polygon{T}
+    polygon::Polygon{T,V}
     Rectangle(center::T, args...) where {T<:Real} = Rectangle(complex(center), args...)
-    function Rectangle(center::AnyComplex{S}=0.0, radii::AbstractVector{T}=[-1.0, 1.0], rotation::U=0) where {S<:Real,T<:Real,U<:Real}
+    function Rectangle(center::AnyComplex{S}=0.0, radii::AbstractVector{T}=[1.0, 1.0], rotation::U=0) where {S<:Real,T<:Real,U<:Real}
         # rotation is in radians
         @assert (length(radii) == 2) && all(radii .>= 0)
         R = promote_type(S, T, U)
+        c = complex(convert_real_type(R, center))
         ρ = cis(convert(R, rotation))
-        z = @. center + ρ * complex(R(radii[1]) * [-1, 1, 1, -1], R(radii[2]) * [-1, -1, 1, 1])
+        z = @. c + ρ * complex(R(radii[1]) * [-1, 1, 1, -1], R(radii[2]) * [-1, -1, 1, 1])
         p = Polygon(z)
-        new{R}(center, radii, rotation, p)
+        new{R,typeof(c),typeof(curves(p))}(c, radii, rotation, p)
     end
 end
 

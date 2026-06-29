@@ -3,12 +3,13 @@
 	(type) Ray{T<:AnyComplex} in the complex plane
 Each `Ray` type is parameterized according to the common type of its complex input arguments.
 """
-struct Ray{T} <: AbstractCurve{T}
-    base::AnyComplex{T}
+struct Ray{T,Z<:AnyComplex{T}} <: AbstractCurve{T}
+    base::Z
     angle::T
     reverse::Bool
     function Ray{T}(a, d, rev=false) where {T}
-        new(complex(convert_real_type(T, a)), mod2pi(T(d)), rev)
+        base = complex(convert_real_type(T, a))
+        new{T,typeof(base)}(base, mod2pi(T(d)), rev)
     end
 end
 
@@ -38,9 +39,9 @@ function point(R::Ray{T}, t::Real) where {T}
     if t == 0
         R.base
     elseif t == 1
-        T(Inf)
+        typeof(R.base)(Inf)
     else
-        R.base + t / (1 - t) * cis(R.angle)
+        R.base + typeof(R.base)(t / (1 - t) * cis(R.angle))
     end
 end
 
