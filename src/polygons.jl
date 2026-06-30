@@ -335,7 +335,7 @@ inv(r::Rectangle) = inv(Polygon(r))
 # these provide shortcuts
 Base.:+(r::Rectangle, z::Number) = Rectangle(r.center + z, r.radii, r.rotation)
 Base.:+(z::Number, r::Rectangle) = r + z
-Base.:-(r::Rectangle) = rectangle(-vertices(r))
+Base.:-(r::Rectangle) = Rectangle(-r.center, r.radii, r.rotation)
 Base.:-(r::Rectangle, z::Number) = Rectangle(r.center - z, r.radii, r.rotation)
 Base.:-(z::Number, r::Rectangle) = (-r) + z
 
