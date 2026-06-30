@@ -5,9 +5,21 @@ check(u::AbstractArray, v::AbstractArray) = all(check(u, v) for (u, v) in zip(u,
 check(u::AbstractArray, v::Number) = all(check(u, v) for u in u)
 using Test
 using Aqua
+using JET
 
 @testset "Aqua quality assurance" begin
     Aqua.test_all(ComplexRegions)
+end
+
+@testset "JET static analysis" begin
+    # Informational only: run JET's static analysis and report findings without
+    # failing the suite. Inference-limitation false positives (which work via
+    # runtime dispatch) can appear depending on the Julia version, so this is a
+    # non-blocking heads-up rather than a hard gate.
+    rep = report_package(ComplexRegions; target_modules=(ComplexRegions,))
+    n = length(JET.get_reports(rep))
+    n > 0 && @warn "JET reported $n possible issue(s) (informational; see output above)."
+    @test true
 end
 
 @testset "Utilities" begin
