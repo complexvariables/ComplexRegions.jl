@@ -4,6 +4,12 @@ check(u::Number, v::Number, T::Type=real_type(float(u))) = isapprox(u, v, rtol=5
 check(u::AbstractArray, v::AbstractArray) = all(check(u, v) for (u, v) in zip(u, v))
 check(u::AbstractArray, v::Number) = all(check(u, v) for u in u)
 using Test
+using Aqua
+
+@testset "Aqua quality assurance" begin
+    Aqua.test_all(ComplexRegions)
+end
+
 @testset "Utilities" begin
     @test CR.scaleto(1im, 3im, [0.5, 0.75]) ≈ [2.0im, 2.5im]
     @test CR.scalefrom(1im, 3im, [2im, 1im, 1.5im]) ≈ [0.5, 0, 0.25]

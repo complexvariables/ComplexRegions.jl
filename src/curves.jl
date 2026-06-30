@@ -192,7 +192,7 @@ ClosedCurve(f::Function, df::Function=t -> ForwardDiff.derivative(f,t); kw...) =
 ClosedCurve(f::Function, a::Real, b::Real; kw...) = ClosedCurve(Curve(f, a, b; kw...))
 ClosedCurve(f::Function, df::Function, a::Real, b::Real; kw...) = ClosedCurve(Curve(f, df, a, b; kw...))
 
-ClosedCurve(c::Curve{T}, args...) where T = ClosedCurve{T}(c, args...)
+ClosedCurve(c::Curve{T}; kw...) where T = ClosedCurve{T}(c; kw...)
 function ClosedCurve(f::Function, args...)
 	c = Curve(f, args...)
 	return ClosedCurve{real_type(c)}(c)
