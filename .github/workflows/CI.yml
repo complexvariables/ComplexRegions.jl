@@ -43,7 +43,7 @@ jobs:
       - name: Generate coverage report
         run: julia --project=. -e 'using Pkg; Pkg.add("Coverage"); using Coverage; LCOV.writefile("coverage-lcov.info", process_folder())'
       - name: Upload coverage to Codecov
-        if: ${{ matrix.version }} == '1'
+        if: matrix.version == '1'
         uses: codecov/codecov-action@v5
         with:
           token: ${{ secrets.CODECOV_TOKEN }}

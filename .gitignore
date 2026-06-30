@@ -5,3 +5,5 @@ Manifest.toml
 .DS_Store
 docs/node_modules/
 *.cov
+.pytest_cache/
+__pycache__/
