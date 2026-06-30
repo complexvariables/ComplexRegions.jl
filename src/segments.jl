@@ -4,12 +4,13 @@
 
 Each `Segment` type is parameterized according to the common type of its complex input arguments.
 """
-struct Segment{T} <: AbstractCurve{T}
-    za::Union{T,AnyComplex{T}}
-    zb::Union{T,AnyComplex{T}}
+struct Segment{T,Z<:Union{T,AnyComplex{T}}} <: AbstractCurve{T}
+    za::Z
+    zb::Z
     function Segment{T}(a, b) where {T}
         @assert isfinite(a) && isfinite(b)
-        new(convert_real_type(T, a), convert_real_type(T, b))
+        za, zb = promote(convert_real_type(T, a), convert_real_type(T, b))
+        new{T,typeof(za)}(za, zb)
     end
 end
 

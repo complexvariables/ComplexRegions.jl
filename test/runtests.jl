@@ -629,6 +629,28 @@ end
     @test arclength(Shapes.spiral(3, 1)) ≈ 172.17394523
 end
 
+# `point` and the tangent/normal accessors must infer a concrete complex return
+# type. `@inferred` throws if inference fails or widens to an abstract type, so
+# these guard against regressions in the curve/path type parameterization.
+# Note: only homogeneous (uniform-coordinate) paths/polygons are stable; a
+# genuinely heterogeneous path has element type `AbstractCurve` and returns `Any`
+# by design, so such cases are intentionally excluded here.
+@testset "Type stability using $T" for T in (Float64, BigFloat)
+    o = complex(T(0))
+    leaves = (Circle(o, T(1)), Arc(complex(T(1)), 1im + o, -1 + o),
+              Segment(o, 1im + o), Line(o, 1 + 1im + o), Ray(o, T(1)))
+    for C in leaves, f in (point, tangent, unittangent, unitnormal)
+        @test (@inferred f(C, T(3) / 10)) isa Complex{T}
+    end
+    poly = Polygon([o, 1 + o, 1 + 1im + o, 1im + o])
+    @test (@inferred point(poly, T(7) / 4)) isa Complex{T}
+    @test (@inferred point(Rectangle(o, T[1, 1]), T(1) / 2)) isa Complex{T}
+    upath = Path([Segment(o, 1 + o), Segment(1 + o, 1 + 1im + o)])
+    @test (@inferred point(upath, T(1) / 2)) isa Complex{T}
+    cpath = ClosedPath([Segment(o, 1 + o), Segment(1 + o, 1im + o), Segment(1im + o, o)])
+    @test (@inferred point(cpath, T(3) / 2)) isa Complex{T}
+end
+
 @testset "Utilities" begin
     @test isempty(CR.realroots(1, 2, 2))
     @test length(CR.realroots(1, -4, 4)) == 1

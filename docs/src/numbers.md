@@ -20,7 +20,7 @@ In addition, the package supports different floating-point types underlying any 
 
 ```@example examples
 using DoubleFloats
-seg = Segment{DoubleFloat}(-1, 1)
+seg = Segment{Double64}(-1, 1)
 seg(2//3)
 ```
 

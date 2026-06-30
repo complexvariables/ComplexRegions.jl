@@ -4,12 +4,15 @@
 
 Each `Arc` type is parameterized according to the common type of its complex input arguments.
 """
-struct Arc{T} <: AbstractCurve{T}
-    circle::Circle{T}
+struct Arc{T,Z<:AnyComplex{T}} <: AbstractCurve{T}
+    circle::Circle{T,Z}
     start::T  # specified as positive fraction of 1 ccw rotation from positive real
     delta::T
-	Arc{T}(c, s, d) where {T} = new(convert_real_type(T, c), T(s), T(d))
+	Arc{T,Z}(c::Circle{T,Z}, s, d) where {T,Z} = new{T,Z}(c, T(s), T(d))
 end
+# Determine Z from the (possibly converted) circle.
+Arc{T}(c, s, d) where {T} = _arc(convert_real_type(T, c), T(s), T(d))
+_arc(c::Circle{T,Z}, s, d) where {T,Z} = Arc{T,Z}(c, s, d)
 
 # Untyped constructors
 """

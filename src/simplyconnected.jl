@@ -110,7 +110,7 @@ function isapprox(
 end
 
 # disks
-const Disk{T} = InteriorSimplyConnectedRegion{T, Circle{T}}
+const Disk{T} = InteriorSimplyConnectedRegion{T, <:Circle{T}}
 """
 	disk(C::Circle)
 Construct the disk interior to `C`.
@@ -133,7 +133,7 @@ show(io::IO, R::Disk) = print(io, "Disk")
 # COV_EXCL_STOP
 
 # quads
-const Quad{T} = InteriorSimplyConnectedRegion{T, Rectangle{T}}
+const Quad{T} = InteriorSimplyConnectedRegion{T, <:Rectangle{T}}
 """
 	quad(R::Rectangle)
 Construct the rectangle interior to `R`.
@@ -148,7 +148,7 @@ end
 # COV_EXCL_STOP
 
 # half-planes
-const Halfplane{T} = SimplyConnectedRegion{T, Line{T}}
+const Halfplane{T} = SimplyConnectedRegion{T, <:Line{T}}
 """
 	halfplane(L::Line)
 Construct the half-plane to the left of `L`.
@@ -174,4 +174,4 @@ end
 	(type) PolygonalRegion
 Representation of a simply connected region bounded by a polygon.
 """
-const PolygonalRegion{T} = SimplyConnectedRegion{T, Polygon{T}}
+const PolygonalRegion{T} = SimplyConnectedRegion{T, <:Polygon{T}}

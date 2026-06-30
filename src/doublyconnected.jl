@@ -64,10 +64,10 @@ end
 
 Region between two concentric circles.
 """
-struct Annulus{T} <: AbstractDoublyConnectedRegion{T}
-    outer::Circle{T}
-    inner::Circle{T}
-    function Annulus{T}(outer::Circle{T}, inner::Circle{T}) where T
+struct Annulus{T,Z<:AnyComplex{T}} <: AbstractDoublyConnectedRegion{T}
+    outer::Circle{T,Z}
+    inner::Circle{T,Z}
+    function Annulus{T}(outer::Circle{T,Z}, inner::Circle{T,Z}) where {T,Z}
         @assert(outer.center ≈ inner.center)
         if isinside(Inf, outer)
             outer = reverse(outer)
@@ -75,7 +75,7 @@ struct Annulus{T} <: AbstractDoublyConnectedRegion{T}
         if isoutside(Inf, inner)
             inner = reverse(inner)
         end
-        new(outer, inner)
+        new{T,Z}(outer, inner)
     end
 end
 

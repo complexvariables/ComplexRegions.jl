@@ -52,9 +52,10 @@ isoutside(C::AbstractClosedCurve) = z -> isoutside(z, C)
 """
 (type) Smooth curve defined by an explicit function of a real paramerter in [0,1].
 """
-struct Curve{T} <: AbstractCurve{T}
-    point::Function
-    tangent::Function
+struct Curve{T,F,G} <: AbstractCurve{T}
+    point::F
+    tangent::G
+    Curve{T}(p, q) where {T} = new{T,typeof(p),typeof(q)}(p, q)
 end
 
 """
@@ -167,14 +168,17 @@ end
 """
 (type) Smooth closed curve defined by an explicit function of a real paramerter in [0,1].
 """
-struct ClosedCurve{T} <: AbstractClosedCurve{T}
-    curve::Curve{T}
-    function ClosedCurve{T}(c::Curve; tol=tolerance(T)) where T<:AbstractFloat
-        @assert isapprox(point(c, T(0)), point(c, T(1)); rtol=tol, atol=tol) "Curve does not close"
-        new(convert_real_type(T, c))
-    end
-	ClosedCurve{T}(f::Function, args...) where T = ClosedCurve{T}(Curve{T}(f, args...))
+struct ClosedCurve{T,F,G} <: AbstractClosedCurve{T}
+    curve::Curve{T,F,G}
+    ClosedCurve{T,F,G}(c::Curve{T,F,G}) where {T,F,G} = new{T,F,G}(c)
 end
+function ClosedCurve{T}(c::Curve; tol=tolerance(T)) where T<:AbstractFloat
+    @assert isapprox(point(c, T(0)), point(c, T(1)); rtol=tol, atol=tol) "Curve does not close"
+    return _closedcurve(convert_real_type(T, c))
+end
+# Function barrier to capture the concrete point/tangent types.
+_closedcurve(c::Curve{T,F,G}) where {T,F,G} = ClosedCurve{T,F,G}(c)
+ClosedCurve{T}(f::Function, args...) where T = ClosedCurve{T}(Curve{T}(f, args...))
 
 """
 	ClosedCurve(f; tol=<default>)
@@ -204,7 +208,7 @@ Base.:-(C::ClosedCurve) = ClosedCurve(-C.curve)
 Base.:*(C::ClosedCurve, z::Number) = ClosedCurve(C.curve * z)
 Base.inv(C::ClosedCurve) = ClosedCurve(inv(C.curve))
 
-convert_real_type(T::Type{<:Real}, C::ClosedCurve{S}) where S = ClosedCurve{T}(C.point, C.tangent)
+convert_real_type(T::Type{<:Real}, C::ClosedCurve{S}) where S = ClosedCurve{T}(convert_real_type(T, C.curve))
 Base.promote_rule(::Type{<:ClosedCurve{T}}, ::Type{<:ClosedCurve{S}}) where {T,S} = ClosedCurve{promote_type(T,S)}
 
 include("lines.jl")
