@@ -9,6 +9,7 @@ end
 
 function refine_discretization(p::AbstractCurveOrPath, lims::AbstractVector, ds::Real)
     t = collect(range(lims[1], lims[2], 20))
+    z = p.(t)
     idx = [1]
     while length(idx) > 0
         z = p.(t)
@@ -205,7 +206,7 @@ function discretize(E::ExteriorRegion, n::Integer=600)
     r *= 4//3
     xlims = mean(xlims) .+ (-r, r)
     ylims = mean(ylims) .+ (-r, r)
-    return discretize(ConnectedRegion(nothing, E.inner), n, limits=(xlims..., ylims...))
+    return invoke(discretize, Tuple{AbstractConnectedRegion,Any}, E, n; limits=(xlims..., ylims...))
 end
 
 # Utility function for the main calls.
