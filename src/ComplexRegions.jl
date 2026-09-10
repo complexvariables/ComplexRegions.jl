@@ -23,6 +23,14 @@ convert_real_type(T::Type{<:Real}, x::S) where S<:Number = convert(T, x)
 import Base: !, ∘, sign, inv, angle, real, imag, conj, show, iterate, eltype, length, getindex, isapprox, isfinite, intersect, union, truncate, reverse, in
 export !, ∘, sign, inv, angle, real, imag, conj, show, iterate, eltype, length, getindex, isapprox, isfinite, intersect, union, truncate, reverse, in
 
+# Julia 1.13 added `Base.ispositive` (meaning `x > 0`). Where it exists, extend it
+# rather than defining a competing binding; otherwise a `using ComplexRegions` client
+# sees an ambiguous name and must qualify every call. On older versions, `ispositive`
+# is created as a new function by the method definitions in lines.jl/circles.jl/polygons.jl.
+@static if isdefined(Base, :ispositive)
+    import Base: ispositive
+end
+
 include("utilities.jl")
 
 export point, tangent, arclength, points, unittangent, normal, unitnormal
