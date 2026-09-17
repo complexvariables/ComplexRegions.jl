@@ -16,7 +16,7 @@ sides(p::AbstractCircularPolygon) = curves(p)
 side(p::AbstractCircularPolygon, args...) = curve(p, args...)
 
 function reverse(p::AbstractCircularPolygon)
-    @assert sum(isinf.(vertices(p))) < 2 "Reversal is not a propoer polygon"
+    @assert sum(isinf.(vertices(p))) < 2 "Reversal is not a proper polygon"
     rebuild(p)(reverse(reverse.(sides(p))))
 end
 
@@ -221,7 +221,7 @@ end
 
 """
 	truncate(P::Union{CircularPolygon,Polygon},C::Circle)
-Compute a trucated form of the polygon by replacing each pair of rays incident at infinity with two segments connected by an arc along the given circle. This is *not* a true clipping of the polygon, as finite sides are not altered. The result is either a CircularPolygon or the original `P`.
+Compute a truncated form of the polygon by replacing each pair of rays incident at infinity with two segments connected by an arc along the given circle. This is *not* a true clipping of the polygon, as finite sides are not altered. The result is either a CircularPolygon or the original `P`.
 """
 function truncate(p::Union{CircularPolygon,Polygon}, c::Circle)
     n = length(p)

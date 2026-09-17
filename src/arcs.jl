@@ -18,7 +18,7 @@ _arc(c::Circle{T,Z}, s, d) where {T,Z} = Arc{T,Z}(c, s, d)
 """
 	Arc(C, start, delta)
 
-Consruct an arc that is the part of the Circle `C` starting at parameter value `start` and ending at `start+delta`. The values are expressed in terms of fractions of a complete circle. The `start` value should be in [0,1), and `delta` should be in [-1,1].
+Construct an arc that is the part of the Circle `C` starting at parameter value `start` and ending at `start+delta`. The values are expressed in terms of fractions of a complete circle. The `start` value should be in [0,1), and `delta` should be in [-1,1].
 
 	Arc(a, b, c)
 

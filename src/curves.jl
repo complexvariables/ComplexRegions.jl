@@ -50,7 +50,7 @@ isoutside(C::AbstractClosedCurve) = z -> isoutside(z, C)
 #####################
 
 """
-(type) Smooth curve defined by an explicit function of a real paramerter in [0,1].
+(type) Smooth curve defined by an explicit function of a real parameter in [0,1].
 """
 struct Curve{T,F,G} <: AbstractCurve{T}
     point::F
@@ -166,7 +166,7 @@ end
 #####################
 
 """
-(type) Smooth closed curve defined by an explicit function of a real paramerter in [0,1].
+(type) Smooth closed curve defined by an explicit function of a real parameter in [0,1].
 """
 struct ClosedCurve{T,F,G} <: AbstractClosedCurve{T}
     curve::Curve{T,F,G}

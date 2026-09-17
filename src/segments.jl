@@ -18,7 +18,7 @@ end
 """
 	Segment(a, b)
 
-Consruct a segment that starts at value `a` and ends at `b`.
+Construct a segment that starts at value `a` and ends at `b`.
 """
 function Segment(a::Number, b::Number)
 	T = promote_type(real_type(float(a)), real_type(float(b)))

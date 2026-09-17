@@ -106,7 +106,7 @@ end
 
 """
 	angles(P::AbstractPath)
-Return a vecrtor of the interior angles at the vertices of the path `P`. The length is one greater than the number of curves in `P`, and the first and last values are `NaN`.
+Return a vector of the interior angles at the vertices of the path `P`. The length is one greater than the number of curves in `P`, and the first and last values are `NaN`.
 """
 function angles(P::AbstractPath{T}) where T
     τ = tangent(P, 0)
@@ -221,7 +221,7 @@ vertices(P::AbstractClosedPath) = [vertex(P, k) for k = 1:length(P)]
 
 """
 	angles(P::AbstractPath)
-Return a vecrtor of the interior angles at the vertices of the path `P`. The length is one greater than the number of curves in `P`, and the first and last values are `NaN`.
+Return a vector of the interior angles at the vertices of the path `P`. The length is one greater than the number of curves in `P`, and the first and last values are `NaN`.
 """
 function angles(P::AbstractClosedPath{T}) where T
     τ = tangent(P, 0)

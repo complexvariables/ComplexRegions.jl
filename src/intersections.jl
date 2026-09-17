@@ -237,7 +237,7 @@ function raycrossing(z::Union{T,AnyComplex{T}}, c::AbstractCurve{S}; tol=toleran
         if -tol ≤ t ≤ 1 + tol
             y = imag(unittangent(c, t))
             if abs(y) < tol
-                # horiztonal tangent; check a perturbed location
+                # horizontal tangent; check a perturbed location
                 ϵ = sqrt(tol)
                 if t < 0.5
                     y = imag(unittangent(c, t + 2ϵ))
